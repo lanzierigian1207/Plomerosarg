@@ -1,0 +1,180 @@
+/*
+Theme Name: Websy
+Theme URI: https://www.nayrathemes.com/websy-free/
+Author: Nayra Themes
+Author URI: https://www.nayrathemes.com/
+Description: A powerful next generation theme for upcoming generations and traditional UI that focuses on the color combinations of solid and gradient colors, along with cool animations and attractive features. It’s perfect for any type of business. View the demo of Websy Pro https://www.nayrathemes.com/demo/pro/?theme=websy
+Template: webique
+Version: 3.3
+Tested up to: 6.9
+Requires PHP: 5.6
+Requires at least: 4.7
+License: GPLv3 or later
+License URI:  https://www.gnu.org/licenses/gpl-3.0.html
+Text Domain: websy
+Slug: websy
+Tags: one-column, two-columns, right-sidebar, flexible-header, custom-background, custom-colors, custom-header, custom-menu,  custom-logo, featured-image-header, featured-images, footer-widgets, full-width-template, sticky-post, theme-options, threaded-comments, translation-ready, blog, photography, portfolio, editor-style, grid-layout, rtl-language-support
+
+This theme, like WordPress, is licensed under the GPL.
+Use it to make something cool, have fun, and share what you've learned with others.
+
+*/
+
+#AVMenu.menubar {
+	min-width: 100px;
+	min-height: 55px;
+}
+
+.slider-wrapper.style2 .thumb-box .owl-carousel .owl-stage {
+	margin: auto;
+}
+
+
+body.rtl .theme-slider div.theme-content {
+	direction: rtl;
+}
+
+body.rtl .main-slider2 .theme-content-offer {
+	float: left;
+	margin-right: 0;
+	margin-left: 10px;
+}
+
+.features-image {
+	/* background-position: unset !important; */
+	background-attachment: fixed;
+}
+
+body.rtl .features-section #jarallax-container-0 {
+	left: unset !important;
+	right: 0px;
+	width: 50% !important;
+}
+
+body.rtl .quote-right-box {
+	left: -41px;
+	right: unset;
+	transform: translateY(-50%) rotate(45deg);
+}
+
+body.rtl .quote-right-box span {
+	right: 8px;
+	left: unset;
+	transform: translateY(-50%) rotate(315deg);
+}
+
+body.rtl .testimonial-slider .testimonial-item {
+	direction: rtl;
+}
+
+body.rtl .testimonial-content {
+	text-align: right;
+}
+
+body.rtl .testimonial-footer .brand {
+	padding-left: 0;
+	padding-right: 5px;
+}
+
+body.rtl .testimonial-author {
+	direction: ltr;
+}
+
+@media (min-width: 992px) {
+	body.rtl .header.header-two .menu-box {
+		left: unset;
+		right: 0;
+	}
+
+	body.rtl .header.header-two .ps-md-5:has(.theme-menu) {
+		padding-right: 3rem !important;
+		padding-left: 0 !important;
+	}
+
+	body.rtl .features-section::before {
+		transform: rotate(180deg);
+	}
+}
+
+.wp-block-page-list p a {
+	padding: 1rem;
+}
+
+.wp-block-post-author img {
+    border-radius: 100%;
+}
+
+a.wp-block-button__link:focus {
+	color: #fff;
+	text-decoration: none;
+}
+
+.post.grid-view-news-area ul.wp-block-rss {
+	list-style: disc;
+}
+
+.post .wp-block-archives li {
+	padding-bottom: 0.625rem;
+}
+
+.widget .wp-block-embed .wp-element-caption a {
+	color: inherit;
+}
+
+.sidebar .widget .textwidget a span{
+	color: inherit;
+}
+
+.wp-block-file .wp-block-file__button {
+   text-decoration: none;
+   border: none;
+}
+
+select:focus,
+.form-control:focus {
+	border-color: rgb(255, 33, 79);
+	box-shadow: 0 0 5px rgba(255, 33, 79, 1);
+}
+
+.input-group > .form-control:focus,
+.input-group > .custom-select:focus,
+.input-group > .custom-file:focus {
+	z-index: 0;
+}
+
+.sidebar .widget .wp-block-group .wp-block-embed {
+	margin: 0;
+}
+
+table.wc-block-cart-items .wc-block-cart-items__row .wc-block-cart-item__quantity .wc-block-cart-item__remove-link {
+ text-decoration: none !important;
+}
+
+.footer-sidebar .widget .wp-block-group .wp-block-verse {
+ 	    background: #202020;
+ 	    color: #cccccc;
+}
+
+.widget .wp-block-quote {
+	color: inherit;
+}
+
+.sidebar .widget .wp-block-group .wp-block-preformatted a {
+	text-decoration: underline;
+}
+
+.entry-content ul.wp-block-post-template li.wp-block-post:hover {
+	box-shadow: none;
+}
+
+.wp-block-image .alignleft figcaption {   
+	text-align: left; 
+}
+
+.wp-block-button.is-style-outline a.wp-block-button__link {
+    color: inherit;
+}
+
+.wp-block-button.is-style-outline a.wp-block-button__link {
+ 	border-color: inherit;
+}

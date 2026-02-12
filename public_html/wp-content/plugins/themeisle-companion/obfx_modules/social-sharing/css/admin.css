@@ -1,0 +1,85 @@
+#obfx-dash .obfx-toggle-icon svg {
+	width: 16px;
+	height: 16px;
+	fill: currentColor;
+}
+
+#obfx-dash .obfx-toggle-icon.facebook {
+	color: #0866FF;
+}
+
+#obfx-dash .obfx-toggle-icon.twitter {
+	color: #000;
+}
+
+#obfx-dash .obfx-toggle-icon.pinterest {
+	color: #bd081c;
+}
+
+#obfx-dash .obfx-toggle-icon.linkedin {
+	color: #0077b5;
+}
+
+#obfx-dash .obfx-toggle-icon.tumblr {
+	color: #36465D;
+}
+
+#obfx-dash .obfx-toggle-icon.reddit {
+	color: #ff4500;
+}
+
+#obfx-dash .obfx-toggle-icon.vkontakte {
+	color: #0077FF;
+}
+
+#obfx-dash .obfx-toggle-icon.odnoklassniki {
+	color: #ee8208;
+}
+
+#obfx-dash .obfx-toggle-icon.douban {
+	color: #2D963D;
+}
+
+#obfx-dash .obfx-toggle-icon.baidu {
+	color: #2932E1;
+}
+
+#obfx-dash .obfx-toggle-icon.xing {
+	color: #006567;
+}
+
+#obfx-dash .obfx-toggle-icon.renren {
+	color: #217DC6;
+}
+
+#obfx-dash .obfx-toggle-icon.weibo {
+	color: #e6162d;
+}
+
+#obfx-dash .obfx-toggle-icon.sms {
+	color: #00b901;
+}
+
+#obfx-dash .obfx-toggle-icon.whatsapp {
+	color: #20b038;
+}
+
+#obfx-dash .obfx-toggle-icon.mail {
+	color: #58a9de;
+}
+
+#obfx-dash .obfx-toggle-icon.telegram {
+	color: #26A5E4;
+}
+
+#obfx-dash .obfx-toggle-icon.mastodon {
+	color: #6364FF;
+}
+
+#obfx-dash .obfx-toggle-icon.bluesky {
+	color: #0285FF;
+}
+
+#obfx-dash .obfx-toggle-icon.threads {
+	color: #000000;
+}
