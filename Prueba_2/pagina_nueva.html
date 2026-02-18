@@ -3,23 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AAPSYA | Institucional</title>
-  <meta name="description" content="Sitio institucional de AAPSYA: servicios, capacitaciones, noticias y contacto.">
+  <title>Plomeros ARG | Red de Plomeros Matriculados</title>
+  <meta name="description" content="Plataforma de Plomeros ARG: urgencias 24/7, capacitaciones, utilidades profesionales y novedades del sector.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --blue-900: #1f5ea8;
-      --blue-700: #55c8f5;
-      --blue-100: #eef8ff;
-      --orange-500: #6bcdf4;
-      --ink: #2f3f55;
-      --muted: #6c7b90;
-      --line: #b5d8ef;
-      --white: #ffffff;
+      --blue-900: #052a61;
+      --blue-700: #0c4da2;
+      --blue-100: #e6f0ff;
+      --ink: #0f1d2f;
+      --muted: #516078;
+      --paper: #ffffff;
+      --accent: #e77f16;
+      --accent-soft: #fff2dd;
+      --stroke: #d7e2f3;
+      --shadow: 0 22px 40px rgba(5, 42, 97, 0.16);
       --max: 1160px;
-      --shadow: 0 16px 30px rgba(31, 94, 168, 0.14);
+      --radius: 18px;
     }
 
     * {
@@ -27,26 +29,34 @@
       margin: 0;
     }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
-      font-family: "Barlow", sans-serif;
+      font-family: "Manrope", sans-serif;
       color: var(--ink);
-      background: linear-gradient(180deg, #ffffff 0%, #f5f8fc 100%);
-      line-height: 1.5;
+      background:
+        radial-gradient(1200px 500px at -15% -10%, #b9d1ff 0%, transparent 65%),
+        radial-gradient(700px 450px at 110% 15%, #ffe3bf 0%, transparent 60%),
+        #f6faff;
+      line-height: 1.6;
+      overflow-x: hidden;
     }
 
     .container {
       width: min(var(--max), calc(100% - 2rem));
-      margin: 0 auto;
+      margin-inline: auto;
     }
 
-    .top {
-      background: #2b69b4;
-      color: #e8f4ff;
-      font-size: 0.92rem;
+    .topbar {
+      background: var(--blue-900);
+      color: #e9f2ff;
+      font-size: 0.9rem;
     }
 
-    .top .container {
-      min-height: 42px;
+    .topbar-inner {
+      min-height: 40px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -55,22 +65,22 @@
       padding: 0.35rem 0;
     }
 
-    .top a {
-      color: #ccecff;
+    .topbar a {
+      color: #fff;
       text-decoration: none;
       font-weight: 700;
     }
 
-    header {
-      background: rgba(255, 255, 255, 0.95);
-      border-bottom: 1px solid var(--line);
+    .site-header {
       position: sticky;
       top: 0;
       z-index: 100;
-      backdrop-filter: blur(6px);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(12, 77, 162, 0.1);
     }
 
-    .header-row {
+    .header-inner {
       min-height: 78px;
       display: flex;
       align-items: center;
@@ -78,117 +88,136 @@
       gap: 1rem;
     }
 
-    .logo {
-      text-decoration: none;
-      color: var(--ink);
+    .brand {
       display: inline-flex;
       align-items: center;
-      gap: 0.7rem;
+      gap: 0.8rem;
+      text-decoration: none;
+      color: var(--blue-900);
       font-weight: 800;
       letter-spacing: 0.02em;
     }
 
-    .logo-badge {
-      width: 42px;
-      height: 42px;
+    .brand-badge {
+      width: 44px;
+      height: 44px;
       border-radius: 12px;
       display: grid;
       place-items: center;
-      background: linear-gradient(135deg, #dff4ff, #a1ddf8);
-      border: 1px solid var(--line);
-      box-shadow: 0 8px 14px rgba(31, 94, 168, 0.2);
-      overflow: hidden;
+      font-family: "Bebas Neue", sans-serif;
+      font-size: 1.5rem;
+      color: #fff;
+      background: linear-gradient(135deg, #0a3f86, #0d63cf);
+      box-shadow: 0 12px 24px rgba(13, 99, 207, 0.3);
     }
 
-    .logo-badge img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    nav {
+    .main-nav {
       display: flex;
-      gap: 1rem;
       align-items: center;
+      gap: 1.1rem;
     }
 
-    nav a {
+    .main-nav a {
       text-decoration: none;
       color: var(--ink);
       font-weight: 700;
       font-size: 0.95rem;
+      transition: color 0.2s ease;
     }
 
-    .cta-nav {
-      background: var(--orange-500);
-      color: #1f5ea8;
-      padding: 0.56rem 0.95rem;
+    .main-nav a:hover {
+      color: var(--blue-700);
+    }
+
+    .nav-btn {
+      display: inline-block;
+      text-decoration: none;
+      padding: 0.58rem 1rem;
       border-radius: 999px;
-      box-shadow: 0 10px 20px rgba(85, 200, 245, 0.4);
+      font-size: 0.88rem;
+      font-weight: 800;
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 10px 18px rgba(231, 127, 22, 0.35);
     }
 
-    .menu-btn {
+    .menu-toggle {
       display: none;
       border: 0;
       background: transparent;
-      font-size: 1.8rem;
+      font-size: 1.9rem;
+      line-height: 1;
       color: var(--blue-900);
       cursor: pointer;
     }
 
     .hero {
-      padding: 3.1rem 0 2.2rem;
+      padding: 3.5rem 0 2.3rem;
     }
 
     .hero-grid {
       display: grid;
-      grid-template-columns: 1.15fr 0.75fr;
-      gap: 1rem;
+      grid-template-columns: 1.2fr 0.72fr;
+      gap: 1.1rem;
       align-items: stretch;
     }
 
-    .hero-main {
-      background: #ffffff;
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      padding: clamp(1.4rem, 3vw, 2.8rem);
+    .hero-copy {
+      border: 1px solid var(--stroke);
+      background: linear-gradient(130deg, rgba(255, 255, 255, 0.96), rgba(232, 243, 255, 0.96));
+      border-radius: calc(var(--radius) + 2px);
+      padding: clamp(1.5rem, 2.8vw, 3rem);
       box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      animation: revealUp 0.7s ease both;
     }
 
-    .badge {
+    .hero-copy::after {
+      content: "";
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle at center, rgba(12, 77, 162, 0.15), transparent 68%);
+      right: -90px;
+      top: -80px;
+      pointer-events: none;
+    }
+
+    .hero-badge {
       display: inline-flex;
       align-items: center;
-      border: 1px solid var(--line);
-      background: var(--blue-100);
-      color: var(--ink);
+      gap: 0.45rem;
+      background: var(--accent-soft);
+      color: #8a4a0f;
+      border: 1px solid #f5d6ad;
       border-radius: 999px;
-      padding: 0.35rem 0.7rem;
+      padding: 0.4rem 0.75rem;
       font-size: 0.82rem;
       font-weight: 800;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.02em;
       text-transform: uppercase;
     }
 
-    h1 {
-      margin-top: 0.9rem;
-      color: var(--blue-900);
-      font-family: "Oswald", sans-serif;
-      font-size: clamp(2.2rem, 5.4vw, 4.3rem);
+    .hero h1 {
+      margin-top: 1rem;
+      font-family: "Bebas Neue", sans-serif;
+      font-size: clamp(2.55rem, 5.2vw, 4.85rem);
       line-height: 0.95;
       letter-spacing: 0.03em;
-      text-transform: uppercase;
+      color: var(--blue-900);
     }
 
-    .hero-main p {
-      margin-top: 0.9rem;
+    .hero p {
+      margin-top: 1rem;
+      max-width: 58ch;
       color: var(--muted);
-      max-width: 60ch;
       font-size: 1.02rem;
     }
 
     .hero-actions {
-      margin-top: 1.4rem;
+      margin-top: 1.6rem;
       display: flex;
       flex-wrap: wrap;
       gap: 0.7rem;
@@ -197,227 +226,226 @@
     .btn {
       text-decoration: none;
       border-radius: 12px;
-      padding: 0.75rem 1.05rem;
+      padding: 0.8rem 1.15rem;
       font-weight: 800;
       border: 1px solid transparent;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
 
     .btn-primary {
-      color: #1f5ea8;
-      background: linear-gradient(135deg, #a9e8ff, #6ecff4);
-      box-shadow: 0 13px 22px rgba(85, 200, 245, 0.35);
+      color: #fff;
+      background: linear-gradient(135deg, var(--blue-700), #0e6de2);
+      box-shadow: 0 16px 22px rgba(12, 77, 162, 0.25);
     }
 
-    .btn-outline {
-      color: var(--ink);
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 26px rgba(12, 77, 162, 0.32);
+    }
+
+    .btn-ghost {
+      color: var(--blue-900);
+      border-color: var(--stroke);
       background: #fff;
-      border-color: var(--line);
     }
 
     .hero-side {
+      border-radius: calc(var(--radius) + 2px);
       background: #fff;
-      border: 2px solid var(--line);
-      border-radius: 20px;
+      border: 2px solid var(--blue-700);
       box-shadow: var(--shadow);
-      padding: 1.3rem;
+      padding: 1.45rem;
+      animation: revealUp 0.7s ease 0.1s both;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
+      justify-content: center;
       gap: 0.8rem;
     }
 
     .hero-side h3 {
-      color: var(--ink);
-      font-family: "Oswald", sans-serif;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      font-size: 1.8rem;
+      color: var(--blue-900);
+      font-family: "Bebas Neue", sans-serif;
+      letter-spacing: 0.05em;
+      font-size: 2rem;
       line-height: 1;
     }
 
     .hero-side p {
       color: var(--muted);
-      margin: 0;
       font-size: 0.95rem;
     }
 
-    .encuentros-list {
-      margin: 0;
-      padding: 0;
-      list-style: none;
+    .side-ring {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 2px solid #c7dbff;
       display: grid;
-      gap: 0.55rem;
+      place-items: center;
+      color: var(--blue-700);
+      font-size: 0.82rem;
+      font-weight: 800;
+      animation: pulseRing 2.5s ease-in-out infinite;
     }
 
-    .encuentro-link {
-      display: block;
-      text-decoration: none;
-      color: var(--ink);
-      background: #f5f9ff;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 0.56rem 0.72rem;
-      font-weight: 700;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-    }
-
-    .encuentro-link:hover {
-      transform: translateY(-1px);
-      border-color: #7ec6ea;
-      box-shadow: 0 9px 16px rgba(31, 94, 168, 0.14);
-    }
-
-    .encuentro-link:focus-visible {
-      outline: 2px solid #55c8f5;
-      outline-offset: 2px;
-    }
-
-    .encuentro-link-disabled {
-      background: #edf3fa;
-      color: #6c7b90;
-      border-style: dashed;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    .stats {
-      margin-top: 1rem;
+    .quick-info {
+      margin: 1rem auto 2.4rem;
       display: grid;
-      gap: 0.8rem;
       grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.9rem;
     }
 
-    .stat {
+    .quick-card {
       background: #fff;
-      border: 1px solid var(--line);
+      border: 1px solid var(--stroke);
       border-radius: 14px;
-      padding: 0.9rem;
-      box-shadow: 0 10px 20px rgba(31, 94, 168, 0.08);
+      padding: 1rem 1.05rem;
+      box-shadow: 0 10px 24px rgba(12, 77, 162, 0.09);
+      animation: revealUp 0.75s ease both;
     }
 
-    .stat strong {
-      color: var(--ink);
-      font-size: 1.05rem;
-      display: block;
-      margin-bottom: 0.15rem;
+    .quick-card h4 {
+      font-size: 1rem;
+      color: var(--blue-900);
+      margin-bottom: 0.2rem;
     }
 
-    .stat span {
-      color: var(--muted);
+    .quick-card p {
       font-size: 0.9rem;
+      color: var(--muted);
     }
 
-    .blocks {
-      margin: 2.4rem 0;
-      background: #fff;
-      border-top: 1px solid var(--line);
-      border-bottom: 1px solid var(--line);
-      padding: 2.8rem 0;
-    }
-
-    .title {
+    .section-title {
       text-align: center;
-      margin-bottom: 1.8rem;
+      margin-bottom: 2rem;
     }
 
-    .title h2 {
-      color: var(--ink);
-      font-family: "Oswald", sans-serif;
-      text-transform: uppercase;
+    .section-title h2 {
+      font-family: "Bebas Neue", sans-serif;
       letter-spacing: 0.05em;
-      font-size: clamp(1.8rem, 4vw, 3rem);
+      color: var(--blue-900);
+      font-size: clamp(2rem, 4vw, 3.4rem);
       line-height: 0.95;
     }
 
-    .title p {
-      margin-top: 0.45rem;
+    .section-title p {
       color: var(--muted);
+      margin-top: 0.55rem;
     }
 
-    .cards-3 {
+    .overview {
+      background: #fff;
+      border-top: 1px solid #e4edfb;
+      border-bottom: 1px solid #e4edfb;
+      padding: 3rem 0;
+    }
+
+    .overview-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 1rem;
     }
 
-    .card {
-      background: #ffffff;
-      border: 1px solid var(--line);
+    .overview-card {
+      border: 1px solid var(--stroke);
       border-radius: 16px;
-      padding: 1.1rem;
-      box-shadow: 0 12px 24px rgba(31, 94, 168, 0.08);
+      padding: 1.2rem;
+      background: linear-gradient(180deg, #fff, #f7fbff);
+      box-shadow: 0 12px 28px rgba(12, 77, 162, 0.08);
+      animation: revealUp 0.75s ease both;
     }
 
-    .card h3 {
-      color: var(--ink);
+    .overview-card .icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 0.8rem;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(135deg, var(--blue-700), var(--blue-900));
+    }
+
+    .overview-card h3 {
+      color: var(--blue-900);
       margin-bottom: 0.35rem;
       font-size: 1.1rem;
     }
 
-    .card h3 a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .card h3 a:hover {
-      text-decoration: underline;
-    }
-
-    .card p {
+    .overview-card p {
       color: var(--muted);
       font-size: 0.95rem;
     }
 
     .connected {
-      padding-bottom: 2.6rem;
+      padding: 3rem 0;
     }
 
     .connected-box {
-      background: linear-gradient(135deg, #2b69b4, #3b83cf);
-      border: 1px solid var(--line);
-      border-radius: 20px;
+      background: #012b68;
       color: #fff;
-      box-shadow: 0 20px 35px rgba(31, 94, 168, 0.24);
-      padding: clamp(1.2rem, 2.7vw, 2rem);
+      border-radius: 20px;
+      box-shadow: 0 22px 36px rgba(2, 43, 104, 0.32);
+      padding: clamp(1.2rem, 2.5vw, 2rem);
       display: grid;
       grid-template-columns: 1.1fr 0.9fr;
       gap: 1rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .connected-box::before {
+      content: "";
+      position: absolute;
+      width: 460px;
+      height: 460px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.12), transparent 66%);
+      left: -240px;
+      top: -220px;
+      pointer-events: none;
     }
 
     .connected h3 {
-      font-family: "Oswald", sans-serif;
-      text-transform: uppercase;
-      font-size: clamp(1.9rem, 4.5vw, 3rem);
-      line-height: 0.95;
-      margin-bottom: 0.4rem;
+      font-family: "Bebas Neue", sans-serif;
+      letter-spacing: 0.06em;
+      font-size: clamp(2rem, 3.8vw, 3.2rem);
+      line-height: 0.92;
+      margin-bottom: 0.5rem;
     }
 
     .connected p {
-      color: rgba(255,255,255,0.9);
-      max-width: 48ch;
+      color: rgba(255, 255, 255, 0.9);
+      max-width: 44ch;
     }
 
-    .mini-box {
-      border: 1px solid rgba(226, 243, 255, 0.55);
-      background: rgba(255, 255, 255, 0.16);
+    .podcast-card {
+      background: rgba(255, 255, 255, 0.09);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 14px;
       padding: 1rem;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 0.5rem;
+      gap: 0.6rem;
     }
 
-    .mini-box a {
-      width: fit-content;
-      color: #e8f6ff;
+    .podcast-card h4 {
+      font-size: 1.1rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .podcast-card a {
+      color: #fff;
       text-decoration: none;
-      border-bottom: 1px solid rgba(232,246,255,0.8);
       font-weight: 700;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+      width: fit-content;
     }
 
     .news {
-      padding-bottom: 2.8rem;
+      padding: 3.4rem 0;
     }
 
     .news-grid {
@@ -428,251 +456,263 @@
 
     .news-card {
       background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      border-radius: 15px;
       overflow: hidden;
-      box-shadow: 0 14px 24px rgba(31, 94, 168, 0.1);
       display: flex;
       flex-direction: column;
+      box-shadow: 0 14px 24px rgba(12, 77, 162, 0.08);
+      animation: revealUp 0.75s ease both;
     }
 
-    .news-image {
-      height: 150px;
+    .news-thumb {
+      height: 155px;
       background-size: cover;
       background-position: center;
-      background-repeat: no-repeat;
+      position: relative;
     }
 
-    .news-body {
-      padding: 0.95rem;
+    .news-thumb::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, rgba(7, 33, 74, 0.55), rgba(7, 33, 74, 0.08));
+    }
+
+    .news-meta {
+      padding: 1rem 1rem 1.1rem;
+      flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 0.3rem;
-      flex: 1;
+      gap: 0.4rem;
     }
 
-    .news-body time {
-      color: #64748b;
-      font-size: 0.82rem;
+    .news-meta time {
+      color: #607087;
+      font-size: 0.8rem;
       font-weight: 700;
     }
 
-    .news-body h4 {
-      color: var(--ink);
-      font-size: 1rem;
+    .news-meta h4 {
+      color: var(--blue-900);
+      font-size: 1.04rem;
+      line-height: 1.25;
     }
 
-    .news-body p {
+    .news-meta p {
       color: var(--muted);
-      font-size: 0.92rem;
+      font-size: 0.9rem;
+      margin-bottom: 0.45rem;
       flex: 1;
     }
 
-    .news-body a {
+    .news-meta a {
       width: fit-content;
+      color: var(--blue-700);
       text-decoration: none;
-      color: #2b69b4;
       font-weight: 800;
-      border-bottom: 1px solid #b5d8ef;
+      border-bottom: 1px solid #9fc0ef;
     }
 
-    .survey {
-      padding-bottom: 2.8rem;
+    .cta-strip {
+      padding-bottom: 3.2rem;
     }
 
-    .survey-wrap {
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      box-shadow: 0 14px 24px rgba(31, 94, 168, 0.1);
-      padding: clamp(1rem, 2.8vw, 1.8rem);
-    }
-
-    .survey-layout {
+    .cta-grid {
       display: grid;
-      grid-template-columns: 0.95fr 1.05fr;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 1rem;
     }
 
-    .survey-intro h3 {
-      margin-top: 0.55rem;
-      color: var(--ink);
-      font-family: "Oswald", sans-serif;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      line-height: 1;
-      font-size: clamp(1.5rem, 4vw, 2.2rem);
-    }
-
-    .survey-intro p {
-      margin-top: 0.55rem;
-      color: var(--muted);
-      max-width: 40ch;
-    }
-
-    .survey-form {
-      display: grid;
-      gap: 0.8rem;
-    }
-
-    .survey-row {
-      display: grid;
-      gap: 0.8rem;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .field {
+    .cta-tile {
+      border-radius: 16px;
+      color: #fff;
+      text-decoration: none;
+      padding: 1.1rem;
+      min-height: 124px;
       display: flex;
       flex-direction: column;
-      gap: 0.32rem;
+      justify-content: space-between;
+      box-shadow: 0 18px 26px rgba(0, 0, 0, 0.18);
+      transition: transform 0.2s ease;
     }
 
-    .field label {
-      font-weight: 700;
-      color: var(--ink);
-      font-size: 0.9rem;
+    .cta-tile:hover {
+      transform: translateY(-3px);
     }
 
-    .field input,
-    .field select,
-    .field textarea {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 0.62rem 0.74rem;
-      font: inherit;
-      color: var(--ink);
-      background: #fff;
+    .tile-blue {
+      background: linear-gradient(135deg, #0862cb, #08377f);
     }
 
-    .field textarea {
-      min-height: 110px;
-      resize: vertical;
+    .tile-green {
+      background: linear-gradient(135deg, #1f8d43, #10612d);
     }
 
-    .field-inline {
-      display: flex;
-      gap: 0.85rem;
-      flex-wrap: wrap;
-      margin-top: 0.1rem;
+    .tile-orange {
+      background: linear-gradient(135deg, #ea8f2c, #ba5c00);
     }
 
-    .field-inline label {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.32rem;
-      font-weight: 600;
-      color: var(--ink);
+    .cta-tile h4 {
+      font-size: 1.1rem;
+      line-height: 1.25;
     }
 
-    .survey-status {
-      min-height: 1.25rem;
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: var(--muted);
-    }
-
-    .survey-status.ok {
-      color: #1f8e4f;
-    }
-
-    .survey-status.error {
-      color: #b2382a;
+    .cta-tile span {
+      font-size: 0.86rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      opacity: 0.92;
     }
 
     footer {
-      background: #2d629f;
-      color: #e7f3ff;
-      border-top: 1px solid #9fcae6;
+      background: #03214d;
+      color: #d5e4ff;
+      margin-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .footer-grid {
-      padding: 1.9rem 0 1rem;
+    .footer-inner {
+      padding: 2rem 0 1rem;
       display: grid;
-      gap: 1rem;
       grid-template-columns: 1fr;
+      gap: 1rem;
     }
 
-    footer h5 {
+    .footer-inner h5 {
       color: #fff;
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
     }
 
-    footer a,
-    footer p {
-      color: #edf7ff;
-      text-decoration: none;
+    .footer-inner p,
+    .footer-inner a {
+      color: #c8daff;
       font-size: 0.92rem;
+      text-decoration: none;
     }
 
-    .copy {
-      border-top: 1px solid rgba(181,216,239,0.7);
-      padding: 0.7rem 0 1rem;
-      color: #d8ecff;
-      font-size: 0.8rem;
+    .footer-inner .social {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.6rem;
+    }
+
+    .social a {
+      border: 1px solid rgba(200, 218, 255, 0.35);
+      border-radius: 999px;
+      padding: 0.35rem 0.7rem;
+      font-weight: 700;
+    }
+
+    .copyright {
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 0.75rem 0 1.1rem;
+      font-size: 0.79rem;
+      color: #9fbbec;
+    }
+
+    .animate {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+
+    .animate.show {
+      animation: revealUp 0.7s ease forwards;
+    }
+
+    @keyframes revealUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulseRing {
+      0%,
+      100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.08);
+      }
     }
 
     @media (max-width: 1060px) {
-      .hero-grid,
-      .connected-box,
-      .survey-layout {
+      .hero-grid {
         grid-template-columns: 1fr;
+      }
+
+      .hero-side {
+        max-width: 420px;
       }
 
       .news-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .cards-3,
-      .stats {
+      .overview-grid,
+      .cta-grid,
+      .quick-info {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
     @media (max-width: 860px) {
-      .menu-btn {
-        display: inline-block;
+      .menu-toggle {
+        display: block;
       }
 
-      nav {
+      .main-nav {
         position: absolute;
-        top: 78px;
         left: 1rem;
         right: 1rem;
+        top: 82px;
         background: #fff;
-        border: 1px solid var(--line);
+        border: 1px solid var(--stroke);
         border-radius: 14px;
         box-shadow: var(--shadow);
-        padding: 0.8rem;
+        padding: 0.85rem;
         flex-direction: column;
         align-items: flex-start;
         gap: 0.65rem;
         opacity: 0;
         pointer-events: none;
-        transform: translateY(-8px);
+        transform: translateY(-6px);
         transition: opacity 0.2s ease, transform 0.2s ease;
       }
 
-      nav.open {
+      .main-nav.open {
         opacity: 1;
         pointer-events: auto;
         transform: translateY(0);
+      }
+
+      .connected-box {
+        grid-template-columns: 1fr;
       }
     }
 
     @media (max-width: 680px) {
       .news-grid,
-      .cards-3,
-      .stats,
-      .footer-grid {
+      .overview-grid,
+      .cta-grid,
+      .quick-info,
+      .footer-inner {
         grid-template-columns: 1fr;
       }
 
-      .survey-row {
-        grid-template-columns: 1fr;
+      .hero h1 {
+        font-size: clamp(2.2rem, 17vw, 3.6rem);
       }
 
-      .top .container {
+      .topbar-inner {
         justify-content: center;
         text-align: center;
       }
@@ -680,22 +720,20 @@
   </style>
 </head>
 <body>
-  <header>
-    <div class="container header-row">
-      <a class="logo" href="#inicio">
-        <span class="logo-badge">
-          <img src="assets/logo-aapsya.png" alt="Logo AAPSYA">
-        </span>
-        <span>AAPSYA</span>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#inicio">
+        <span class="brand-badge">PA</span>
+        <span>PLOMEROS ARG</span>
       </a>
-      <button class="menu-btn" id="menuBtn" aria-label="Abrir menÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âº">ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¹Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°</button>
-      <nav id="menu">
+      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú">☰</button>
+      <nav class="main-nav" id="mainNav">
         <a href="#inicio">Inicio</a>
         <a href="#institucional">Institucional</a>
         <a href="#servicios">Servicios</a>
         <a href="#novedades">Novedades</a>
         <a href="#contacto">Contacto</a>
-        <a class="cta-nav" href="https://wa.me/5491100000000?text=Hola%2C%20necesito%20un%20plomero">WhatsApp</a>
+        <a class="nav-btn" href="https://wa.me/5491100000000?text=Hola%2C%20necesito%20asistencia%20de%20plomer%C3%ADa">WhatsApp</a>
       </nav>
     </div>
   </header>
@@ -703,49 +741,60 @@
   <main id="inicio">
     <section class="hero">
       <div class="container hero-grid">
-        <article class="hero-main">
-          <span class="badge">Sitio institucional</span>
-          <h1>Asociacion Argentina Plomeros Sanitaristas y Afines</h1>
-          <p>Modelo de home inspirado en una estructura institucional: portada clara, acceso rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡pido, bloques informativos, noticias y contacto.</p>
+        <article class="hero-copy">
+          <span class="hero-badge">Urgencias 24/7</span>
+          <h1>Red de plomeros matriculados para hogares y comercios</h1>
+          <p>Inspirado en el estilo institucional de AAIERIC, este sitio presenta una estructura clara para comunicar servicios, beneficios, actividades y noticias de la comunidad profesional.</p>
           <div class="hero-actions">
-            <a class="btn btn-primary" href="encuentros.html">Encuentros</a>
-            <a class="btn btn-outline" href="#contacto">Solicitar asistencia</a>
+            <a class="btn btn-primary" href="#servicios">Ver servicios</a>
+            <a class="btn btn-ghost" href="#contacto">Solicitar visita</a>
           </div>
         </article>
-
         <aside class="hero-side">
-          <h3>Futuros Encuentros</h3>
-          <p>Selecciona un encuentro para ir a su inscripcion.</p>
-          <ul class="encuentros-list">
-            <li><a class="encuentro-link" href="inscripcion-bahia-blanca.html">Bah&iacute;a Blanca 11/3</a></li>
-            <li><a class="encuentro-link" href="inscripcion-mar-del-plata.html">Mar del Plata 14/3</a></li>
-            <li><span class="encuentro-link encuentro-link-disabled">Mendoza 9/5 - Proximamente</span></li>
-            <li><span class="encuentro-link encuentro-link-disabled">Salta 6/6 - Proximamente</span></li>
-            <li><span class="encuentro-link encuentro-link-disabled">San Luis 8/8 - Proximamente</span></li>
-          </ul>
+          <div class="side-ring">SOCIOS</div>
+          <h3>Acceso Clientes</h3>
+          <p>Ingresá para ver presupuestos, estado de trabajos, historial y certificaciones técnicas de cada intervención.</p>
+          <a class="btn btn-primary" href="#" aria-label="Ingresar al panel de clientes">Ingresar</a>
+          <a class="btn btn-ghost" href="#">Quiero asociarme</a>
         </aside>
       </div>
-
+      <div class="container quick-info">
+        <div class="quick-card animate">
+          <h4>Visita en menos de 2 horas</h4>
+          <p>Despacho de cuadrillas por cercanía y nivel de urgencia.</p>
+        </div>
+        <div class="quick-card animate">
+          <h4>Garantía escrita</h4>
+          <p>Cada trabajo se entrega con detalle técnico y plazo de cobertura.</p>
+        </div>
+        <div class="quick-card animate">
+          <h4>Pagos flexibles</h4>
+          <p>Efectivo, transferencias y medios electrónicos habilitados.</p>
+        </div>
+      </div>
     </section>
 
-    <section class="blocks" id="servicios">
+    <section class="overview" id="servicios">
       <div class="container">
-        <div class="title">
-          <h2>Bloques informativos</h2>
-          <p>Estructura de tres columnas, similar al estilo institucional solicitado.</p>
+        <div class="section-title">
+          <h2>Servicios Destacados</h2>
+          <p>Bloque central inspirado en la grilla informativa del sitio de referencia.</p>
         </div>
-        <div class="cards-3">
-          <article class="card">
-            <h3>Ultimas Novedades</h3>
-            <p>Normativas, alertas tÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cnicas y comunicaciones importantes para socios y clientes.</p>
+        <div class="overview-grid">
+          <article class="overview-card animate">
+            <div class="icon">01</div>
+            <h3>Últimas Novedades</h3>
+            <p>Actualizaciones sobre normas técnicas, materiales y procedimientos recomendados para instalaciones sanitarias y de gas.</p>
           </article>
-          <article class="card">
-            <h3><a href="encuentros.html">Proximos Encuentros</a></h3>
-            <p>Proximos Encuentro y Capacitaciones</p>
+          <article class="overview-card animate">
+            <div class="icon">02</div>
+            <h3>Próximas Capacitaciones</h3>
+            <p>Calendario de cursos presenciales y virtuales para instaladores, mantenimiento de edificios y responsables técnicos.</p>
           </article>
-          <article class="card">
-            <h3><a href="contacto-empresas.html">Contacto empresas</a></h3>
-            <p>Directorio con datos de contacto de empresas del sector.</p>
+          <article class="overview-card animate">
+            <div class="icon">03</div>
+            <h3>Utilidades Profesionales</h3>
+            <p>Calculadora de materiales, guía de costos sugeridos y checklist de inspección para obras nuevas y remodelaciones.</p>
           </article>
         </div>
       </div>
@@ -753,15 +802,15 @@
 
     <section class="connected" id="institucional">
       <div class="container">
-        <div class="connected-box">
+        <div class="connected-box animate">
           <div>
-            <h3>Conectados con AAPSYA</h3>
-            <p>Proximamente el canal para cada Plomero y Plomera</p>
+            <h3>Conectados con Plomeros ARG</h3>
+            <p>Programa semanal para socios y clientes: entrevistas, análisis de casos reales y recomendaciones para mantener instalaciones seguras durante todo el año.</p>
           </div>
-          <div class="mini-box">
-            <h4>Contenido destacado</h4>
-            <p>Proximamente</p>
-            <a href="https://www.youtube.com/@plomerosarg">Ver en YouTube</a>
+          <div class="podcast-card">
+            <h4>Capítulo destacado</h4>
+            <p>Prevención de pérdidas ocultas y mantenimiento de tanques en temporada de calor.</p>
+            <a href="#" target="_blank" rel="noopener noreferrer">Ver en YouTube</a>
           </div>
         </div>
       </div>
@@ -769,80 +818,113 @@
 
     <section class="news" id="novedades">
       <div class="container">
-        <div class="title">
-          <h2>ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ltimas Noticias</h2>
-          <p>Tarjetas visuales para novedades y comunicados.</p>
+        <div class="section-title">
+          <h2>Últimas Noticias</h2>
+          <p>Tarjetas de noticias con estilo editorial y lectura rápida.</p>
         </div>
         <div class="news-grid">
-          <article class="news-card">
-            <div class="news-image" style="background-image: linear-gradient(135deg,#3f8dd9,#2b69b4);"></div>
-            <div class="news-body">
+          <article class="news-card animate">
+            <div class="news-thumb" style="background-image:linear-gradient(135deg,#2b6bc7,#09387f);"></div>
+            <div class="news-meta">
               <time datetime="2026-02-11">11/02/2026</time>
-              <h4>Lanzamos el mapa de plomeros matriculados</h4>
-              <p>Buscador para encontrar profesionales por barrio y tipo de trabajo.</p>
-              <a href="#">Leer mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡s</a>
+              <h4>Lanzamiento del mapa de plomeros habilitados</h4>
+              <p>Publicamos una herramienta para ubicar profesionales por barrio y especialidad.</p>
+              <a href="#">Leer más</a>
             </div>
           </article>
-          <article class="news-card">
-            <div class="news-image" style="background-image: linear-gradient(135deg,#8adcf9,#55c8f5);"></div>
-            <div class="news-body">
+          <article class="news-card animate">
+            <div class="news-thumb" style="background-image:linear-gradient(135deg,#18844c,#0f532f);"></div>
+            <div class="news-meta">
               <time datetime="2026-02-08">08/02/2026</time>
-              <h4>Encuentro tÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cnico en sede central</h4>
-              <p>Intercambio sobre presiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de red y mantenimiento de bombas.</p>
-              <a href="#">Leer mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡s</a>
+              <h4>Encuentro técnico en sede central</h4>
+              <p>Jornada de intercambio sobre presurización de redes y mantenimiento de bombas.</p>
+              <a href="#">Leer más</a>
             </div>
           </article>
-          <article class="news-card">
-            <div class="news-image" style="background-image: linear-gradient(135deg,#9bb3ca,#6e87a3);"></div>
-            <div class="news-body">
+          <article class="news-card animate">
+            <div class="news-thumb" style="background-image:linear-gradient(135deg,#e9912a,#b85e00);"></div>
+            <div class="news-meta">
               <time datetime="2026-01-31">31/01/2026</time>
-              <h4>ActualizaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de costos sugeridos 2026</h4>
-              <p>Nueva referencia para mano de obra en trabajos habituales de plomerÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a.</p>
-              <a href="#">Leer mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡s</a>
+              <h4>Actualización de costos sugeridos 2026</h4>
+              <p>Nueva tabla de referencia para mano de obra y materiales en instalaciones sanitarias.</p>
+              <a href="#">Leer más</a>
             </div>
           </article>
-          <article class="news-card">
-            <div class="news-image" style="background-image: linear-gradient(135deg,#7aa8d6,#4e79b3);"></div>
-            <div class="news-body">
+          <article class="news-card animate">
+            <div class="news-thumb" style="background-image:linear-gradient(135deg,#4e5f75,#253447);"></div>
+            <div class="news-meta">
               <time datetime="2026-01-20">20/01/2026</time>
               <h4>Beneficios para socios activos</h4>
-              <p>Acceso a capacitaciones, biblioteca tÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cnica y asesorÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a administrativa.</p>
-              <a href="#">Leer mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡s</a>
+              <p>Acceso preferencial a capacitaciones, biblioteca técnica y soporte legal básico.</p>
+              <a href="#">Leer más</a>
             </div>
           </article>
         </div>
       </div>
     </section>
 
+    <section class="cta-strip">
+      <div class="container cta-grid">
+        <a class="cta-tile tile-green animate" href="#">
+          <h4>Quiero asociarme a la red profesional</h4>
+          <span>Más información</span>
+        </a>
+        <a class="cta-tile tile-blue animate" href="#">
+          <h4>Dónde estudiar plomería e instalaciones</h4>
+          <span>Ver institutos</span>
+        </a>
+        <a class="cta-tile tile-orange animate" href="#">
+          <h4>Sistema web de inscripción a cursos</h4>
+          <span>Inscribirme</span>
+        </a>
+      </div>
+    </section>
   </main>
 
   <footer id="contacto">
-    <div class="container footer-grid">
+    <div class="container footer-inner">
       <div>
-        <h5>Contacto</h5>
+        <h5>Contacto y redes</h5>
         <p><a href="mailto:contacto@plomerosarg.com">contacto@plomerosarg.com</a></p>
+        <div class="social">
+          <a href="#">Facebook</a>
+          <a href="#">Instagram</a>
+          <a href="#">YouTube</a>
+          <a href="#">LinkedIn</a>
+        </div>
       </div>
     </div>
-    <div class="container copy">
-      <p>ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© <span id="year"></span> AAPSYA. AsociaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n profesional sin fines de lucro.</p>
+    <div class="container copyright">
+      <p>© <span id="year"></span> Plomeros ARG. Asociación profesional sin fines de lucro. Términos y Condiciones | Política de Privacidad.</p>
     </div>
   </footer>
 
   <script>
-    const menuBtn = document.getElementById("menuBtn");
-    const menu = document.getElementById("menu");
+    const menuToggle = document.getElementById("menuToggle");
+    const mainNav = document.getElementById("mainNav");
     const year = document.getElementById("year");
+    const animated = document.querySelectorAll(".animate");
 
-    menuBtn.addEventListener("click", () => {
-      menu.classList.toggle("open");
+    menuToggle.addEventListener("click", () => {
+      mainNav.classList.toggle("open");
     });
 
-    menu.querySelectorAll("a").forEach((link) => {
+    document.querySelectorAll(".main-nav a").forEach((link) => {
       link.addEventListener("click", () => {
-        menu.classList.remove("open");
+        mainNav.classList.remove("open");
       });
     });
 
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("show");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    animated.forEach((item) => observer.observe(item));
     year.textContent = new Date().getFullYear();
   </script>
 </body>
