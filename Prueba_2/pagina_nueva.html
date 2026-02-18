@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AAPSYA | Institucional</title>
+  <meta name="description" content="Sitio institucional de AAPSYA: servicios, capacitaciones, noticias y contacto.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --blue-900: #1f5ea8;
+      --blue-700: #55c8f5;
+      --blue-100: #eef8ff;
+      --orange-500: #6bcdf4;
+      --ink: #2f3f55;
+      --muted: #6c7b90;
+      --line: #b5d8ef;
+      --white: #ffffff;
+      --max: 1160px;
+      --shadow: 0 16px 30px rgba(31, 94, 168, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+    }
+
+    body {
+      font-family: "Barlow", sans-serif;
+      color: var(--ink);
+      background: linear-gradient(180deg, #ffffff 0%, #f5f8fc 100%);
+      line-height: 1.5;
+    }
+
+    .container {
+      width: min(var(--max), calc(100% - 2rem));
+      margin: 0 auto;
+    }
+
+    .top {
+      background: #2b69b4;
+      color: #e8f4ff;
+      font-size: 0.92rem;
+    }
+
+    .top .container {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      padding: 0.35rem 0;
+    }
+
+    .top a {
+      color: #ccecff;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    header {
+      background: rgba(255, 255, 255, 0.95);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(6px);
+    }
+
+    .header-row {
+      min-height: 78px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .logo {
+      text-decoration: none;
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .logo-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #dff4ff, #a1ddf8);
+      border: 1px solid var(--line);
+      box-shadow: 0 8px 14px rgba(31, 94, 168, 0.2);
+      overflow: hidden;
+    }
+
+    .logo-badge img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    nav {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--ink);
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .cta-nav {
+      background: var(--orange-500);
+      color: #1f5ea8;
+      padding: 0.56rem 0.95rem;
+      border-radius: 999px;
+      box-shadow: 0 10px 20px rgba(85, 200, 245, 0.4);
+    }
+
+    .menu-btn {
+      display: none;
+      border: 0;
+      background: transparent;
+      font-size: 1.8rem;
+      color: var(--blue-900);
+      cursor: pointer;
+    }
+
+    .hero {
+      padding: 3.1rem 0 2.2rem;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.75fr;
+      gap: 1rem;
+      align-items: stretch;
+    }
+
+    .hero-main {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: clamp(1.4rem, 3vw, 2.8rem);
+      box-shadow: var(--shadow);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--line);
+      background: var(--blue-100);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 0.35rem 0.7rem;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin-top: 0.9rem;
+      color: var(--blue-900);
+      font-family: "Oswald", sans-serif;
+      font-size: clamp(2.2rem, 5.4vw, 4.3rem);
+      line-height: 0.95;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .hero-main p {
+      margin-top: 0.9rem;
+      color: var(--muted);
+      max-width: 60ch;
+      font-size: 1.02rem;
+    }
+
+    .hero-actions {
+      margin-top: 1.4rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+    }
+
+    .btn {
+      text-decoration: none;
+      border-radius: 12px;
+      padding: 0.75rem 1.05rem;
+      font-weight: 800;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      color: #1f5ea8;
+      background: linear-gradient(135deg, #a9e8ff, #6ecff4);
+      box-shadow: 0 13px 22px rgba(85, 200, 245, 0.35);
+    }
+
+    .btn-outline {
+      color: var(--ink);
+      background: #fff;
+      border-color: var(--line);
+    }
+
+    .hero-side {
+      background: #fff;
+      border: 2px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 1.3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 0.8rem;
+    }
+
+    .hero-side h3 {
+      color: var(--ink);
+      font-family: "Oswald", sans-serif;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-size: 1.8rem;
+      line-height: 1;
+    }
+
+    .hero-side p {
+      color: var(--muted);
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    .encuentros-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .encuentro-link {
+      display: block;
+      text-decoration: none;
+      color: var(--ink);
+      background: #f5f9ff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.56rem 0.72rem;
+      font-weight: 700;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .encuentro-link:hover {
+      transform: translateY(-1px);
+      border-color: #7ec6ea;
+      box-shadow: 0 9px 16px rgba(31, 94, 168, 0.14);
+    }
+
+    .encuentro-link:focus-visible {
+      outline: 2px solid #55c8f5;
+      outline-offset: 2px;
+    }
+
+    .encuentro-link-disabled {
+      background: #edf3fa;
+      color: #6c7b90;
+      border-style: dashed;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .stats {
+      margin-top: 1rem;
+      display: grid;
+      gap: 0.8rem;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .stat {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0.9rem;
+      box-shadow: 0 10px 20px rgba(31, 94, 168, 0.08);
+    }
+
+    .stat strong {
+      color: var(--ink);
+      font-size: 1.05rem;
+      display: block;
+      margin-bottom: 0.15rem;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .blocks {
+      margin: 2.4rem 0;
+      background: #fff;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 2.8rem 0;
+    }
+
+    .title {
+      text-align: center;
+      margin-bottom: 1.8rem;
+    }
+
+    .title h2 {
+      color: var(--ink);
+      font-family: "Oswald", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      line-height: 0.95;
+    }
+
+    .title p {
+      margin-top: 0.45rem;
+      color: var(--muted);
+    }
+
+    .cards-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 1.1rem;
+      box-shadow: 0 12px 24px rgba(31, 94, 168, 0.08);
+    }
+
+    .card h3 {
+      color: var(--ink);
+      margin-bottom: 0.35rem;
+      font-size: 1.1rem;
+    }
+
+    .card h3 a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .card h3 a:hover {
+      text-decoration: underline;
+    }
+
+    .card p {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .connected {
+      padding-bottom: 2.6rem;
+    }
+
+    .connected-box {
+      background: linear-gradient(135deg, #2b69b4, #3b83cf);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      color: #fff;
+      box-shadow: 0 20px 35px rgba(31, 94, 168, 0.24);
+      padding: clamp(1.2rem, 2.7vw, 2rem);
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 1rem;
+    }
+
+    .connected h3 {
+      font-family: "Oswald", sans-serif;
+      text-transform: uppercase;
+      font-size: clamp(1.9rem, 4.5vw, 3rem);
+      line-height: 0.95;
+      margin-bottom: 0.4rem;
+    }
+
+    .connected p {
+      color: rgba(255,255,255,0.9);
+      max-width: 48ch;
+    }
+
+    .mini-box {
+      border: 1px solid rgba(226, 243, 255, 0.55);
+      background: rgba(255, 255, 255, 0.16);
+      border-radius: 14px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .mini-box a {
+      width: fit-content;
+      color: #e8f6ff;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(232,246,255,0.8);
+      font-weight: 700;
+    }
+
+    .news {
+      padding-bottom: 2.8rem;
+    }
+
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .news-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 14px 24px rgba(31, 94, 168, 0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .news-image {
+      height: 150px;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .news-body {
+      padding: 0.95rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      flex: 1;
+    }
+
+    .news-body time {
+      color: #64748b;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .news-body h4 {
+      color: var(--ink);
+      font-size: 1rem;
+    }
+
+    .news-body p {
+      color: var(--muted);
+      font-size: 0.92rem;
+      flex: 1;
+    }
+
+    .news-body a {
+      width: fit-content;
+      text-decoration: none;
+      color: #2b69b4;
+      font-weight: 800;
+      border-bottom: 1px solid #b5d8ef;
+    }
+
+    .survey {
+      padding-bottom: 2.8rem;
+    }
+
+    .survey-wrap {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 14px 24px rgba(31, 94, 168, 0.1);
+      padding: clamp(1rem, 2.8vw, 1.8rem);
+    }
+
+    .survey-layout {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 1rem;
+    }
+
+    .survey-intro h3 {
+      margin-top: 0.55rem;
+      color: var(--ink);
+      font-family: "Oswald", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      line-height: 1;
+      font-size: clamp(1.5rem, 4vw, 2.2rem);
+    }
+
+    .survey-intro p {
+      margin-top: 0.55rem;
+      color: var(--muted);
+      max-width: 40ch;
+    }
+
+    .survey-form {
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .survey-row {
+      display: grid;
+      gap: 0.8rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.32rem;
+    }
+
+    .field label {
+      font-weight: 700;
+      color: var(--ink);
+      font-size: 0.9rem;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 0.62rem 0.74rem;
+      font: inherit;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .field textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .field-inline {
+      display: flex;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+      margin-top: 0.1rem;
+    }
+
+    .field-inline label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.32rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .survey-status {
+      min-height: 1.25rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .survey-status.ok {
+      color: #1f8e4f;
+    }
+
+    .survey-status.error {
+      color: #b2382a;
+    }
+
+    footer {
+      background: #2d629f;
+      color: #e7f3ff;
+      border-top: 1px solid #9fcae6;
+    }
+
+    .footer-grid {
+      padding: 1.9rem 0 1rem;
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1fr;
+    }
+
+    footer h5 {
+      color: #fff;
+      margin-bottom: 0.4rem;
+    }
+
+    footer a,
+    footer p {
+      color: #edf7ff;
+      text-decoration: none;
+      font-size: 0.92rem;
+    }
+
+    .copy {
+      border-top: 1px solid rgba(181,216,239,0.7);
+      padding: 0.7rem 0 1rem;
+      color: #d8ecff;
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 1060px) {
+      .hero-grid,
+      .connected-box,
+      .survey-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .news-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .cards-3,
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 860px) {
+      .menu-btn {
+        display: inline-block;
+      }
+
+      nav {
+        position: absolute;
+        top: 78px;
+        left: 1rem;
+        right: 1rem;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 0.8rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.65rem;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-8px);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+      }
+
+      nav.open {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 680px) {
+      .news-grid,
+      .cards-3,
+      .stats,
+      .footer-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .survey-row {
+        grid-template-columns: 1fr;
+      }
+
+      .top .container {
+        justify-content: center;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-row">
+      <a class="logo" href="#inicio">
+        <span class="logo-badge">
+          <img src="assets/logo-aapsya.png" alt="Logo AAPSYA">
+        </span>
+        <span>AAPSYA</span>
+      </a>
+      <button class="menu-btn" id="menuBtn" aria-label="Abrir menÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âº">ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¹Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°</button>
+      <nav id="menu">
+        <a href="#inicio">Inicio</a>
+        <a href="#institucional">Institucional</a>
+        <a href="#servicios">Servicios</a>
+        <a href="#novedades">Novedades</a>
+        <a href="#contacto">Contacto</a>
+        <a class="cta-nav" href="https://wa.me/5491100000000?text=Hola%2C%20necesito%20un%20plomero">WhatsApp</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="inicio">
+    <section class="hero">
+      <div class="container hero-grid">
+        <article class="hero-main">
+          <span class="badge">Sitio institucional</span>
+          <h1>Asociacion Argentina Plomeros Sanitaristas y Afines</h1>
+          <p>Modelo de home inspirado en una estructura institucional: portada clara, acceso rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡pido, bloques informativos, noticias y contacto.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="encuentros.html">Encuentros</a>
+            <a class="btn btn-outline" href="#contacto">Solicitar asistencia</a>
+          </div>
+        </article>
+
+        <aside class="hero-side">
+          <h3>Futuros Encuentros</h3>
+          <p>Selecciona un encuentro para ir a su inscripcion.</p>
+          <ul class="encuentros-list">
+            <li><a class="encuentro-link" href="inscripcion-bahia-blanca.html">Bah&iacute;a Blanca 11/3</a></li>
+            <li><a class="encuentro-link" href="inscripcion-mar-del-plata.html">Mar del Plata 14/3</a></li>
+            <li><span class="encuentro-link encuentro-link-disabled">Mendoza 9/5 - Proximamente</span></li>
+            <li><span class="encuentro-link encuentro-link-disabled">Salta 6/6 - Proximamente</span></li>
+            <li><span class="encuentro-link encuentro-link-disabled">San Luis 8/8 - Proximamente</span></li>
+          </ul>
+        </aside>
+      </div>
+
+    </section>
+
+    <section class="blocks" id="servicios">
+      <div class="container">
+        <div class="title">
+          <h2>Bloques informativos</h2>
+          <p>Estructura de tres columnas, similar al estilo institucional solicitado.</p>
+        </div>
+        <div class="cards-3">
+          <article class="card">
+            <h3>Ultimas Novedades</h3>
+            <p>Normativas, alertas tÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cnicas y comunicaciones importantes para socios y clientes.</p>
+          </article>
+          <article class="card">
+            <h3><a href="encuentros.html">Proximos Encuentros</a></h3>
+            <p>Proximos Encuentro y Capacitaciones</p>
+          </article>
+          <article class="card">
+            <h3><a href="contacto-empresas.html">Contacto empresas</a></h3>
+            <p>Directorio con datos de contacto de empresas del sector.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="connected" id="institucional">
+      <div class="container">
+        <div class="connected-box">
+          <div>
+            <h3>Conectados con AAPSYA</h3>
+            <p>Proximamente el canal para cada Plomero y Plomera</p>
+          </div>
+          <div class="mini-box">
+            <h4>Contenido destacado</h4>
+            <p>Proximamente</p>
+            <a href="https://www.youtube.com/@plomerosarg">Ver en YouTube</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="news" id="novedades">
+      <div class="container">
+        <div class="title">
+          <h2>ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ltimas Noticias</h2>
+          <p>Tarjetas visuales para novedades y comunicados.</p>
+        </div>
+        <div class="news-grid">
+          <article class="news-card">
+            <div class="news-image" style="background-image: linear-gradient(135deg,#3f8dd9,#2b69b4);"></div>
+            <div class="news-body">
+              <time datetime="2026-02-11">11/02/2026</time>
+              <h4>Lanzamos el mapa de plomeros matriculados</h4>
+              <p>Buscador para encontrar profesionales por barrio y tipo de trabajo.</p>
+              <a href="#">Leer mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡s</a>
+            </div>
+          </article>
+          <article class="news-card">
+            <div class="news-image" style="background-image: linear-gradient(135deg,#8adcf9,#55c8f5);"></div>
+            <div class="news-body">
+              <time datetime="2026-02-08">08/02/2026</time>
+              <h4>Encuentro tÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cnico en sede central</h4>
+              <p>Intercambio sobre presiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de red y mantenimiento de bombas.</p>
+              <a href="#">Leer mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡s</a>
+            </div>
+          </article>
+          <article class="news-card">
+            <div class="news-image" style="background-image: linear-gradient(135deg,#9bb3ca,#6e87a3);"></div>
+            <div class="news-body">
+              <time datetime="2026-01-31">31/01/2026</time>
+              <h4>ActualizaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de costos sugeridos 2026</h4>
+              <p>Nueva referencia para mano de obra en trabajos habituales de plomerÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a.</p>
+              <a href="#">Leer mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡s</a>
+            </div>
+          </article>
+          <article class="news-card">
+            <div class="news-image" style="background-image: linear-gradient(135deg,#7aa8d6,#4e79b3);"></div>
+            <div class="news-body">
+              <time datetime="2026-01-20">20/01/2026</time>
+              <h4>Beneficios para socios activos</h4>
+              <p>Acceso a capacitaciones, biblioteca tÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©cnica y asesorÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a administrativa.</p>
+              <a href="#">Leer mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡s</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer id="contacto">
+    <div class="container footer-grid">
+      <div>
+        <h5>Contacto</h5>
+        <p><a href="mailto:contacto@plomerosarg.com">contacto@plomerosarg.com</a></p>
+      </div>
+    </div>
+    <div class="container copy">
+      <p>ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© <span id="year"></span> AAPSYA. AsociaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n profesional sin fines de lucro.</p>
+    </div>
+  </footer>
+
+  <script>
+    const menuBtn = document.getElementById("menuBtn");
+    const menu = document.getElementById("menu");
+    const year = document.getElementById("year");
+
+    menuBtn.addEventListener("click", () => {
+      menu.classList.toggle("open");
+    });
+
+    menu.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        menu.classList.remove("open");
+      });
+    });
+
+    year.textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

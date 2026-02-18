@@ -1,0 +1,50 @@
+#wpcontent {
+  padding-left: 0 !important;
+}
+
+.ob-overflow-off {
+  overflow: hidden !important;
+}
+
+body, #wpbody-content {
+  background-color: var(--chakra-colors-bg-muted) !important;
+} 
+
+#wpbody-content > .notice {
+  display: none;
+}
+
+
+// Specific settings for social sharing.
+.obfx-settings-social-sharing {
+	.chakra-stack {
+    .chakra-switch__root {
+      min-width: 150px;
+      margin-right: auto;
+
+      ~ .chakra-checkbox__root {
+        transition: opacity 0.2s ease-in-out;
+        opacity: 0;
+      }
+
+      &[data-state="checked"] ~ .chakra-checkbox__root {
+        opacity: 1;
+      }
+    }
+	}
+}
+
+// Select in settings.
+.obfx-module-settings-wrap {
+  select {
+    max-width: unset !important;
+  }
+}
+
+// TSDK banner & other notices we might want to reposition.
+.obfx-banner {
+  .notice {
+    margin: 0 !important;
+    border-radius: 5px !important;
+  }
+}
