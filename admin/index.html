@@ -261,7 +261,7 @@
       return rows
         .map((item) => `
           <tr>
-            <td>${escapeHtml(item.id ?? "-")}</td>
+            <td>${escapeHtml(item.id_evento ?? "-")}</td>
             <td>${escapeHtml(formatDate(item.created_at))}</td>
             <td>${escapeHtml(item.nombre_apellido || "-")}</td>
             <td>${escapeHtml(item.dni || "-")}</td>
@@ -287,7 +287,7 @@
       return rows
         .map((item) => `
           <tr>
-            <td>${escapeHtml(item.id ?? "-")}</td>
+            <td>${escapeHtml(item.id_evento ?? "-")}</td>
             <td>${escapeHtml(formatDate(item.created_at))}</td>
             <td>${escapeHtml(item.nombre_apellido || "-")}</td>
             <td style="mso-number-format:'\\@';">${escapeHtml(item.dni || "-")}</td>
@@ -320,7 +320,7 @@
                   <th colspan="10">Evento ${safeEventName}</th>
                 </tr>
                 <tr>
-                  <th>ID</th>
+                  <th>ID encuentro</th>
                   <th>Fecha</th>
                   <th>Nombre y apellido</th>
                   <th>DNI</th>
@@ -392,7 +392,7 @@
                       <table>
                         <thead>
                           <tr>
-                            <th>ID</th>
+                            <th>ID encuentro</th>
                             <th>Fecha</th>
                             <th>Nombre y apellido</th>
                             <th>DNI</th>

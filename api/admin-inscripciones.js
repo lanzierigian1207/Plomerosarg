@@ -98,6 +98,29 @@ function formatProfesion(value) {
     .join(", ");
 }
 
+function getComparableTimestamp(value) {
+  const timestamp = Date.parse(String(value ?? ""));
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+function compareRegistrationOrder(a, b) {
+  const timeA = getComparableTimestamp(a.created_at);
+  const timeB = getComparableTimestamp(b.created_at);
+
+  if (timeA !== null && timeB !== null && timeA !== timeB) {
+    return timeA - timeB;
+  }
+
+  const idA = Number.parseInt(String(a.id ?? ""), 10);
+  const idB = Number.parseInt(String(b.id ?? ""), 10);
+
+  if (Number.isFinite(idA) && Number.isFinite(idB) && idA !== idB) {
+    return idA - idB;
+  }
+
+  return String(a.id ?? "").localeCompare(String(b.id ?? ""), "es");
+}
+
 module.exports = async (req, res) => {
   if (req.method !== "GET") {
     return res.status(405).json({
@@ -128,7 +151,7 @@ module.exports = async (req, res) => {
     "select",
     "id,encuentro,dni,nombre_apellido,mail,provincia,localidad,asociado,profesion,origen,acepto_terminos,created_at"
   );
-  endpoint.searchParams.set("order", "id.desc");
+  endpoint.searchParams.set("order", "id.asc");
   endpoint.searchParams.set("limit", String(limit));
 
   try {
@@ -187,7 +210,14 @@ module.exports = async (req, res) => {
     ];
 
     const eventos = orderedEvents.map((eventName) => {
-      const inscripciones = grouped.get(eventName) || [];
+      const inscripciones = (grouped.get(eventName) || [])
+        .slice()
+        .sort(compareRegistrationOrder)
+        .map((item, index) => ({
+          ...item,
+          id_evento: index + 1
+        }));
+
       return {
         evento: eventName,
         contador: inscripciones.length,
