@@ -165,15 +165,15 @@ async function sendConfirmationEmail({ to, nombre, encuentro, id }) {
         Unos d&iacute;as antes del encuentro recibir&aacute; un mail para que confirme su asistencia.
       </p>
       <p style="margin:0 0 10px;">Que tengan buen d&iacute;a</p>
-      <p style="margin:0 0 16px;">Saludos AAPSYA</p>
+      <p style="margin:0 0 16px;">Saludos Equipo de Plomeros y Sanitaristas</p>
       <p style="margin:0 0 14px;color:#5b6b80;font-size:13px;">
         N&uacute;mero de registro: <strong>${escapeHtml(id || "pendiente")}</strong>
       </p>
       <img
         src="${safeLogoUrl}"
         alt="Logo Plomeros ARG"
-        width="88"
-        height="88"
+        width="140"
+        height="140"
         style="display:block;margin:8px auto 0;border:0;outline:none;text-decoration:none;"
       />
     </div>
