@@ -3,6 +3,20 @@ const crypto = require("crypto");
 const COOKIE_NAME = "admin_session";
 const SESSION_MAX_AGE = 60 * 60 * 12;
 
+const EXPORT_COLUMNS = [
+  { key: "id", label: "ID" },
+  { key: "created_at", label: "Fecha" },
+  { key: "encuentro", label: "Encuentro" },
+  { key: "dni", label: "DNI" },
+  { key: "nombre_apellido", label: "Nombre y Apellido" },
+  { key: "mail", label: "Mail" },
+  { key: "provincia", label: "Provincia" },
+  { key: "localidad", label: "Localidad" },
+  { key: "asociado", label: "Asociado" },
+  { key: "profesion", label: "Profesion" },
+  { key: "origen", label: "Origen" }
+];
+
 function parseCookies(req) {
   const raw = req.headers.cookie || "";
   const cookies = {};
@@ -40,41 +54,38 @@ function createToken(username, secret) {
   return `${payload}.${signature}`;
 }
 
-function verifyToken(token, secret) {
+function decodeToken(token, secret) {
   if (!token || typeof token !== "string" || !token.includes(".")) {
-    return false;
+    return null;
   }
 
   const [payload, signature] = token.split(".");
-  if (!payload || !signature) return false;
+  if (!payload || !signature) return null;
 
   const expected = sign(payload, secret);
-  if (!timingSafeEqual(signature, expected)) return false;
+  if (!timingSafeEqual(signature, expected)) return null;
 
   try {
     const decoded = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
-    if (!decoded || typeof decoded !== "object") return false;
-    if (typeof decoded.exp !== "number") return false;
-    if (Date.now() > decoded.exp) return false;
-    return true;
+    if (!decoded || typeof decoded !== "object") return null;
+    if (typeof decoded.exp !== "number") return null;
+    if (Date.now() > decoded.exp) return null;
+    return decoded;
   } catch {
-    return false;
+    return null;
   }
 }
 
 function parseBody(req) {
   if (!req.body) return {};
 
-  if (typeof req.body === "object") {
+  if (typeof req.body === "object" && !Buffer.isBuffer(req.body)) {
     return req.body;
   }
 
-  if (typeof req.body === "string") {
-    const params = new URLSearchParams(req.body);
-    return Object.fromEntries(params.entries());
-  }
-
-  return {};
+  const raw = Buffer.isBuffer(req.body) ? req.body.toString("utf8") : String(req.body);
+  const params = new URLSearchParams(raw);
+  return Object.fromEntries(params.entries());
 }
 
 function parseAdminsFromJson(value) {
@@ -136,9 +147,99 @@ function hasValidCredentials(username, password, admins) {
   });
 }
 
+function getSearchParams(req) {
+  try {
+    const url = new URL(req.url || "/", "http://localhost");
+    return url.searchParams;
+  } catch {
+    return new URLSearchParams();
+  }
+}
+
+function escapeHtml(value) {
+  const text = String(value ?? "");
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function toCsvCell(value) {
+  const text = String(value ?? "");
+  return `"${text.replace(/"/g, "\"\"")}"`;
+}
+
+function formatDate(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleString("es-AR");
+}
+
+function buildCsv(rows) {
+  const headers = EXPORT_COLUMNS.map((col) => toCsvCell(col.label)).join(",");
+  const lines = rows.map((row) => {
+    return EXPORT_COLUMNS
+      .map((col) => {
+        const val = col.key === "created_at" ? formatDate(row[col.key]) : row[col.key];
+        return toCsvCell(val);
+      })
+      .join(",");
+  });
+
+  return `\uFEFF${[headers, ...lines].join("\n")}`;
+}
+
+async function fetchInscripciones(env) {
+  const supabaseUrl = String(env.SUPABASE_URL || "").trim();
+  const serviceRoleKey = String(env.SUPABASE_SERVICE_ROLE_KEY || "").trim();
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    return {
+      rows: [],
+      error: "Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en Vercel."
+    };
+  }
+
+  const endpoint = `${supabaseUrl.replace(/\/$/, "")}/rest/v1/inscripciones?select=id,created_at,encuentro,dni,nombre_apellido,mail,provincia,localidad,asociado,profesion,origen&order=created_at.desc&limit=1000`;
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "GET",
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+        Accept: "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      const detail = await response.text();
+      return {
+        rows: [],
+        error: `No se pudo leer inscripciones (${response.status}). ${detail}`
+      };
+    }
+
+    const rows = await response.json();
+    if (!Array.isArray(rows)) {
+      return { rows: [], error: "Respuesta invalida de Supabase." };
+    }
+
+    return { rows, error: "" };
+  } catch (error) {
+    return {
+      rows: [],
+      error: `Error al consultar Supabase: ${error instanceof Error ? error.message : "desconocido"}`
+    };
+  }
+}
+
 function loginView(errorMessage = "") {
   const errorBlock = errorMessage
-    ? `<p class="error">${errorMessage}</p>`
+    ? `<p class="error">${escapeHtml(errorMessage)}</p>`
     : "";
 
   return `<!DOCTYPE html>
@@ -242,7 +343,58 @@ function loginView(errorMessage = "") {
 </html>`;
 }
 
-function panelView() {
+function buildRowsHtml(rows) {
+  return rows
+    .map((row) => {
+      return `<tr>
+        <td>${escapeHtml(row.id)}</td>
+        <td>${escapeHtml(formatDate(row.created_at))}</td>
+        <td>${escapeHtml(row.encuentro)}</td>
+        <td>${escapeHtml(row.dni)}</td>
+        <td>${escapeHtml(row.nombre_apellido)}</td>
+        <td>${escapeHtml(row.mail)}</td>
+        <td>${escapeHtml(row.provincia)}</td>
+        <td>${escapeHtml(row.localidad)}</td>
+        <td>${escapeHtml(row.asociado)}</td>
+        <td>${escapeHtml(row.profesion)}</td>
+        <td>${escapeHtml(row.origen)}</td>
+      </tr>`;
+    })
+    .join("");
+}
+
+function panelView({ rows, error }) {
+  const errorBlock = error
+    ? `<p class="error">${escapeHtml(error)}</p>`
+    : "";
+
+  const countLabel = `Total de inscripciones: ${rows.length}`;
+
+  const tableBlock = rows.length > 0
+    ? `<div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Fecha</th>
+              <th>Encuentro</th>
+              <th>DNI</th>
+              <th>Nombre y Apellido</th>
+              <th>Mail</th>
+              <th>Provincia</th>
+              <th>Localidad</th>
+              <th>Asociado</th>
+              <th>Profesion</th>
+              <th>Origen</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${buildRowsHtml(rows)}
+          </tbody>
+        </table>
+      </div>`
+    : `<p class="empty">No hay inscripciones para mostrar.</p>`;
+
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -256,6 +408,7 @@ function panelView() {
       --card: #ffffff;
       --line: #dbe6f2;
       --accent: #0d63c7;
+      --error: #b3261e;
     }
     * { box-sizing: border-box; margin: 0; }
     body {
@@ -263,39 +416,48 @@ function panelView() {
       color: var(--ink);
       background: var(--bg);
       min-height: 100vh;
-      display: grid;
-      place-items: center;
       padding: 20px;
     }
     .panel {
-      width: min(760px, 100%);
+      width: min(1220px, 100%);
+      margin: 0 auto;
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: 16px;
-      padding: 26px;
+      padding: 22px;
       box-shadow: 0 16px 28px rgba(15, 47, 87, 0.12);
     }
     h1 {
-      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-size: clamp(1.7rem, 4vw, 2.3rem);
       margin-bottom: 8px;
     }
     p {
       color: #355d88;
-      margin-bottom: 18px;
+      margin-bottom: 14px;
     }
     .status {
       border: 1px solid #c7d9f2;
       background: #f4f9ff;
       border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 16px;
-      font-weight: 600;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+    .error {
+      background: #fdeaea;
+      border: 1px solid #f0b9b6;
+      color: var(--error);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      font-weight: 700;
     }
     .actions {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
       align-items: center;
+      margin-bottom: 14px;
     }
     .btn {
       display: inline-flex;
@@ -319,21 +481,62 @@ function panelView() {
       border-color: var(--accent);
     }
     form { margin: 0; }
+    .table-wrap {
+      width: 100%;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+    }
+    table {
+      width: 100%;
+      min-width: 1140px;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    thead th {
+      text-align: left;
+      background: #f2f7ff;
+      color: #264f7d;
+      padding: 10px;
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    tbody td {
+      padding: 9px 10px;
+      border-bottom: 1px solid #eef3fa;
+      vertical-align: top;
+    }
+    tbody tr:nth-child(even) {
+      background: #fbfdff;
+    }
+    .empty {
+      border: 1px dashed #c7d9f2;
+      border-radius: 10px;
+      padding: 14px;
+      background: #f8fbff;
+      margin: 0;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
   <main class="panel">
     <h1>Panel Admin</h1>
-    <p>Acceso interno de Plomeros ARG.</p>
-    <div class="status">Ruta protegida: <strong>/admin</strong></div>
+    <p>Inscripciones registradas en tiempo real.</p>
+    <div class="status">${escapeHtml(countLabel)}</div>
+    ${errorBlock}
     <div class="actions">
-      <a class="btn btn-primary" href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer">Ver inscripciones (Supabase)</a>
+      <a class="btn btn-primary" href="/admin?download=excel">Descargar Excel (.csv)</a>
       <a class="btn btn-ghost" href="/">Volver al inicio</a>
       <form method="post" action="/api/admin">
         <input type="hidden" name="action" value="logout">
         <button class="btn btn-ghost" type="submit">Cerrar sesion</button>
       </form>
     </div>
+    ${tableBlock}
   </main>
 </body>
 </html>`;
@@ -342,6 +545,7 @@ function panelView() {
 function sendHtml(res, statusCode, html) {
   res.status(statusCode);
   res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.setHeader("Cache-Control", "no-store");
   return res.send(html);
 }
 
@@ -352,18 +556,37 @@ module.exports = async (req, res) => {
   if (!ADMIN_SESSION_SECRET || ADMIN_CREDENTIALS.length === 0) {
     return res.status(500).json({
       ok: false,
-      error: "Faltan variables de entorno para login admin (ADMIN_SESSION_SECRET y usuarios admin)."
+      error: "Faltan variables para login admin (ADMIN_SESSION_SECRET y usuarios admin)."
     });
   }
 
   const cookies = parseCookies(req);
-  const hasValidSession = verifyToken(cookies[COOKIE_NAME], ADMIN_SESSION_SECRET);
+  const session = decodeToken(cookies[COOKIE_NAME], ADMIN_SESSION_SECRET);
+  const isAuthenticated = Boolean(session);
 
   if (req.method === "GET") {
-    if (hasValidSession) {
-      return sendHtml(res, 200, panelView());
+    if (!isAuthenticated) {
+      return sendHtml(res, 200, loginView());
     }
-    return sendHtml(res, 200, loginView());
+
+    const params = getSearchParams(req);
+    const { rows, error } = await fetchInscripciones(process.env);
+
+    if (params.get("download") === "excel") {
+      if (error) {
+        return res.status(500).json({ ok: false, error });
+      }
+
+      const csv = buildCsv(rows);
+      const today = new Date().toISOString().slice(0, 10);
+      res.status(200);
+      res.setHeader("Content-Type", "text/csv; charset=utf-8");
+      res.setHeader("Content-Disposition", `attachment; filename=\"inscripciones-${today}.csv\"`);
+      res.setHeader("Cache-Control", "no-store");
+      return res.send(csv);
+    }
+
+    return sendHtml(res, 200, panelView({ rows, error }));
   }
 
   if (req.method !== "POST") {
