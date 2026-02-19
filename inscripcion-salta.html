@@ -108,6 +108,51 @@
       background: #ffffff;
     }
 
+    .profession-group {
+      display: grid;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      background: #ffffff;
+    }
+
+    .profession-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #2a4f79;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .profession-option input[type="checkbox"] {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      border: 2px solid #84bce6;
+      border-radius: 50%;
+      display: grid;
+      place-content: center;
+      cursor: pointer;
+      flex: 0 0 18px;
+    }
+
+    .profession-option input[type="checkbox"]::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      transform: scale(0);
+      transition: transform 0.12s ease-in-out;
+    }
+
+    .profession-option input[type="checkbox"]:checked::before {
+      transform: scale(1);
+    }
+
     .consent {
       display: flex;
       gap: 10px;
@@ -267,20 +312,49 @@
       </div>
 
       <div class="field">
-        <label class="required" for="profesion">Profesion (podes elegir varias)</label>
-        <select id="profesion" name="profesion" required multiple size="10">
-          <option value="plomero">Plomero</option>
-          <option value="gasista">Gasista</option>
-          <option value="oficial_plomero">Oficial Plomero</option>
-          <option value="ayudante_plomero">Ayudante de Plomero</option>
-          <option value="medio_oficial_plomero">Medio Oficial Plomero</option>
-          <option value="maestro_mayor_obra">Maestro Mayor de Obra</option>
-          <option value="arquitecto_ingeniero">Arquitecto/Ingeniero</option>
-          <option value="estudiante_centro_formacion">Estudiante de centro de Formacion</option>
-          <option value="expositor">Expositor</option>
-          <option value="otros">Otros</option>
-        </select>
-        <small>Usa Ctrl (o Cmd en Mac) para elegir mas de una opcion.</small>
+        <label class="required" for="profesion_plomero">Profesion (podes elegir varias)</label>
+        <div class="profession-group" role="group" aria-label="Profesion">
+          <label class="profession-option" for="profesion_plomero">
+            <input id="profesion_plomero" type="checkbox" name="profesion" value="plomero">
+            <span>Plomero</span>
+          </label>
+          <label class="profession-option" for="profesion_gasista">
+            <input id="profesion_gasista" type="checkbox" name="profesion" value="gasista">
+            <span>Gasista</span>
+          </label>
+          <label class="profession-option" for="profesion_oficial_plomero">
+            <input id="profesion_oficial_plomero" type="checkbox" name="profesion" value="oficial_plomero">
+            <span>Oficial Plomero</span>
+          </label>
+          <label class="profession-option" for="profesion_ayudante_plomero">
+            <input id="profesion_ayudante_plomero" type="checkbox" name="profesion" value="ayudante_plomero">
+            <span>Ayudante de Plomero</span>
+          </label>
+          <label class="profession-option" for="profesion_medio_oficial_plomero">
+            <input id="profesion_medio_oficial_plomero" type="checkbox" name="profesion" value="medio_oficial_plomero">
+            <span>Medio Oficial Plomero</span>
+          </label>
+          <label class="profession-option" for="profesion_maestro_mayor_obra">
+            <input id="profesion_maestro_mayor_obra" type="checkbox" name="profesion" value="maestro_mayor_obra">
+            <span>Maestro Mayor de Obra</span>
+          </label>
+          <label class="profession-option" for="profesion_arquitecto_ingeniero">
+            <input id="profesion_arquitecto_ingeniero" type="checkbox" name="profesion" value="arquitecto_ingeniero">
+            <span>Arquitecto/Ingeniero</span>
+          </label>
+          <label class="profession-option" for="profesion_estudiante_centro_formacion">
+            <input id="profesion_estudiante_centro_formacion" type="checkbox" name="profesion" value="estudiante_centro_formacion">
+            <span>Estudiante de centro de Formacion</span>
+          </label>
+          <label class="profession-option" for="profesion_expositor">
+            <input id="profesion_expositor" type="checkbox" name="profesion" value="expositor">
+            <span>Expositor</span>
+          </label>
+          <label class="profession-option" for="profesion_otros">
+            <input id="profesion_otros" type="checkbox" name="profesion" value="otros">
+            <span>Otros</span>
+          </label>
+        </div>
       </div>
 
       <div class="field">
@@ -317,6 +391,17 @@
       successMessage.classList.remove("error");
 
       const formData = new FormData(form);
+      const profesiones = formData
+        .getAll("profesion")
+        .map((value) => String(value || "").trim())
+        .filter(Boolean);
+
+      if (profesiones.length === 0) {
+        successMessage.textContent = "Selecciona al menos una profesion.";
+        successMessage.classList.add("error");
+        successMessage.style.display = "block";
+        return;
+      }
       const payload = {
         encuentro: String(formData.get("encuentro") || "").trim(),
         dni: String(formData.get("dni") || "").trim(),
@@ -325,10 +410,8 @@
         provincia: String(formData.get("provincia") || "").trim(),
         localidad: String(formData.get("localidad") || "").trim(),
         asociado: String(formData.get("asociado") || "").trim(),
-        profesion: formData
-          .getAll("profesion")
-          .map((value) => String(value || "").trim())
-          .filter(Boolean),
+        profesion: profesiones,
+
         origen: String(formData.get("origen") || "").trim(),
         acepto_terminos: formData.get("acepto_terminos") ? "si" : ""
       };
