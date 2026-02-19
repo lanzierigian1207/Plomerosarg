@@ -130,6 +130,30 @@
       white-space: nowrap;
     }
 
+    .event-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-event {
+      border: 1px solid #95b8ea;
+      border-radius: 999px;
+      background: #fff;
+      color: var(--accent);
+      padding: 6px 11px;
+      font: inherit;
+      font-size: 0.86rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-event:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
     .empty {
       padding: 16px;
       color: var(--muted);
@@ -212,6 +236,7 @@
     const totalValue = document.getElementById("totalValue");
     const updatedAt = document.getElementById("updatedAt");
     const refreshBtn = document.getElementById("refreshBtn");
+    let currentEventos = [];
 
     function escapeHtml(value) {
       return String(value ?? "")
@@ -249,7 +274,88 @@
         .join("");
     }
 
+    function sanitizeFileName(value) {
+      return String(value ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "evento";
+    }
+
+    function buildExcelRows(rows) {
+      return rows
+        .map((item) => `
+          <tr>
+            <td>${escapeHtml(item.id ?? "-")}</td>
+            <td>${escapeHtml(formatDate(item.created_at))}</td>
+            <td>${escapeHtml(item.nombre_apellido || "-")}</td>
+            <td style="mso-number-format:'\\@';">${escapeHtml(item.dni || "-")}</td>
+            <td>${escapeHtml(item.mail || "-")}</td>
+            <td>${escapeHtml(item.provincia || "-")}</td>
+            <td>${escapeHtml(item.localidad || "-")}</td>
+            <td>${escapeHtml(item.asociado || "-")}</td>
+            <td>${escapeHtml(item.profesion_label || item.profesion || "-")}</td>
+            <td>${escapeHtml(item.origen || "-")}</td>
+          </tr>
+        `)
+        .join("");
+    }
+
+    function downloadEventExcel(eventName, rows) {
+      if (!Array.isArray(rows) || rows.length === 0) {
+        return;
+      }
+
+      const safeEventName = escapeHtml(eventName || "Evento");
+      const html = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+          <head>
+            <meta charset="UTF-8">
+          </head>
+          <body>
+            <table border="1">
+              <thead>
+                <tr>
+                  <th colspan="10">Evento ${safeEventName}</th>
+                </tr>
+                <tr>
+                  <th>ID</th>
+                  <th>Fecha</th>
+                  <th>Nombre y apellido</th>
+                  <th>DNI</th>
+                  <th>Mail</th>
+                  <th>Provincia</th>
+                  <th>Localidad</th>
+                  <th>Asociado</th>
+                  <th>Profesión</th>
+                  <th>Origen</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${buildExcelRows(rows)}
+              </tbody>
+            </table>
+          </body>
+        </html>
+      `;
+
+      const blob = new Blob(["\ufeff", html], {
+        type: "application/vnd.ms-excel;charset=utf-8;"
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `inscripciones-${sanitizeFileName(eventName)}.xls`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
     function renderEvents(eventos) {
+      currentEventos = Array.isArray(eventos) ? eventos : [];
+
       if (!Array.isArray(eventos) || eventos.length === 0) {
         eventsContainer.innerHTML = `
           <article class="event-card">
@@ -260,13 +366,23 @@
       }
 
       eventsContainer.innerHTML = eventos
-        .map((item) => {
+        .map((item, index) => {
           const rows = Array.isArray(item.inscripciones) ? item.inscripciones : [];
           return `
             <article class="event-card">
               <header class="event-head">
                 <h2 class="event-title">Evento ${escapeHtml(item.evento || "Sin evento")}</h2>
-                <span class="counter">${rows.length} inscriptos</span>
+                <div class="event-meta">
+                  <span class="counter">${rows.length} inscriptos</span>
+                  <button
+                    class="btn-event"
+                    type="button"
+                    data-download-event="${index}"
+                    ${rows.length === 0 ? "disabled" : ""}
+                  >
+                    Descargar Excel
+                  </button>
+                </div>
               </header>
               ${
                 rows.length === 0
@@ -330,6 +446,19 @@
         refreshBtn.disabled = false;
       }
     }
+
+    eventsContainer.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-download-event]");
+      if (!button) return;
+
+      const index = Number.parseInt(button.getAttribute("data-download-event"), 10);
+      if (!Number.isInteger(index)) return;
+
+      const selected = currentEventos[index];
+      if (!selected) return;
+
+      downloadEventExcel(selected.evento || "evento", selected.inscripciones || []);
+    });
 
     refreshBtn.addEventListener("click", loadData);
     loadData();
