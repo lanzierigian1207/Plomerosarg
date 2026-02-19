@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel Admin | Inscripciones</title>
+  <style>
+    :root {
+      --ink: #13233a;
+      --muted: #4d627e;
+      --bg: #eef4fb;
+      --card: #ffffff;
+      --line: #d3deec;
+      --accent: #0f4ea8;
+      --accent-soft: #e4efff;
+      --ok: #1f7a45;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+    }
+
+    body {
+      font-family: "Barlow", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(900px 500px at -10% -10%, #d9e9ff 0%, transparent 60%),
+        radial-gradient(700px 400px at 110% 0%, #ffe9d0 0%, transparent 58%),
+        var(--bg);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .wrap {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .top {
+      background: linear-gradient(135deg, #0f4ea8 0%, #1d6fd0 100%);
+      border-radius: 16px;
+      color: #fff;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      box-shadow: 0 18px 30px rgba(14, 63, 134, 0.22);
+    }
+
+    .top h1 {
+      font-size: clamp(1.5rem, 3vw, 2.1rem);
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+
+    .summary {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      color: #d9e9ff;
+      font-weight: 600;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 10px;
+      background: #ffffff;
+      color: var(--accent);
+      padding: 10px 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .events {
+      display: grid;
+      gap: 14px;
+    }
+
+    .event-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .event-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      background: var(--accent-soft);
+      border-bottom: 1px solid var(--line);
+      flex-wrap: wrap;
+    }
+
+    .event-title {
+      font-size: 1.12rem;
+      line-height: 1.2;
+    }
+
+    .counter {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #fff;
+      color: var(--ok);
+      border: 1px solid #b8dec7;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .empty {
+      padding: 16px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .table-wrap {
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid #edf2f8;
+      vertical-align: top;
+      font-size: 0.94rem;
+    }
+
+    th {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #4e6482;
+      background: #f8fbff;
+    }
+
+    td {
+      color: #213750;
+    }
+
+    .status {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .status.error {
+      border-color: #f1b5af;
+      background: #fdeceb;
+      color: #8f241f;
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="top">
+      <div>
+        <h1>Panel de inscripciones</h1>
+        <div class="summary">
+          <span class="pill">Total: <strong id="totalValue">0</strong></span>
+          <span id="updatedAt">Sin actualización</span>
+        </div>
+      </div>
+      <button class="btn" id="refreshBtn" type="button">Actualizar</button>
+    </header>
+
+    <div class="status" id="status">Cargando datos...</div>
+    <section class="events" id="eventsContainer"></section>
+  </main>
+
+  <script>
+    const statusBox = document.getElementById("status");
+    const eventsContainer = document.getElementById("eventsContainer");
+    const totalValue = document.getElementById("totalValue");
+    const updatedAt = document.getElementById("updatedAt");
+    const refreshBtn = document.getElementById("refreshBtn");
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function formatDate(value) {
+      if (!value) return "-";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "-";
+      return new Intl.DateTimeFormat("es-AR", {
+        dateStyle: "short",
+        timeStyle: "short"
+      }).format(date);
+    }
+
+    function buildRows(rows) {
+      return rows
+        .map((item) => `
+          <tr>
+            <td>${escapeHtml(item.id ?? "-")}</td>
+            <td>${escapeHtml(formatDate(item.created_at))}</td>
+            <td>${escapeHtml(item.nombre_apellido || "-")}</td>
+            <td>${escapeHtml(item.dni || "-")}</td>
+            <td>${escapeHtml(item.mail || "-")}</td>
+            <td>${escapeHtml(item.provincia || "-")}</td>
+            <td>${escapeHtml(item.localidad || "-")}</td>
+            <td>${escapeHtml(item.profesion_label || item.profesion || "-")}</td>
+          </tr>
+        `)
+        .join("");
+    }
+
+    function renderEvents(eventos) {
+      if (!Array.isArray(eventos) || eventos.length === 0) {
+        eventsContainer.innerHTML = `
+          <article class="event-card">
+            <p class="empty">No hay eventos para mostrar.</p>
+          </article>
+        `;
+        return;
+      }
+
+      eventsContainer.innerHTML = eventos
+        .map((item) => {
+          const rows = Array.isArray(item.inscripciones) ? item.inscripciones : [];
+          return `
+            <article class="event-card">
+              <header class="event-head">
+                <h2 class="event-title">Evento ${escapeHtml(item.evento || "Sin evento")}</h2>
+                <span class="counter">${rows.length} inscriptos</span>
+              </header>
+              ${
+                rows.length === 0
+                  ? `<p class="empty">No hay inscripciones en este evento.</p>`
+                  : `
+                    <div class="table-wrap">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Nombre y apellido</th>
+                            <th>DNI</th>
+                            <th>Mail</th>
+                            <th>Provincia</th>
+                            <th>Localidad</th>
+                            <th>Profesión</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          ${buildRows(rows)}
+                        </tbody>
+                      </table>
+                    </div>
+                  `
+              }
+            </article>
+          `;
+        })
+        .join("");
+    }
+
+    async function loadData() {
+      statusBox.classList.remove("error");
+      statusBox.textContent = "Actualizando datos...";
+      refreshBtn.disabled = true;
+
+      try {
+        const response = await fetch("/api/admin-inscripciones", {
+          method: "GET",
+          headers: { "Accept": "application/json" }
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error || "No se pudo cargar el panel.");
+        }
+
+        totalValue.textContent = String(data.total ?? 0);
+        updatedAt.textContent = data.generated_at
+          ? `Actualizado: ${formatDate(data.generated_at)}`
+          : "Actualizado";
+
+        renderEvents(data.eventos || []);
+        statusBox.textContent = "Datos cargados correctamente.";
+      } catch (error) {
+        statusBox.classList.add("error");
+        statusBox.textContent = `Error: ${error.message}`;
+      } finally {
+        refreshBtn.disabled = false;
+      }
+    }
+
+    refreshBtn.addEventListener("click", loadData);
+    loadData();
+  </script>
+</body>
+</html>
