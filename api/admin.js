@@ -19,8 +19,8 @@ function parseCookies(req) {
 }
 
 function timingSafeEqual(a, b) {
-  const buffA = Buffer.from(a);
-  const buffB = Buffer.from(b);
+  const buffA = Buffer.from(String(a || ""));
+  const buffB = Buffer.from(String(b || ""));
   if (buffA.length !== buffB.length) return false;
   return crypto.timingSafeEqual(buffA, buffB);
 }
@@ -75,6 +75,65 @@ function parseBody(req) {
   }
 
   return {};
+}
+
+function parseAdminsFromJson(value) {
+  if (!value) return [];
+
+  try {
+    const parsed = JSON.parse(value);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .filter((item) => item && typeof item === "object")
+      .map((item) => ({
+        username: String(item.username || "").trim(),
+        password: String(item.password || "")
+      }))
+      .filter((item) => item.username && item.password);
+  } catch {
+    return [];
+  }
+}
+
+function parseAdminsFromList(value) {
+  if (!value) return [];
+
+  return String(value)
+    .split(/[\n,;]+/)
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .map((entry) => {
+      const index = entry.indexOf(":");
+      if (index <= 0) return null;
+      const username = entry.slice(0, index).trim();
+      const password = entry.slice(index + 1);
+      if (!username || !password) return null;
+      return { username, password };
+    })
+    .filter(Boolean);
+}
+
+function getAdminCredentials(env) {
+  const fromJson = parseAdminsFromJson(env.ADMIN_USERS_JSON);
+  if (fromJson.length > 0) return fromJson;
+
+  const fromList = parseAdminsFromList(env.ADMIN_USERS);
+  if (fromList.length > 0) return fromList;
+
+  const singleUser = String(env.ADMIN_USER || "").trim();
+  const singlePass = String(env.ADMIN_PASSWORD || "");
+  if (singleUser && singlePass) {
+    return [{ username: singleUser, password: singlePass }];
+  }
+
+  return [];
+}
+
+function hasValidCredentials(username, password, admins) {
+  return admins.some((admin) => {
+    return timingSafeEqual(username, admin.username) && timingSafeEqual(password, admin.password);
+  });
 }
 
 function loginView(errorMessage = "") {
@@ -165,7 +224,7 @@ function loginView(errorMessage = "") {
 <body>
   <main class="card">
     <h1>Admin</h1>
-    <p>Ingresá con tus credenciales de administrador.</p>
+    <p>Ingresa con tus credenciales de administrador.</p>
     ${errorBlock}
     <form method="post" action="/api/admin">
       <div>
@@ -173,7 +232,7 @@ function loginView(errorMessage = "") {
         <input id="username" name="username" type="text" autocomplete="username" required>
       </div>
       <div>
-        <label for="password">Contraseña</label>
+        <label for="password">Contrasena</label>
         <input id="password" name="password" type="password" autocomplete="current-password" required>
       </div>
       <button type="submit">Entrar</button>
@@ -272,7 +331,7 @@ function panelView() {
       <a class="btn btn-ghost" href="/">Volver al inicio</a>
       <form method="post" action="/api/admin">
         <input type="hidden" name="action" value="logout">
-        <button class="btn btn-ghost" type="submit">Cerrar sesión</button>
+        <button class="btn btn-ghost" type="submit">Cerrar sesion</button>
       </form>
     </div>
   </main>
@@ -287,14 +346,13 @@ function sendHtml(res, statusCode, html) {
 }
 
 module.exports = async (req, res) => {
-  const ADMIN_USER = process.env.ADMIN_USER;
-  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
   const ADMIN_SESSION_SECRET = process.env.ADMIN_SESSION_SECRET;
+  const ADMIN_CREDENTIALS = getAdminCredentials(process.env);
 
-  if (!ADMIN_USER || !ADMIN_PASSWORD || !ADMIN_SESSION_SECRET) {
+  if (!ADMIN_SESSION_SECRET || ADMIN_CREDENTIALS.length === 0) {
     return res.status(500).json({
       ok: false,
-      error: "Faltan variables de entorno para el login admin."
+      error: "Faltan variables de entorno para login admin (ADMIN_SESSION_SECRET y usuarios admin)."
     });
   }
 
@@ -328,8 +386,8 @@ module.exports = async (req, res) => {
   const username = String(body.username || "").trim();
   const password = String(body.password || "");
 
-  if (username !== ADMIN_USER || password !== ADMIN_PASSWORD) {
-    return sendHtml(res, 401, loginView("Credenciales inválidas."));
+  if (!hasValidCredentials(username, password, ADMIN_CREDENTIALS)) {
+    return sendHtml(res, 401, loginView("Credenciales invalidas."));
   }
 
   const token = createToken(username, ADMIN_SESSION_SECRET);
