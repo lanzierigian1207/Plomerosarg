@@ -1,4 +1,4 @@
-﻿const ALLOWED_PROVINCIAS = new Set([
+const ALLOWED_PROVINCIAS = new Set([
   "buenos_aires", "caba", "catamarca", "chaco", "chubut", "cordoba", "corrientes",
   "entre_rios", "formosa", "jujuy", "la_pampa", "la_rioja", "mendoza", "misiones",
   "neuquen", "rio_negro", "salta", "san_juan", "san_luis", "santa_cruz", "santa_fe",
@@ -230,7 +230,7 @@ async function sendConfirmationEmail({ to, nombre, encuentro, id }) {
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
-    return res.status(405).json({ ok: false, error: "Metodo no permitido. Usa POST." });
+    return res.status(405).json({ ok: false, error: "Método no permitido. Usá POST." });
   }
 
   const payload = normalizeBody(req.body);
@@ -260,28 +260,28 @@ module.exports = async (req, res) => {
   ) {
     return res.status(422).json({
       ok: false,
-      error: "Completa todos los campos obligatorios y acepta los terminos."
+      error: "Completá todos los campos obligatorios y aceptá los términos."
     });
   }
 
   if (!isValidEmail(mail)) {
-    return res.status(422).json({ ok: false, error: "Mail invalido." });
+    return res.status(422).json({ ok: false, error: "Mail inválido." });
   }
 
   if (!ALLOWED_PROVINCIAS.has(provincia)) {
-    return res.status(422).json({ ok: false, error: "Provincia invalida." });
+    return res.status(422).json({ ok: false, error: "Provincia inválida." });
   }
 
   if (!ALLOWED_ASOCIADO.has(asociado)) {
-    return res.status(422).json({ ok: false, error: "Valor de asociado invalido." });
+    return res.status(422).json({ ok: false, error: "Valor de asociado inválido." });
   }
 
   if (!profesiones.every((item) => ALLOWED_PROFESION.has(item))) {
-    return res.status(422).json({ ok: false, error: "Profesion invalida." });
+    return res.status(422).json({ ok: false, error: "Profesión inválida." });
   }
 
   if (!ALLOWED_ORIGEN.has(origen)) {
-    return res.status(422).json({ ok: false, error: "Origen invalido." });
+    return res.status(422).json({ ok: false, error: "Origen inválido." });
   }
 
   const supabaseUrl = process.env.SUPABASE_URL;
@@ -345,7 +345,7 @@ module.exports = async (req, res) => {
 
       return res.status(500).json({
         ok: false,
-        error: "No se pudo guardar la inscripcion en la base de datos.",
+        error: "No se pudo guardar la inscripción en la base de datos.",
         detail
       });
     }
@@ -361,7 +361,7 @@ module.exports = async (req, res) => {
 
     return res.status(200).json({
       ok: true,
-      message: "Inscripcion guardada correctamente.",
+      message: "Inscripción guardada correctamente.",
       id,
       mail_enviado: mailResult.sent
     });

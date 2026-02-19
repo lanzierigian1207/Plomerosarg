@@ -102,17 +102,13 @@
       width: 44px;
       height: 44px;
       border-radius: 12px;
-      overflow: hidden;
-      background: #ffffff;
-      border: 1px solid #cfe0f6;
-      box-shadow: 0 12px 24px rgba(13, 99, 207, 0.22);
-    }
-
-    .brand-badge img {
-      display: block;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+      display: grid;
+      place-items: center;
+      font-family: "Bebas Neue", sans-serif;
+      font-size: 1.5rem;
+      color: #fff;
+      background: linear-gradient(135deg, #0a3f86, #0d63cf);
+      box-shadow: 0 12px 24px rgba(13, 99, 207, 0.3);
     }
 
     .main-nav {
@@ -262,7 +258,7 @@
       animation: revealUp 0.7s ease 0.1s both;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
+      justify-content: center;
       gap: 0.8rem;
     }
 
@@ -277,98 +273,6 @@
     .hero-side p {
       color: var(--muted);
       font-size: 0.95rem;
-    }
-
-    .hero-events {
-      display: grid;
-      gap: 0.55rem;
-    }
-
-    .hero-event {
-      position: relative;
-      min-height: 98px;
-      border-radius: 12px;
-      border: 1px solid rgba(15, 47, 87, 0.35);
-      overflow: hidden;
-      background-size: cover;
-      background-position: center;
-      padding: 0.72rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .hero-event::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(100deg, rgba(9, 32, 61, 0.88) 0%, rgba(9, 32, 61, 0.66) 56%, rgba(9, 32, 61, 0.32) 100%);
-    }
-
-    .hero-event > * {
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero-event h4 {
-      color: #ffffff;
-      font-size: 1rem;
-      line-height: 1.2;
-      margin: 0;
-      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
-    }
-
-    .hero-event p {
-      margin: 0.18rem 0 0.45rem;
-      font-size: 0.78rem;
-      color: #edf5ff;
-      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
-    }
-
-    .hero-event-btn {
-      display: inline-flex;
-      width: fit-content;
-      align-items: center;
-      justify-content: center;
-      padding: 0.28rem 0.64rem;
-      border-radius: 8px;
-      border: 1px solid #ffffff;
-      background: #ffffff;
-      color: #0d63c7;
-      text-decoration: none;
-      font-size: 0.74rem;
-      font-weight: 800;
-      line-height: 1.1;
-      cursor: pointer;
-    }
-
-    .hero-event-btn.is-disabled {
-      border-color: #c8d4e2;
-      background: #b7c4d3;
-      color: #eef3f8;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    .hero-event-bahia {
-      background-image: url("/Prueba_2/assets/bahia-blanca.jpg");
-      background-position: center right;
-    }
-
-    .hero-event-mar-del-plata {
-      background-image: url("/Prueba_2/assets/mar-del-plata.webp");
-    }
-
-    .hero-event-mendoza {
-      background-image: url("/Prueba_2/assets/mendoza.jpg");
-    }
-
-    .hero-event-salta {
-      background-image: url("/Prueba_2/assets/salta.jpg");
-    }
-
-    .hero-event-san-luis {
-      background-image: url("/Prueba_2/assets/san-luis.png");
     }
 
     .side-ring {
@@ -819,9 +723,7 @@
   <header class="site-header">
     <div class="container header-inner">
       <a class="brand" href="#inicio">
-        <span class="brand-badge">
-          <img src="/Prueba_2/assets/logo-plomeros-circular.png" alt="Logo Plomeros ARG">
-        </span>
+        <span class="brand-badge">PA</span>
         <span>PLOMEROS ARG</span>
       </a>
       <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú">☰</button>
@@ -849,35 +751,11 @@
           </div>
         </article>
         <aside class="hero-side">
-          <h3>Futuros Encuentros</h3>
-          <p>Seleccioná un encuentro:</p>
-          <div class="hero-events">
-            <article class="hero-event hero-event-bahia">
-              <h4>Bahía Blanca 11/3</h4>
-              <p>Inscripción abierta.</p>
-              <a class="hero-event-btn" href="/inscripcion-bahia-blanca.html">Inscribirme</a>
-            </article>
-            <article class="hero-event hero-event-mar-del-plata">
-              <h4>Mar del Plata 14/3</h4>
-              <p>Inscripción abierta.</p>
-              <a class="hero-event-btn" href="/inscripcion-mar-del-plata.html">Inscribirme</a>
-            </article>
-            <article class="hero-event hero-event-mendoza">
-              <h4>Mendoza 9/5</h4>
-              <p>Inscripción abierta.</p>
-              <span class="hero-event-btn is-disabled">Próximamente</span>
-            </article>
-            <article class="hero-event hero-event-salta">
-              <h4>Salta 6/6</h4>
-              <p>Inscripción abierta.</p>
-              <span class="hero-event-btn is-disabled">Próximamente</span>
-            </article>
-            <article class="hero-event hero-event-san-luis">
-              <h4>San Luis 8/8</h4>
-              <p>Inscripción abierta.</p>
-              <span class="hero-event-btn is-disabled">Próximamente</span>
-            </article>
-          </div>
+          <div class="side-ring">SOCIOS</div>
+          <h3>Acceso Clientes</h3>
+          <p>Ingresá para ver presupuestos, estado de trabajos, historial y certificaciones técnicas de cada intervención.</p>
+          <a class="btn btn-primary" href="#" aria-label="Ingresar al panel de clientes">Ingresar</a>
+          <a class="btn btn-ghost" href="#">Quiero asociarme</a>
         </aside>
       </div>
       <div class="container quick-info">

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inscripción Salta 6/6 | Encuentros</title>
+  <style>
+    :root {
+      --ink: #0f2f57;
+      --bg: #dff1ff;
+      --card: #ffffff;
+      --line: #dbe6f2;
+      --accent: #0d63c7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+    }
+
+    body {
+      font-family: "Barlow", sans-serif;
+      color: var(--ink);
+      background-color: var(--bg);
+      line-height: 1.5;
+      padding: 32px 20px;
+    }
+
+    .wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 28px;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 4vw, 2.75rem);
+      margin-bottom: 8px;
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .header-copy {
+      min-width: 0;
+    }
+
+    .intro {
+      color: #335a86;
+      margin-bottom: 0;
+    }
+
+    .header-logo {
+      flex: 0 0 auto;
+      width: 128px;
+      height: 128px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #f9fbfe;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+    }
+
+    .header-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    form {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    label {
+      font-weight: 700;
+    }
+
+    label.required::after {
+      content: " *";
+      color: #d93025;
+      font-size: 0.72em;
+      vertical-align: super;
+    }
+
+    input:not([type="checkbox"]),
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      color: var(--ink);
+      background: #ffffff;
+    }
+
+    .profession-group {
+      display: grid;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      background: #ffffff;
+    }
+
+    .profession-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #2a4f79;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .profession-option input[type="checkbox"] {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      border: 2px solid #84bce6;
+      border-radius: 50%;
+      display: grid;
+      place-content: center;
+      cursor: pointer;
+      flex: 0 0 18px;
+    }
+
+    .profession-option input[type="checkbox"]::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      transform: scale(0);
+      transition: transform 0.12s ease-in-out;
+    }
+
+    .profession-option input[type="checkbox"]:checked::before {
+      transform: scale(1);
+    }
+
+    .consent {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      background: #f9fbfe;
+    }
+
+    .consent input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-top: 3px;
+      cursor: pointer;
+    }
+
+    .consent label {
+      font-weight: 500;
+      font-size: 0.96rem;
+      color: #2a4f79;
+      line-height: 1.45;
+      cursor: pointer;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .success-message {
+      display: none;
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #95d5a5;
+      background: #e8f8ec;
+      color: #1d6f35;
+      font-weight: 700;
+    }
+
+    .success-message.error {
+      border-color: #f0b5b0;
+      background: #fdebea;
+      color: #9c2a24;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      text-decoration: none;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    @media (max-width: 680px) {
+      .header-row {
+        flex-direction: column;
+      }
+
+      .header-logo {
+        width: 108px;
+        height: 108px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="header-row">
+      <div class="header-copy">
+        <h1>Inscripción - Salta 6/6</h1>
+        <p class="intro">Complet&aacute; el formulario para reservar tu lugar en Salta 6/6.</p>
+      </div>
+      <div class="header-logo">
+        <img src="/Prueba_2/assets/logo-plomeros-circular.png" alt="Logo Plomeros Sanitaristas Argentinos">
+      </div>
+    </div>
+
+    <form id="inscripcionForm" action="/api/inscripciones" method="post">
+      <input type="hidden" id="encuentro" name="encuentro" value="Salta 6/6">
+      <div class="field">
+        <label class="required" for="dni">DNI</label>
+        <input id="dni" name="dni" type="text" required>
+      </div>
+
+      <div class="field">
+        <label class="required" for="nombre_apellido">Nombre y Apellido</label>
+        <input id="nombre_apellido" name="nombre_apellido" type="text" required>
+      </div>
+
+      <div class="field">
+        <label class="required" for="mail">Mail</label>
+        <input id="mail" name="mail" type="email" required>
+      </div>
+
+      <div class="field">
+        <label class="required" for="provincia">¿De qué provincia sos?</label>
+        <select id="provincia" name="provincia" required>
+          <option value="">Seleccionar</option>
+          <option value="buenos_aires">Buenos Aires</option>
+          <option value="caba">Ciudad Autónoma de Buenos Aires</option>
+          <option value="catamarca">Catamarca</option>
+          <option value="chaco">Chaco</option>
+          <option value="chubut">Chubut</option>
+          <option value="cordoba">Córdoba</option>
+          <option value="corrientes">Corrientes</option>
+          <option value="entre_rios">Entre Ríos</option>
+          <option value="formosa">Formosa</option>
+          <option value="jujuy">Jujuy</option>
+          <option value="la_pampa">La Pampa</option>
+          <option value="la_rioja">La Rioja</option>
+          <option value="mendoza">Mendoza</option>
+          <option value="misiones">Misiones</option>
+          <option value="neuquen">Neuquén</option>
+          <option value="rio_negro">Río Negro</option>
+          <option value="salta">Salta</option>
+          <option value="san_juan">San Juan</option>
+          <option value="san_luis">San Luis</option>
+          <option value="santa_cruz">Santa Cruz</option>
+          <option value="santa_fe">Santa Fe</option>
+          <option value="santiago_del_estero">Santiago del Estero</option>
+          <option value="tierra_del_fuego">Tierra del Fuego</option>
+          <option value="tucuman">Tucumán</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="localidad">¿De qué localidad sos?</label>
+        <input id="localidad" name="localidad" type="text" placeholder="(Opcional)">
+      </div>
+
+      <div class="field">
+        <label class="required" for="asociado">¿Sos asociado a AAPSYA?</label>
+        <select id="asociado" name="asociado" required>
+          <option value="">Seleccionar</option>
+          <option value="si">Sí</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="required" for="profesion_plomero">Profesión (podés elegir varias)</label>
+        <div class="profession-group" role="group" aria-label="Profesión">
+          <label class="profession-option" for="profesion_plomero">
+            <input id="profesion_plomero" type="checkbox" name="profesion" value="plomero">
+            <span>Plomero</span>
+          </label>
+          <label class="profession-option" for="profesion_gasista">
+            <input id="profesion_gasista" type="checkbox" name="profesion" value="gasista">
+            <span>Gasista</span>
+          </label>
+          <label class="profession-option" for="profesion_oficial_plomero">
+            <input id="profesion_oficial_plomero" type="checkbox" name="profesion" value="oficial_plomero">
+            <span>Oficial Plomero</span>
+          </label>
+          <label class="profession-option" for="profesion_ayudante_plomero">
+            <input id="profesion_ayudante_plomero" type="checkbox" name="profesion" value="ayudante_plomero">
+            <span>Ayudante de Plomero</span>
+          </label>
+          <label class="profession-option" for="profesion_medio_oficial_plomero">
+            <input id="profesion_medio_oficial_plomero" type="checkbox" name="profesion" value="medio_oficial_plomero">
+            <span>Medio Oficial Plomero</span>
+          </label>
+          <label class="profession-option" for="profesion_maestro_mayor_obra">
+            <input id="profesion_maestro_mayor_obra" type="checkbox" name="profesion" value="maestro_mayor_obra">
+            <span>Maestro Mayor de Obra</span>
+          </label>
+          <label class="profession-option" for="profesion_arquitecto_ingeniero">
+            <input id="profesion_arquitecto_ingeniero" type="checkbox" name="profesion" value="arquitecto_ingeniero">
+            <span>Arquitecto/Ingeniero</span>
+          </label>
+          <label class="profession-option" for="profesion_estudiante_centro_formacion">
+            <input id="profesion_estudiante_centro_formacion" type="checkbox" name="profesion" value="estudiante_centro_formacion">
+            <span>Estudiante de centro de formación</span>
+          </label>
+          <label class="profession-option" for="profesion_expositor">
+            <input id="profesion_expositor" type="checkbox" name="profesion" value="expositor">
+            <span>Expositor</span>
+          </label>
+          <label class="profession-option" for="profesion_otros">
+            <input id="profesion_otros" type="checkbox" name="profesion" value="otros">
+            <span>Otros</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="required" for="origen">¿Dónde nos conociste?</label>
+        <select id="origen" name="origen" required>
+          <option value="">Seleccionar</option>
+          <option value="facebook">Grupo de Facebook</option>
+          <option value="grupo_whatsapp">Grupo de WhatsApp</option>
+          <option value="instagram">Instagram de Plomeros</option>
+          <option value="casa_sanitarios">Casa de Sanitarios</option>
+          <option value="centro_formacion">Centro de formación</option>
+        </select>
+      </div>
+
+      <div class="consent">
+        <input id="acepto_terminos" name="acepto_terminos" type="checkbox" required>
+        <label class="required" for="acepto_terminos">Confirmo que mis datos son verdaderos. Al inscribirme, acepto que se envíen mis datos a los sponsors y, además, acepto que los sponsors y/o los organizadores utilicen mi imagen, parcial o total, para hacer publicidad. La presente autorización y cesión de mi imagen es a título gratuito y concedida por tiempo ilimitado.</label>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" type="submit">Enviar</button>
+        <a class="btn btn-secondary" href="encuentros.html">Volver a Encuentros</a>
+      </div>
+      <p class="success-message" id="successMessage" role="status">Gracias por la Inscripci&oacute;n, en breve les llegar&aacute; la informaci&oacute;n.</p>
+    </form>
+  </main>
+  <script>
+    const form = document.getElementById("inscripcionForm");
+    const successMessage = document.getElementById("successMessage");
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      successMessage.style.display = "none";
+      successMessage.classList.remove("error");
+
+      const formData = new FormData(form);
+      const profesiones = formData
+        .getAll("profesion")
+        .map((value) => String(value || "").trim())
+        .filter(Boolean);
+
+      if (profesiones.length === 0) {
+        successMessage.textContent = "Seleccioná al menos una profesión.";
+        successMessage.classList.add("error");
+        successMessage.style.display = "block";
+        return;
+      }
+      const payload = {
+        encuentro: String(formData.get("encuentro") || "").trim(),
+        dni: String(formData.get("dni") || "").trim(),
+        nombre_apellido: String(formData.get("nombre_apellido") || "").trim(),
+        mail: String(formData.get("mail") || "").trim(),
+        provincia: String(formData.get("provincia") || "").trim(),
+        localidad: String(formData.get("localidad") || "").trim(),
+        asociado: String(formData.get("asociado") || "").trim(),
+        profesion: profesiones,
+
+        origen: String(formData.get("origen") || "").trim(),
+        acepto_terminos: formData.get("acepto_terminos") ? "si" : ""
+      };
+
+      try {
+        const response = await fetch("/api/inscripciones", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        let data = {};
+        try {
+          data = await response.json();
+        } catch (jsonError) {
+          data = {};
+        }
+
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error || "No fue posible guardar la inscripción.");
+        }
+
+        successMessage.textContent = "Gracias por la inscripción, en breve les llegará la información.";
+        successMessage.style.display = "block";
+        form.reset();
+      } catch (error) {
+        successMessage.textContent = `Error: ${error.message}`;
+        successMessage.classList.add("error");
+        successMessage.style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>
