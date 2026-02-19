@@ -16,6 +16,7 @@ const ALLOWED_PROFESION = new Set([
   "maestro_mayor_obra",
   "arquitecto_ingeniero",
   "estudiante_centro_formacion",
+  "expositor",
   "otros"
 ]);
 
@@ -30,6 +31,21 @@ const ALLOWED_ORIGEN = new Set([
 function cleanText(value, maxLength = 120) {
   const text = String(value ?? "").trim().replace(/<[^>]*>/g, "");
   return text.length > maxLength ? text.slice(0, maxLength) : text;
+}
+
+function normalizeProfesion(value) {
+  const list = Array.isArray(value)
+    ? value
+    : cleanText(value, 300)
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+  const normalized = list
+    .map((item) => cleanText(item, 40))
+    .filter(Boolean);
+
+  return [...new Set(normalized)];
 }
 
 function normalizeDni(value) {
@@ -226,7 +242,8 @@ module.exports = async (req, res) => {
   const provincia = cleanText(payload.provincia, 40);
   const localidad = cleanText(payload.localidad, 120);
   const asociado = cleanText(payload.asociado, 5);
-  const profesion = cleanText(payload.profesion, 40);
+  const profesiones = normalizeProfesion(payload.profesion);
+  const profesion = profesiones.join(",");
   const origen = cleanText(payload.origen, 40);
   const acepto_terminos = cleanText(payload.acepto_terminos, 5).toLowerCase() === "si";
 
@@ -237,7 +254,7 @@ module.exports = async (req, res) => {
     !mail ||
     !provincia ||
     !asociado ||
-    !profesion ||
+    profesiones.length === 0 ||
     !origen ||
     !acepto_terminos
   ) {
@@ -259,7 +276,7 @@ module.exports = async (req, res) => {
     return res.status(422).json({ ok: false, error: "Valor de asociado invalido." });
   }
 
-  if (!ALLOWED_PROFESION.has(profesion)) {
+  if (!profesiones.every((item) => ALLOWED_PROFESION.has(item))) {
     return res.status(422).json({ ok: false, error: "Profesion invalida." });
   }
 

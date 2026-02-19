@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -267,9 +267,8 @@
       </div>
 
       <div class="field">
-        <label class="required" for="profesion">Profesion</label>
-        <select id="profesion" name="profesion" required>
-          <option value="">Seleccionar</option>
+        <label class="required" for="profesion">Profesion (podes elegir varias)</label>
+        <select id="profesion" name="profesion" required multiple size="10">
           <option value="plomero">Plomero</option>
           <option value="gasista">Gasista</option>
           <option value="oficial_plomero">Oficial Plomero</option>
@@ -278,8 +277,10 @@
           <option value="maestro_mayor_obra">Maestro Mayor de Obra</option>
           <option value="arquitecto_ingeniero">Arquitecto/Ingeniero</option>
           <option value="estudiante_centro_formacion">Estudiante de centro de Formacion</option>
+          <option value="expositor">Expositor</option>
           <option value="otros">Otros</option>
         </select>
+        <small>Usa Ctrl (o Cmd en Mac) para elegir mas de una opcion.</small>
       </div>
 
       <div class="field">
@@ -324,7 +325,10 @@
         provincia: String(formData.get("provincia") || "").trim(),
         localidad: String(formData.get("localidad") || "").trim(),
         asociado: String(formData.get("asociado") || "").trim(),
-        profesion: String(formData.get("profesion") || "").trim(),
+        profesion: formData
+          .getAll("profesion")
+          .map((value) => String(value || "").trim())
+          .filter(Boolean),
         origen: String(formData.get("origen") || "").trim(),
         acepto_terminos: formData.get("acepto_terminos") ? "si" : ""
       };
@@ -361,5 +365,3 @@
   </script>
 </body>
 </html>
-
-
