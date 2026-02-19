@@ -32,6 +32,10 @@ function cleanText(value, maxLength = 120) {
   return text.length > maxLength ? text.slice(0, maxLength) : text;
 }
 
+function normalizeDni(value) {
+  return cleanText(value, 20).replace(/\D+/g, "");
+}
+
 function normalizeBody(body) {
   if (!body) return {};
 
@@ -55,6 +59,41 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function isDuplicateConstraintError(detail) {
+  const normalized = String(detail ?? "").toLowerCase();
+  return (
+    normalized.includes("duplicate key value") ||
+    normalized.includes("inscripciones_dni_encuentro_key") ||
+    (normalized.includes("unique") &&
+      normalized.includes("dni") &&
+      normalized.includes("encuentro"))
+  );
+}
+
+async function existsDniInEncuentro({ endpoint, serviceRoleKey, dni, encuentro }) {
+  const lookupUrl = new URL(endpoint);
+  lookupUrl.searchParams.set("select", "id");
+  lookupUrl.searchParams.set("dni", `eq.${dni}`);
+  lookupUrl.searchParams.set("encuentro", `eq.${encuentro}`);
+  lookupUrl.searchParams.set("limit", "1");
+
+  const response = await fetch(lookupUrl.toString(), {
+    method: "GET",
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`
+    }
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`No se pudo validar el DNI: ${detail}`);
+  }
+
+  const rows = await response.json().catch(() => []);
+  return Array.isArray(rows) && rows.length > 0;
+}
+
 function getClientIp(req) {
   const forwarded = req.headers["x-forwarded-for"];
 
@@ -69,6 +108,77 @@ function getClientIp(req) {
   return req.socket?.remoteAddress || "";
 }
 
+function formatEncuentroLabel(encuentro) {
+  return String(encuentro || "")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function escapeHtml(text) {
+  return String(text ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+async function sendConfirmationEmail({ to, nombre, encuentro, id }) {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const mailFrom = process.env.MAIL_FROM;
+  const replyTo = process.env.MAIL_REPLY_TO;
+  const normalizedTo = cleanText(to, 120).toLowerCase();
+
+  if (!resendApiKey || !mailFrom || !normalizedTo) {
+    return { sent: false, skipped: true, reason: "missing_config" };
+  }
+
+  const safeNombre = escapeHtml(nombre || "participante");
+  const safeEncuentro = escapeHtml(formatEncuentroLabel(encuentro) || "encuentro");
+  const html = `
+    <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.55;color:#10263f">
+      <h2 style="margin:0 0 12px">Inscripcion confirmada</h2>
+      <p>Hola ${safeNombre},</p>
+      <p>Recibimos correctamente tu inscripcion para <strong>${safeEncuentro}</strong>.</p>
+      <p>Numero de registro: <strong>${escapeHtml(id || "pendiente")}</strong></p>
+      <p>Gracias por participar en Plomeros ARG.</p>
+    </div>
+  `;
+
+  const payload = {
+    from: mailFrom,
+    to: [normalizedTo],
+    subject: "Inscripcion confirmada - Plomeros ARG",
+    html
+  };
+
+  if (replyTo) {
+    payload.reply_to = replyTo;
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${resendApiKey}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    return {
+      sent: false,
+      skipped: false,
+      reason: `resend_error_${response.status}`,
+      detail
+    };
+  }
+
+  return { sent: true, skipped: false };
+}
+
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "Metodo no permitido. Usa POST." });
@@ -76,7 +186,7 @@ module.exports = async (req, res) => {
 
   const payload = normalizeBody(req.body);
 
-  const dni = cleanText(payload.dni, 20);
+  const dni = normalizeDni(payload.dni);
   const encuentro = cleanText(payload.encuentro, 80);
   const nombre_apellido = cleanText(payload.nombre_apellido, 120);
   const mail = cleanText(payload.mail, 120).toLowerCase();
@@ -149,6 +259,20 @@ module.exports = async (req, res) => {
   };
 
   try {
+    const duplicatedDni = await existsDniInEncuentro({
+      endpoint,
+      serviceRoleKey,
+      dni,
+      encuentro
+    });
+
+    if (duplicatedDni) {
+      return res.status(409).json({
+        ok: false,
+        error: "Este DNI ya fue inscripto en este encuentro."
+      });
+    }
+
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
@@ -162,6 +286,13 @@ module.exports = async (req, res) => {
 
     if (!response.ok) {
       const detail = await response.text();
+      if (response.status === 409 || isDuplicateConstraintError(detail)) {
+        return res.status(409).json({
+          ok: false,
+          error: "Este DNI ya fue inscripto en este encuentro."
+        });
+      }
+
       return res.status(500).json({
         ok: false,
         error: "No se pudo guardar la inscripcion en la base de datos.",
@@ -171,11 +302,18 @@ module.exports = async (req, res) => {
 
     const inserted = await response.json().catch(() => []);
     const id = Array.isArray(inserted) && inserted[0] ? inserted[0].id : null;
+    const mailResult = await sendConfirmationEmail({
+      to: mail,
+      nombre: nombre_apellido,
+      encuentro,
+      id
+    });
 
     return res.status(200).json({
       ok: true,
       message: "Inscripcion guardada correctamente.",
-      id
+      id,
+      mail_enviado: mailResult.sent
     });
   } catch (error) {
     return res.status(500).json({
