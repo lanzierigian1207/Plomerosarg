@@ -128,6 +128,10 @@ async function sendConfirmationEmail({ to, nombre, encuentro, id }) {
   const resendApiKey = process.env.RESEND_API_KEY;
   const mailFrom = process.env.MAIL_FROM;
   const replyTo = process.env.MAIL_REPLY_TO;
+  const whatsappGroupUrl =
+    process.env.MAIL_WHATSAPP_GRUPO_URL ||
+    "https://wa.me/5491100000000?text=Hola%2C%20quiero%20sumarme%20al%20grupo%20del%20encuentro";
+  const logoUrl = "https://plomerosarg.com/Prueba_2/assets/logo-plomeros-circular.png";
   const normalizedTo = cleanText(to, 120).toLowerCase();
 
   if (!resendApiKey || !mailFrom || !normalizedTo) {
@@ -136,13 +140,42 @@ async function sendConfirmationEmail({ to, nombre, encuentro, id }) {
 
   const safeNombre = escapeHtml(nombre || "participante");
   const safeEncuentro = escapeHtml(formatEncuentroLabel(encuentro) || "encuentro");
+  const safeWhatsappGroupUrl = escapeHtml(whatsappGroupUrl);
+  const safeLogoUrl = escapeHtml(logoUrl);
   const html = `
     <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.55;color:#10263f">
       <h2 style="margin:0 0 12px">Inscripcion confirmada</h2>
-      <p>Hola ${safeNombre},</p>
-      <p>Recibimos correctamente tu inscripcion para <strong>${safeEncuentro}</strong>.</p>
-      <p>Numero de registro: <strong>${escapeHtml(id || "pendiente")}</strong></p>
-      <p>Gracias por participar en Plomeros ARG.</p>
+      <p>Hola ${safeNombre}</p>
+      <p>Ya esta confirmada su vacante para el encuentro <strong>${safeEncuentro}</strong>.</p>
+      <p>
+        Ingrese al grupo de WhatsApp exclusivo para empezar a vivir la experiencia del encuentro para
+        consultas, sorteo, informacion y comunicados:
+      </p>
+      <p style="margin:10px 0 14px;">
+        <a
+          href="${safeWhatsappGroupUrl}"
+          target="_blank"
+          rel="noopener noreferrer"
+          style="display:inline-block;padding:10px 14px;border-radius:8px;background:#0b6b35;color:#ffffff;text-decoration:none;font-weight:700;"
+        >
+          Ingresar al grupo de WhatsApp
+        </a>
+      </p>
+      <p style="margin:0 0 14px;color:#c62828;font-weight:800;">
+        Unos dias antes del encuentro recibira un mail para que confirme su asistencia.
+      </p>
+      <p style="margin:0 0 10px;">Que tengan buen dia</p>
+      <p style="margin:0 0 16px;">Saludos AAPSYA</p>
+      <p style="margin:0 0 14px;color:#5b6b80;font-size:13px;">
+        Numero de registro: <strong>${escapeHtml(id || "pendiente")}</strong>
+      </p>
+      <img
+        src="${safeLogoUrl}"
+        alt="Logo Plomeros ARG"
+        width="88"
+        height="88"
+        style="display:block;margin:8px auto 0;border:0;outline:none;text-decoration:none;"
+      />
     </div>
   `;
 
