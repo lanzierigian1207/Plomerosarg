@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -204,7 +204,7 @@
       </div>
     </div>
 
-    <form id="inscripcionForm" action="guardar_inscripcion.php" method="post">
+    <form id="inscripcionForm" action="/api/inscripciones" method="post">
       <input type="hidden" id="encuentro" name="encuentro" value="Bahia Blanca 11/3">
       <div class="field">
         <label class="required" for="dni">DNI</label>
@@ -330,7 +330,7 @@
       };
 
       try {
-        const response = await fetch("guardar_inscripcion.php", {
+        const response = await fetch("/api/inscripciones", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -361,4 +361,5 @@
   </script>
 </body>
 </html>
+
 
