@@ -144,12 +144,12 @@ async function sendConfirmationEmail({ to, nombre, encuentro, id }) {
   const safeLogoUrl = escapeHtml(logoUrl);
   const html = `
     <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.55;color:#10263f">
-      <h2 style="margin:0 0 12px">Inscripcion confirmada</h2>
+      <h2 style="margin:0 0 12px">Inscripci&oacute;n confirmada</h2>
       <p>Hola ${safeNombre}</p>
-      <p>Ya esta confirmada su vacante para el encuentro <strong>${safeEncuentro}</strong>.</p>
+      <p>Ya est&aacute; confirmada su vacante para el encuentro <strong>${safeEncuentro}</strong>.</p>
       <p>
         Ingrese al grupo de WhatsApp exclusivo para empezar a vivir la experiencia del encuentro para
-        consultas, sorteo, informacion y comunicados:
+        consultas, sorteo, informaci&oacute;n y comunicados:
       </p>
       <p style="margin:10px 0 14px;">
         <a
@@ -162,12 +162,12 @@ async function sendConfirmationEmail({ to, nombre, encuentro, id }) {
         </a>
       </p>
       <p style="margin:0 0 14px;color:#c62828;font-weight:800;">
-        Unos dias antes del encuentro recibira un mail para que confirme su asistencia.
+        Unos d&iacute;as antes del encuentro recibir&aacute; un mail para que confirme su asistencia.
       </p>
-      <p style="margin:0 0 10px;">Que tengan buen dia</p>
+      <p style="margin:0 0 10px;">Que tengan buen d&iacute;a</p>
       <p style="margin:0 0 16px;">Saludos AAPSYA</p>
       <p style="margin:0 0 14px;color:#5b6b80;font-size:13px;">
-        Numero de registro: <strong>${escapeHtml(id || "pendiente")}</strong>
+        N&uacute;mero de registro: <strong>${escapeHtml(id || "pendiente")}</strong>
       </p>
       <img
         src="${safeLogoUrl}"
@@ -182,7 +182,7 @@ async function sendConfirmationEmail({ to, nombre, encuentro, id }) {
   const payload = {
     from: mailFrom,
     to: [normalizedTo],
-    subject: "Inscripcion confirmada - Plomeros ARG",
+    subject: "Inscripci\u00f3n confirmada - Plomeros ARG",
     html
   };
 
