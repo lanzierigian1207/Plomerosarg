@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin | Plomeros ARG</title>
+  <style>
+    :root {
+      --ink: #0f2f57;
+      --bg: #dff1ff;
+      --card: #ffffff;
+      --line: #dbe6f2;
+      --accent: #0d63c7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+    }
+
+    body {
+      font-family: "Barlow", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+
+    .panel {
+      width: min(760px, 100%);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 26px;
+      box-shadow: 0 16px 28px rgba(15, 47, 87, 0.12);
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      margin-bottom: 8px;
+    }
+
+    p {
+      color: #355d88;
+      margin-bottom: 18px;
+    }
+
+    .status {
+      border: 1px solid #c7d9f2;
+      background: #f4f9ff;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-ghost {
+      background: #fff;
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <main class="panel">
+    <h1>Panel Admin</h1>
+    <p>Acceso interno de Plomeros ARG (ruta privada por URL).</p>
+
+    <div class="status">
+      Ruta activa: <strong>/admin</strong>
+    </div>
+
+    <div class="actions">
+      <a class="btn btn-primary" href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer">Ver inscripciones (Supabase)</a>
+      <a class="btn btn-ghost" href="/">Volver al inicio</a>
+    </div>
+  </main>
+</body>
+</html>
