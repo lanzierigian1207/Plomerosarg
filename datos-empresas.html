@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Datos de Empresas | Plomeros ARG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --blue-900: #052a61;
+      --blue-700: #0c4da2;
+      --ink: #0f1d2f;
+      --muted: #516078;
+      --stroke: #d7e2f3;
+      --paper: #ffffff;
+      --shadow: 0 20px 36px rgba(5, 42, 97, 0.18);
+      --max: 1160px;
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+    }
+
+    body {
+      font-family: "Manrope", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(950px 420px at -10% -15%, #b9d1ff 0%, transparent 65%),
+        radial-gradient(720px 420px at 105% 5%, #d6e8ff 0%, transparent 62%),
+        #f6faff;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: min(var(--max), calc(100% - 2rem));
+      margin-inline: auto;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(255, 255, 255, 0.95);
+      border-bottom: 1px solid rgba(12, 77, 162, 0.12);
+      backdrop-filter: blur(8px);
+    }
+
+    .header-inner {
+      min-height: 78px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.8rem;
+      color: var(--blue-900);
+      text-decoration: none;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #ffffff;
+      border: 1px solid #cfe0f6;
+      box-shadow: 0 12px 24px rgba(13, 99, 207, 0.22);
+    }
+
+    .brand-badge img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .nav-btn {
+      text-decoration: none;
+      padding: 0.58rem 1rem;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(135deg, var(--blue-700), #0e6de2);
+      box-shadow: 0 10px 18px rgba(12, 77, 162, 0.35);
+    }
+
+    .companies {
+      padding: 2.4rem 0 3rem;
+    }
+
+    .companies-hero {
+      background: linear-gradient(150deg, rgba(255, 255, 255, 0.98), rgba(232, 243, 255, 0.96));
+      border: 1px solid var(--stroke);
+      border-radius: calc(var(--radius) + 2px);
+      box-shadow: var(--shadow);
+      padding: clamp(1.2rem, 2.5vw, 1.9rem);
+      margin-bottom: 1rem;
+    }
+
+    .companies-hero h1 {
+      font-family: "Bebas Neue", sans-serif;
+      color: var(--blue-900);
+      letter-spacing: 0.05em;
+      font-size: clamp(2rem, 4.8vw, 3.3rem);
+      line-height: 0.95;
+      text-transform: uppercase;
+      margin-bottom: 0.65rem;
+    }
+
+    .companies-hero p {
+      color: var(--muted);
+    }
+
+    .companies-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.85rem;
+    }
+
+    .company-card {
+      border: 1px solid var(--stroke);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #ffffff, #f4f9ff);
+      box-shadow: 0 12px 24px rgba(12, 77, 162, 0.12);
+      padding: 1.1rem;
+      min-height: 178px;
+    }
+
+    .company-card h2 {
+      font-size: 1.35rem;
+      color: var(--blue-900);
+      margin-bottom: 0.55rem;
+      letter-spacing: 0.01em;
+      text-transform: uppercase;
+    }
+
+    .company-card p,
+    .company-card a {
+      display: block;
+      color: #214367;
+      text-decoration: none;
+      margin-bottom: 0.2rem;
+      word-break: break-word;
+    }
+
+    .company-card a:hover {
+      color: var(--blue-700);
+      text-decoration: underline;
+    }
+
+    .muted {
+      color: #6f839d;
+    }
+
+    @media (max-width: 980px) {
+      .companies-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .companies-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .brand span:last-child {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="https://www.plomerosarg.com/">
+        <span class="brand-badge">
+          <img src="/Prueba_2/assets/logo-plomeros-circular.png" alt="Logo Plomeros ARG">
+        </span>
+        <span>PLOMEROS ARG</span>
+      </a>
+      <a class="nav-btn" href="https://www.plomerosarg.com/">Volver al inicio</a>
+    </div>
+  </header>
+
+  <main class="companies">
+    <div class="container">
+      <section class="companies-hero">
+        <h1>Datos de Empresas</h1>
+        <p>Listado inicial de empresas y contactos. Luego agregamos el contenido extra que me indiques.</p>
+      </section>
+
+      <section class="companies-grid" aria-label="Empresas y contactos">
+        <article class="company-card">
+          <h2>EGEO</h2>
+          <a href="https://wa.me/5491153145450" target="_blank" rel="noopener noreferrer">WhatsApp 11-5314-5450</a>
+          <a href="https://instagram.com/egeo.arg" target="_blank" rel="noopener noreferrer">@egeo.arg</a>
+          <a href="http://www.egeo.com.ar" target="_blank" rel="noopener noreferrer">http://www.egeo.com.ar</a>
+        </article>
+
+        <article class="company-card">
+          <h2>RAO</h2>
+          <p class="muted">.</p>
+          <a href="https://instagram.com/raosolucionessanitarias" target="_blank" rel="noopener noreferrer">@raosolucionessanitarias</a>
+          <a href="http://www.raosrl.com" target="_blank" rel="noopener noreferrer">http://www.raosrl.com</a>
+        </article>
+
+        <article class="company-card">
+          <h2>DUKE</h2>
+          <a href="https://wa.me/5491168951878" target="_blank" rel="noopener noreferrer">WhatsApp 1168951878</a>
+          <a href="https://instagram.com/duke.argentina" target="_blank" rel="noopener noreferrer">@duke.argentina</a>
+          <a href="http://www.dukeargentina.com" target="_blank" rel="noopener noreferrer">http://www.dukeargentina.com</a>
+        </article>
+
+        <article class="company-card">
+          <h2>PLUVIUS</h2>
+          <a href="https://wa.me/5491164818307" target="_blank" rel="noopener noreferrer">WhatsApp 1164818307</a>
+          <a href="https://wa.me/5491130005954" target="_blank" rel="noopener noreferrer">WhatsApp 1130005954</a>
+          <a href="https://www.pluvius.com.ar" target="_blank" rel="noopener noreferrer">www.pluvius.com.ar</a>
+        </article>
+
+        <article class="company-card">
+          <h2>PIAZZA</h2>
+          <a href="https://wa.me/5491145645913" target="_blank" rel="noopener noreferrer">WhatsApp 1145645913</a>
+          <p class="muted">.</p>
+          <a href="https://www.piazzagriferia.com" target="_blank" rel="noopener noreferrer">www.piazzagriferia.com</a>
+        </article>
+
+        <article class="company-card">
+          <h2>KREWEN</h2>
+          <a href="https://wa.me/5491155895508" target="_blank" rel="noopener noreferrer">WhatsApp 1155895508</a>
+          <a href="mailto:lucas@krewen.com">lucas@krewen.com</a>
+          <a href="https://instagram.com/somoskrewen" target="_blank" rel="noopener noreferrer">@somoskrewen</a>
+        </article>
+
+        <article class="company-card">
+          <h2>CHICOTE</h2>
+          <a href="https://wa.me/5491151230915" target="_blank" rel="noopener noreferrer">WhatsApp 11 5123-0915</a>
+          <a href="mailto:consultas@chicotesa.com.ar">consultas@chicotesa.com.ar</a>
+          <a href="https://www.chicotesa.com.ar" target="_blank" rel="noopener noreferrer">www.chicotesa.com.ar</a>
+        </article>
+
+        <article class="company-card">
+          <h2>WATERPLAST</h2>
+          <p>Proximamente</p>
+          <p>Proximamente</p>
+          <p>Proximamente</p>
+        </article>
+
+        <article class="company-card">
+          <h2>VASSER</h2>
+          <p>Proximamente</p>
+          <p>Proximamente</p>
+          <p>Proximamente</p>
+        </article>
+
+        <article class="company-card">
+          <h2>PARSECS</h2>
+          <a href="https://wa.me/5491126657004" target="_blank" rel="noopener noreferrer">WhatsApp 1126657004</a>
+          <a href="mailto:info@adhesivosparsecs.com.ar">Info@adhesivosparsecs.com.ar</a>
+          <p class="muted">.</p>
+        </article>
+
+        <article class="company-card">
+          <h2>BTM</h2>
+          <p>Proximamente</p>
+          <p>Proximamente</p>
+          <p>Proximamente</p>
+        </article>
+
+        <article class="company-card">
+          <h2>DINATECNICA</h2>
+          <p>Proximamente</p>
+          <p>Proximamente</p>
+          <p>Proximamente</p>
+        </article>
+
+        <article class="company-card">
+          <h2>REDECO</h2>
+          <p class="muted">.</p>
+          <a href="mailto:info@sefinpol.com">info@sefinpol.com</a>
+          <p class="muted">.</p>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
