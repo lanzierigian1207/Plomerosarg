@@ -135,10 +135,45 @@
       box-shadow: 0 12px 24px rgba(12, 77, 162, 0.12);
       padding: 1.1rem;
       min-height: 178px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .company-logo {
+      flex: 0 0 clamp(86px, 14vw, 112px);
+      height: 82px;
+      border: 1px solid #d0dff4;
+      border-radius: 10px;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem;
+      overflow: hidden;
+    }
+
+    .company-logo.dark {
+      background: linear-gradient(160deg, #0d4fa9, #07316e);
+      border-color: #0f458f;
+    }
+
+    .company-logo img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .company-content {
+      flex: 1;
+      min-width: 0;
     }
 
     .company-card h2 {
-      font-size: 1.35rem;
+      font-size: 1.3rem;
       color: var(--blue-900);
       margin-bottom: 0.55rem;
       letter-spacing: 0.01em;
@@ -174,6 +209,21 @@
         grid-template-columns: 1fr;
       }
 
+      .company-card {
+        padding: 0.95rem;
+        gap: 0.75rem;
+        min-height: 0;
+      }
+
+      .company-logo {
+        flex-basis: 80px;
+        height: 72px;
+      }
+
+      .company-card h2 {
+        font-size: 1.12rem;
+      }
+
       .brand span:last-child {
         display: none;
       }
@@ -202,94 +252,159 @@
 
       <section class="companies-grid" aria-label="Empresas y contactos">
         <article class="company-card">
-          <h2>EGEO</h2>
-          <a href="https://wa.me/5491153145450" target="_blank" rel="noopener noreferrer">WhatsApp 11-5314-5450</a>
-          <a href="https://instagram.com/egeo.arg" target="_blank" rel="noopener noreferrer">@egeo.arg</a>
-          <a href="http://www.egeo.com.ar" target="_blank" rel="noopener noreferrer">http://www.egeo.com.ar</a>
+          <div class="company-logo">
+            <img src="/Prueba_2/assets/empresas/logo-egeo.png" alt="Logo EGEO">
+          </div>
+          <div class="company-content">
+            <h2>EGEO</h2>
+            <a href="https://wa.me/5491153145450" target="_blank" rel="noopener noreferrer">WhatsApp 11-5314-5450</a>
+            <a href="https://instagram.com/egeo.arg" target="_blank" rel="noopener noreferrer">@egeo.arg</a>
+            <a href="http://www.egeo.com.ar" target="_blank" rel="noopener noreferrer">http://www.egeo.com.ar</a>
+          </div>
         </article>
 
         <article class="company-card">
-          <h2>RAO</h2>
-          <p class="muted">.</p>
-          <a href="https://instagram.com/raosolucionessanitarias" target="_blank" rel="noopener noreferrer">@raosolucionessanitarias</a>
-          <a href="http://www.raosrl.com" target="_blank" rel="noopener noreferrer">http://www.raosrl.com</a>
+          <div class="company-logo">
+            <img src="/Prueba_2/assets/empresas/logo-rao.jpg" alt="Logo RAO">
+          </div>
+          <div class="company-content">
+            <h2>RAO</h2>
+            <p class="muted">.</p>
+            <a href="https://instagram.com/raosolucionessanitarias" target="_blank" rel="noopener noreferrer">@raosolucionessanitarias</a>
+            <a href="http://www.raosrl.com" target="_blank" rel="noopener noreferrer">http://www.raosrl.com</a>
+          </div>
         </article>
 
         <article class="company-card">
-          <h2>DUKE</h2>
-          <a href="https://wa.me/5491168951878" target="_blank" rel="noopener noreferrer">WhatsApp 1168951878</a>
-          <a href="https://instagram.com/duke.argentina" target="_blank" rel="noopener noreferrer">@duke.argentina</a>
-          <a href="http://www.dukeargentina.com" target="_blank" rel="noopener noreferrer">http://www.dukeargentina.com</a>
+          <div class="company-logo">
+            <img src="/Prueba_2/assets/empresas/logo-duke.png" alt="Logo DUKE">
+          </div>
+          <div class="company-content">
+            <h2>DUKE</h2>
+            <a href="https://wa.me/5491168951878" target="_blank" rel="noopener noreferrer">WhatsApp 1168951878</a>
+            <a href="https://instagram.com/duke.argentina" target="_blank" rel="noopener noreferrer">@duke.argentina</a>
+            <a href="http://www.dukeargentina.com" target="_blank" rel="noopener noreferrer">http://www.dukeargentina.com</a>
+          </div>
         </article>
 
         <article class="company-card">
-          <h2>PLUVIUS</h2>
-          <a href="https://wa.me/5491164818307" target="_blank" rel="noopener noreferrer">WhatsApp 1164818307</a>
-          <a href="https://wa.me/5491130005954" target="_blank" rel="noopener noreferrer">WhatsApp 1130005954</a>
-          <a href="https://www.pluvius.com.ar" target="_blank" rel="noopener noreferrer">www.pluvius.com.ar</a>
+          <div class="company-logo dark">
+            <img src="/Prueba_2/assets/empresas/logo-pluvius.svg" alt="Logo PLUVIUS">
+          </div>
+          <div class="company-content">
+            <h2>PLUVIUS</h2>
+            <a href="https://wa.me/5491164818307" target="_blank" rel="noopener noreferrer">WhatsApp 1164818307</a>
+            <a href="https://wa.me/5491130005954" target="_blank" rel="noopener noreferrer">WhatsApp 1130005954</a>
+            <a href="https://www.pluvius.com.ar" target="_blank" rel="noopener noreferrer">www.pluvius.com.ar</a>
+          </div>
         </article>
 
         <article class="company-card">
-          <h2>PIAZZA</h2>
-          <a href="https://wa.me/5491145645913" target="_blank" rel="noopener noreferrer">WhatsApp 1145645913</a>
-          <p class="muted">.</p>
-          <a href="https://www.piazzagriferia.com" target="_blank" rel="noopener noreferrer">www.piazzagriferia.com</a>
+          <div class="company-logo">
+            <img src="/Prueba_2/assets/empresas/logo-piazza.png" alt="Logo PIAZZA">
+          </div>
+          <div class="company-content">
+            <h2>PIAZZA</h2>
+            <a href="https://wa.me/5491145645913" target="_blank" rel="noopener noreferrer">WhatsApp 1145645913</a>
+            <p class="muted">.</p>
+            <a href="https://www.piazzagriferia.com" target="_blank" rel="noopener noreferrer">www.piazzagriferia.com</a>
+          </div>
         </article>
 
         <article class="company-card">
-          <h2>KREWEN</h2>
-          <a href="https://wa.me/5491155895508" target="_blank" rel="noopener noreferrer">WhatsApp 1155895508</a>
-          <a href="mailto:lucas@krewen.com">lucas@krewen.com</a>
-          <a href="https://instagram.com/somoskrewen" target="_blank" rel="noopener noreferrer">@somoskrewen</a>
+          <div class="company-logo">
+            <img src="/Prueba_2/assets/empresas/logo-krewen.jpg" alt="Logo KREWEN">
+          </div>
+          <div class="company-content">
+            <h2>KREWEN</h2>
+            <a href="https://wa.me/5491155895508" target="_blank" rel="noopener noreferrer">WhatsApp 1155895508</a>
+            <a href="mailto:lucas@krewen.com">lucas@krewen.com</a>
+            <a href="https://instagram.com/somoskrewen" target="_blank" rel="noopener noreferrer">@somoskrewen</a>
+          </div>
         </article>
 
         <article class="company-card">
-          <h2>CHICOTE</h2>
-          <a href="https://wa.me/5491151230915" target="_blank" rel="noopener noreferrer">WhatsApp 11 5123-0915</a>
-          <a href="mailto:consultas@chicotesa.com.ar">consultas@chicotesa.com.ar</a>
-          <a href="https://www.chicotesa.com.ar" target="_blank" rel="noopener noreferrer">www.chicotesa.com.ar</a>
+          <div class="company-logo">
+            <img src="/Prueba_2/assets/empresas/logo-chicote.png" alt="Logo CHICOTE">
+          </div>
+          <div class="company-content">
+            <h2>CHICOTE</h2>
+            <a href="https://wa.me/5491151230915" target="_blank" rel="noopener noreferrer">WhatsApp 11 5123-0915</a>
+            <a href="mailto:consultas@chicotesa.com.ar">consultas@chicotesa.com.ar</a>
+            <a href="https://www.chicotesa.com.ar" target="_blank" rel="noopener noreferrer">www.chicotesa.com.ar</a>
+          </div>
         </article>
 
         <article class="company-card">
-          <h2>WATERPLAST</h2>
-          <p>Proximamente</p>
-          <p>Proximamente</p>
-          <p>Proximamente</p>
+          <div class="company-logo dark">
+            <img src="/Prueba_2/assets/empresas/logo-waterplast.svg" alt="Logo WATERPLAST">
+          </div>
+          <div class="company-content">
+            <h2>WATERPLAST</h2>
+            <p>Proximamente</p>
+            <p>Proximamente</p>
+            <p>Proximamente</p>
+          </div>
         </article>
 
         <article class="company-card">
-          <h2>VASSER</h2>
-          <p>Proximamente</p>
-          <p>Proximamente</p>
-          <p>Proximamente</p>
+          <div class="company-logo">
+            <img src="/Prueba_2/assets/empresas/logo-vasser.svg" alt="Logo VASSER">
+          </div>
+          <div class="company-content">
+            <h2>VASSER</h2>
+            <p>Proximamente</p>
+            <p>Proximamente</p>
+            <p>Proximamente</p>
+          </div>
         </article>
 
         <article class="company-card">
-          <h2>PARSECS</h2>
-          <a href="https://wa.me/5491126657004" target="_blank" rel="noopener noreferrer">WhatsApp 1126657004</a>
-          <a href="mailto:info@adhesivosparsecs.com.ar">Info@adhesivosparsecs.com.ar</a>
-          <p class="muted">.</p>
+          <div class="company-logo">
+            <img src="/Prueba_2/assets/empresas/logo-parsecs.svg" alt="Logo PARSECS">
+          </div>
+          <div class="company-content">
+            <h2>PARSECS</h2>
+            <a href="https://wa.me/5491126657004" target="_blank" rel="noopener noreferrer">WhatsApp 1126657004</a>
+            <a href="mailto:info@adhesivosparsecs.com.ar">Info@adhesivosparsecs.com.ar</a>
+            <p class="muted">.</p>
+          </div>
         </article>
 
         <article class="company-card">
-          <h2>BTM</h2>
-          <p>Proximamente</p>
-          <p>Proximamente</p>
-          <p>Proximamente</p>
+          <div class="company-logo">
+            <img src="/Prueba_2/assets/logo-plomeros-circular.png" alt="Logo BTM">
+          </div>
+          <div class="company-content">
+            <h2>BTM</h2>
+            <p>Proximamente</p>
+            <p>Proximamente</p>
+            <p>Proximamente</p>
+          </div>
         </article>
 
         <article class="company-card">
-          <h2>DINATECNICA</h2>
-          <p>Proximamente</p>
-          <p>Proximamente</p>
-          <p>Proximamente</p>
+          <div class="company-logo">
+            <img src="/Prueba_2/assets/empresas/logo-dinatecnica.png" alt="Logo DINATECNICA">
+          </div>
+          <div class="company-content">
+            <h2>DINATECNICA</h2>
+            <p>Proximamente</p>
+            <p>Proximamente</p>
+            <p>Proximamente</p>
+          </div>
         </article>
 
         <article class="company-card">
-          <h2>REDECO</h2>
-          <p class="muted">.</p>
-          <a href="mailto:info@sefinpol.com">info@sefinpol.com</a>
-          <p class="muted">.</p>
+          <div class="company-logo">
+            <img src="/Prueba_2/assets/empresas/logo-redeco.png" alt="Logo REDECO">
+          </div>
+          <div class="company-content">
+            <h2>REDECO</h2>
+            <p class="muted">.</p>
+            <a href="mailto:info@sefinpol.com">info@sefinpol.com</a>
+            <p class="muted">.</p>
+          </div>
         </article>
       </section>
     </div>
