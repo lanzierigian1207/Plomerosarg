@@ -213,6 +213,18 @@
       background-position: center;
     }
 
+    .group-logo-bg {
+      background-image: url("/Prueba_2/assets/logo-plomeros-circular.png");
+      background-repeat: no-repeat;
+      background-size: min(72%, 240px);
+      background-position: center;
+      background-color: #0c3f8e;
+    }
+
+    .group-card.has-photo.group-logo-bg::before {
+      background: linear-gradient(105deg, rgba(9, 32, 61, 0.82) 0%, rgba(9, 32, 61, 0.58) 52%, rgba(9, 32, 61, 0.34) 100%);
+    }
+
     .group-card.has-photo::before {
       content: "";
       position: absolute;
@@ -347,24 +359,21 @@
       </section>
 
       <section class="groups-grid" aria-label="Listado de grupos de WhatsApp">
-        <article class="group-card group-card-logo">
+        <article class="group-card has-photo group-logo-bg">
           <div>
             <h2>Grupo Consulta de Trabajos</h2>
-            <img class="card-center-logo" src="/Prueba_2/assets/logo-plomeros-circular.png" alt="Logo Plomeros ARG">
             <a href="https://chat.whatsapp.com/BzEgD0LNmzq8Ez34QljvDI" target="_blank" rel="noopener noreferrer">Click aca</a>
           </div>
         </article>
-        <article class="group-card group-card-logo">
+        <article class="group-card has-photo group-caba">
           <div>
             <h2>Grupo Consulta de Trabajos CABA</h2>
-            <img class="card-center-logo" src="/Prueba_2/assets/logo-plomeros-circular.png" alt="Logo Plomeros ARG">
             <a href="https://chat.whatsapp.com/KpndWssH5VU2rC2Wwm9HSi" target="_blank" rel="noopener noreferrer">Click aca</a>
           </div>
         </article>
-        <article class="group-card group-card-logo">
+        <article class="group-card has-photo group-cordoba">
           <div>
             <h2>Grupo Capacitaciones 1</h2>
-            <img class="card-center-logo" src="/Prueba_2/assets/logo-plomeros-circular.png" alt="Logo Plomeros ARG">
             <a href="https://chat.whatsapp.com/FDny0SGJoi5GQsotZevSiC" target="_blank" rel="noopener noreferrer">Click aca</a>
           </div>
         </article>
