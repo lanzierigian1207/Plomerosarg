@@ -167,6 +167,18 @@
       display: block;
     }
 
+    .company-logo.placeholder {
+      background: linear-gradient(165deg, #edf4ff, #dceafe);
+      border-color: #bfd5f2;
+    }
+
+    .company-logo.placeholder span {
+      color: var(--blue-900);
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: 0.12em;
+    }
+
     .company-content {
       flex: 1;
       min-width: 0;
@@ -372,8 +384,8 @@
         </article>
 
         <article class="company-card">
-          <div class="company-logo">
-            <img src="/Prueba_2/assets/logo-plomeros-circular.png" alt="Logo BTM">
+          <div class="company-logo placeholder" aria-hidden="true">
+            <span>BTM</span>
           </div>
           <div class="company-content">
             <h2>BTM</h2>
