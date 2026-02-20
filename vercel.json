@@ -1,8 +1,19 @@
 {
   "rewrites": [
-    {
-      "source": "/admin/:path*",
-      "destination": "/api/admin"
-    }
+    { "source": "/Prueba_2/whatsapp.html", "destination": "/whatsapp.html" },
+    { "source": "/pagina_nueva.html", "destination": "/Prueba_2/pagina_nueva.html" },
+    { "source": "/encuentros.html", "destination": "/Prueba_2/encuentros.html" },
+    { "source": "/contacto-empresas.html", "destination": "/Prueba_2/contacto-empresas.html" },
+
+    { "source": "/inscripcion.html", "destination": "/Prueba_2/inscripcion.html" },
+    { "source": "/inscripcion-bahia-blanca.html", "destination": "/Prueba_2/inscripcion-bahia-blanca.html" },
+    { "source": "/inscripcion-mar-del-plata.html", "destination": "/Prueba_2/inscripcion-mar-del-plata.html" },
+    { "source": "/inscripcion-mendoza.html", "destination": "/Prueba_2/inscripcion-mendoza.html" },
+    { "source": "/inscripcion-salta.html", "destination": "/Prueba_2/inscripcion-salta.html" },
+    { "source": "/inscripcion-san-luis.html", "destination": "/Prueba_2/inscripcion-san-luis.html" },
+
+    { "source": "/guardar_inscripcion.php", "destination": "/Prueba_2/guardar_inscripcion.php" },
+    { "source": "/guardar_encuesta.php", "destination": "/Prueba_2/guardar_encuesta.php" },
+    { "source": "/assets/(.*)", "destination": "/Prueba_2/assets/$1" }
   ]
 }
