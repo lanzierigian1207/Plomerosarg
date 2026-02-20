@@ -110,6 +110,13 @@
       margin-bottom: 1rem;
     }
 
+    .groups-hero-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
     .groups-hero h1 {
       font-family: "Bebas Neue", sans-serif;
       color: var(--blue-900);
@@ -120,6 +127,15 @@
       text-decoration: underline;
       text-decoration-thickness: 3px;
       text-underline-offset: 7px;
+    }
+
+    .hero-circle-logo {
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex: 0 0 auto;
+      filter: drop-shadow(0 4px 10px rgba(10, 63, 134, 0.3));
     }
 
     .groups-hero p {
@@ -179,6 +195,16 @@
     .group-card a:hover {
       color: var(--blue-700);
       border-bottom-color: var(--blue-700);
+    }
+
+    .group-card-logo .card-center-logo {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+      margin: 0.35rem auto 0.55rem;
+      filter: drop-shadow(0 4px 10px rgba(10, 63, 134, 0.3));
     }
 
     .group-card.has-photo {
@@ -274,6 +300,15 @@
         min-height: 70px;
       }
 
+      .groups-hero-head {
+        align-items: flex-start;
+      }
+
+      .hero-circle-logo {
+        width: 62px;
+        height: 62px;
+      }
+
       .brand span:last-child {
         display: none;
       }
@@ -304,26 +339,32 @@
   <main class="groups">
     <div class="container">
       <section class="groups-hero">
-        <h1>Grupos de Plomeros Sanitaristas Argentinos</h1>
+        <div class="groups-hero-head">
+          <h1>Grupos de Plomeros Sanitaristas Argentinos</h1>
+          <img class="hero-circle-logo" src="/Prueba_2/assets/logo-plomeros-circular.png" alt="Logo Plomeros ARG">
+        </div>
         <p>Sumate al grupo que te corresponda para consultas de trabajos, capacitaciones y novedades por zona.</p>
       </section>
 
       <section class="groups-grid" aria-label="Listado de grupos de WhatsApp">
-        <article class="group-card">
+        <article class="group-card group-card-logo">
           <div>
             <h2>Grupo Consulta de Trabajos</h2>
+            <img class="card-center-logo" src="/Prueba_2/assets/logo-plomeros-circular.png" alt="Logo Plomeros ARG">
             <a href="https://chat.whatsapp.com/BzEgD0LNmzq8Ez34QljvDI" target="_blank" rel="noopener noreferrer">Click aca</a>
           </div>
         </article>
-        <article class="group-card">
+        <article class="group-card group-card-logo">
           <div>
             <h2>Grupo Consulta de Trabajos CABA</h2>
+            <img class="card-center-logo" src="/Prueba_2/assets/logo-plomeros-circular.png" alt="Logo Plomeros ARG">
             <a href="https://chat.whatsapp.com/KpndWssH5VU2rC2Wwm9HSi" target="_blank" rel="noopener noreferrer">Click aca</a>
           </div>
         </article>
-        <article class="group-card">
+        <article class="group-card group-card-logo">
           <div>
             <h2>Grupo Capacitaciones 1</h2>
+            <img class="card-center-logo" src="/Prueba_2/assets/logo-plomeros-circular.png" alt="Logo Plomeros ARG">
             <a href="https://chat.whatsapp.com/FDny0SGJoi5GQsotZevSiC" target="_blank" rel="noopener noreferrer">Click aca</a>
           </div>
         </article>
