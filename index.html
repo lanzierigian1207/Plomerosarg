@@ -489,6 +489,21 @@
       inset: 0;
       opacity: 0;
       transition: opacity 0.8s ease;
+      background: #031b42;
+    }
+
+    .gallery-slide::after {
+      content: "";
+      position: absolute;
+      inset: -6%;
+      background-image: var(--slide-image);
+      background-size: cover;
+      background-position: center;
+      filter: blur(22px) saturate(1.08);
+      transform: scale(1.06);
+      opacity: 0.58;
+      z-index: 0;
+      pointer-events: none;
     }
 
     .gallery-slide.active {
@@ -511,6 +526,12 @@
 
     .gallery-slide.placeholder::before {
       content: "Subi imagenes en /Prueba_2/assets";
+      position: relative;
+      z-index: 1;
+    }
+
+    .gallery-slide.placeholder::after {
+      display: none;
     }
 
     .gallery-slide img {
@@ -518,7 +539,9 @@
       height: 100%;
       object-fit: contain;
       display: block;
-      background: #031b42;
+      background: transparent;
+      position: relative;
+      z-index: 1;
     }
 
     .gallery-dots {
@@ -920,21 +943,21 @@
       <div class="container">
         <div class="gallery-slider" id="gallerySlider" aria-label="Galer&iacute;a de encuentros Plomeros ARG">
           <div class="gallery-slide active"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.53%20PM%20%281%29.jpeg" alt="Encuentro Plomeros ARG 1" loading="lazy"></div>
-          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.53%20PM.jpeg" alt="Encuentro Plomeros ARG 2" loading="lazy"></div>
-          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.54%20PM%20%281%29.jpeg" alt="Encuentro Plomeros ARG 3" loading="lazy"></div>
-          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.54%20PM%20%282%29.jpeg" alt="Encuentro Plomeros ARG 4" loading="lazy"></div>
-          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.54%20PM.jpeg" alt="Encuentro Plomeros ARG 5" loading="lazy"></div>
-          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.55%20PM.jpeg" alt="Encuentro Plomeros ARG 6" loading="lazy"></div>
-          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.56%20PM%20%281%29.jpeg" alt="Encuentro Plomeros ARG 7" loading="lazy"></div>
-          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.56%20PM%20%282%29.jpeg" alt="Encuentro Plomeros ARG 8" loading="lazy"></div>
-          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.56%20PM.jpeg" alt="Encuentro Plomeros ARG 9" loading="lazy"></div>
-          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.36.58%20PM.jpeg" alt="Encuentro Plomeros ARG 10" loading="lazy"></div>
-          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.36.57%20PM%20%281%29.jpeg" alt="Encuentro Plomeros ARG 11" loading="lazy"></div>
-          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.36.39%20PM.jpeg" alt="Encuentro Plomeros ARG 12" loading="lazy"></div>
-          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.36.57%20PM.jpeg" alt="Encuentro Plomeros ARG 13" loading="lazy"></div>
-          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.36.55%20PM.jpeg" alt="Encuentro Plomeros ARG 14" loading="lazy"></div>
-          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.36.54%20PM%20%281%29.jpeg" alt="Encuentro Plomeros ARG 15" loading="lazy"></div>
-          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.36.54%20PM.jpeg" alt="Encuentro Plomeros ARG 16" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.36.58%20PM.jpeg" alt="Encuentro Plomeros ARG 2" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.53%20PM.jpeg" alt="Encuentro Plomeros ARG 3" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.36.57%20PM%20%281%29.jpeg" alt="Encuentro Plomeros ARG 4" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.54%20PM%20%281%29.jpeg" alt="Encuentro Plomeros ARG 5" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.36.39%20PM.jpeg" alt="Encuentro Plomeros ARG 6" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.54%20PM%20%282%29.jpeg" alt="Encuentro Plomeros ARG 7" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.36.57%20PM.jpeg" alt="Encuentro Plomeros ARG 8" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.54%20PM.jpeg" alt="Encuentro Plomeros ARG 9" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.36.55%20PM.jpeg" alt="Encuentro Plomeros ARG 10" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.55%20PM.jpeg" alt="Encuentro Plomeros ARG 11" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.36.54%20PM%20%281%29.jpeg" alt="Encuentro Plomeros ARG 12" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.56%20PM%20%281%29.jpeg" alt="Encuentro Plomeros ARG 13" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.36.54%20PM.jpeg" alt="Encuentro Plomeros ARG 14" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.56%20PM%20%282%29.jpeg" alt="Encuentro Plomeros ARG 15" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.56%20PM.jpeg" alt="Encuentro Plomeros ARG 16" loading="lazy"></div>
           <div class="gallery-dots" id="galleryDots"></div>
         </div>
       </div>
@@ -1063,7 +1086,21 @@
           return;
         }
 
+        const setSlideBackground = () => {
+          const imageSrc = image.currentSrc || image.getAttribute("src");
+          if (imageSrc) {
+            slide.style.setProperty("--slide-image", `url("${imageSrc}")`);
+          }
+        };
+
+        if (image.complete && image.naturalWidth > 0) {
+          setSlideBackground();
+        } else {
+          image.addEventListener("load", setSlideBackground, { once: true });
+        }
+
         image.addEventListener("error", () => {
+          slide.style.removeProperty("--slide-image");
           image.remove();
           slide.classList.add("placeholder");
         }, { once: true });
