@@ -1077,41 +1077,17 @@
     const galleryDots = document.getElementById("galleryDots");
 
     if (gallerySlider) {
-      const slides = Array.from(gallerySlider.querySelectorAll(".gallery-slide"));
-
-      slides.forEach((slide) => {
-        const image = slide.querySelector("img");
-
-        if (!image) {
-          return;
-        }
-
-        const setSlideBackground = () => {
-          const imageSrc = image.currentSrc || image.getAttribute("src");
-          if (imageSrc) {
-            slide.style.setProperty("--slide-image", `url("${imageSrc}")`);
-          }
-        };
-
-        if (image.complete && image.naturalWidth > 0) {
-          setSlideBackground();
-        } else {
-          image.addEventListener("load", setSlideBackground, { once: true });
-        }
-
-        image.addEventListener("error", () => {
-          slide.style.removeProperty("--slide-image");
-          image.remove();
-          slide.classList.add("placeholder");
-        }, { once: true });
-      });
-
+      let slides = Array.from(gallerySlider.querySelectorAll(".gallery-slide"));
       const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       let currentIndex = 0;
       let autoplayId = null;
 
       const setActiveSlide = (nextIndex) => {
-        currentIndex = nextIndex;
+        if (!slides.length) {
+          return;
+        }
+
+        currentIndex = ((nextIndex % slides.length) + slides.length) % slides.length;
 
         slides.forEach((slide, index) => {
           slide.classList.toggle("active", index === currentIndex);
@@ -1143,7 +1119,13 @@
         }, 3000);
       };
 
-      if (galleryDots) {
+      const rebuildDots = () => {
+        if (!galleryDots) {
+          return;
+        }
+
+        galleryDots.innerHTML = "";
+
         slides.forEach((_, index) => {
           const dot = document.createElement("button");
           dot.type = "button";
@@ -1157,15 +1139,67 @@
 
           galleryDots.appendChild(dot);
         });
-      }
+      };
 
-      gallerySlider.addEventListener("mouseenter", stopAutoplay);
-      gallerySlider.addEventListener("mouseleave", startAutoplay);
-      gallerySlider.addEventListener("focusin", stopAutoplay);
-      gallerySlider.addEventListener("focusout", startAutoplay);
+      const prepareSlide = (slide) => new Promise((resolve) => {
+        const image = slide.querySelector("img");
 
-      setActiveSlide(0);
-      startAutoplay();
+        if (!image) {
+          slide.remove();
+          resolve(false);
+          return;
+        }
+
+        const setSlideBackground = () => {
+          const imageSrc = image.currentSrc || image.getAttribute("src");
+          if (imageSrc) {
+            slide.style.setProperty("--slide-image", `url("${imageSrc}")`);
+          }
+        };
+
+        const removeSlide = () => {
+          slide.remove();
+          resolve(false);
+        };
+
+        if (image.complete) {
+          if (image.naturalWidth > 0) {
+            setSlideBackground();
+            resolve(true);
+          } else {
+            removeSlide();
+          }
+          return;
+        }
+
+        image.addEventListener("load", () => {
+          setSlideBackground();
+          resolve(true);
+        }, { once: true });
+
+        image.addEventListener("error", removeSlide, { once: true });
+      });
+
+      Promise.all(slides.map((slide) => prepareSlide(slide))).then(() => {
+        slides = Array.from(gallerySlider.querySelectorAll(".gallery-slide"));
+
+        if (!slides.length) {
+          if (galleryDots) {
+            galleryDots.innerHTML = "";
+          }
+          return;
+        }
+
+        rebuildDots();
+
+        gallerySlider.addEventListener("mouseenter", stopAutoplay);
+        gallerySlider.addEventListener("mouseleave", startAutoplay);
+        gallerySlider.addEventListener("focusin", stopAutoplay);
+        gallerySlider.addEventListener("focusout", startAutoplay);
+
+        setActiveSlide(0);
+        startAutoplay();
+      });
     }
 
     year.textContent = new Date().getFullYear();
