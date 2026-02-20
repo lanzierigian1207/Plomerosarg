@@ -136,7 +136,7 @@
     }
 
     .group-card {
-      min-height: 150px;
+      min-height: 162px;
       border-radius: 12px;
       background: linear-gradient(180deg, #f9fbff, #eef4ff);
       border: 1px solid #c9daf4;
@@ -145,7 +145,14 @@
       display: grid;
       place-items: center;
       text-align: center;
+      position: relative;
+      overflow: hidden;
       transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .group-card > div {
+      position: relative;
+      z-index: 2;
     }
 
     .group-card:hover {
@@ -174,6 +181,88 @@
       border-bottom-color: var(--blue-700);
     }
 
+    .group-card.has-photo {
+      border-color: rgba(15, 47, 87, 0.35);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .group-card.has-photo::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(105deg, rgba(9, 32, 61, 0.9) 0%, rgba(9, 32, 61, 0.62) 52%, rgba(9, 32, 61, 0.38) 100%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .group-card.has-photo h2 {
+      color: #ffffff;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+    }
+
+    .group-card.has-photo a,
+    .group-card.has-photo a:hover {
+      color: #ffffff;
+      border-bottom-color: rgba(255, 255, 255, 0.85);
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+    }
+
+    .group-caba {
+      background-image: url("/Prueba_2/assets/whatsapp-caba.jpg");
+      background-position: center center;
+    }
+
+    .group-cordoba {
+      background-image: url("/Prueba_2/assets/whatsapp-cordoba.jpg");
+      background-position: center center;
+    }
+
+    .group-entre-rios {
+      background-image: url("/Prueba_2/assets/whatsapp-entre-rios.jpg");
+      background-position: center center;
+    }
+
+    .group-mar-del-plata {
+      background-image: url("/Prueba_2/assets/mar-del-plata.webp");
+      background-position: center center;
+    }
+
+    .group-mendoza {
+      background-image: url("/Prueba_2/assets/mendoza.jpg");
+      background-position: center center;
+    }
+
+    .group-rosario {
+      background-image: url("/Prueba_2/assets/whatsapp-rosario.jpg");
+      background-position: center center;
+    }
+
+    .group-salta {
+      background-image: url("/Prueba_2/assets/salta.jpg");
+      background-position: center center;
+    }
+
+    .group-san-nicolas {
+      background-image: url("/Prueba_2/assets/whatsapp-san-nicolas.jpg");
+      background-position: center center;
+    }
+
+    .group-santa-fe {
+      background-image: url("/Prueba_2/assets/whatsapp-santa-fe.jpg");
+      background-position: center center;
+    }
+
+    .group-santiago {
+      background-image: url("/Prueba_2/assets/whatsapp-santiago-del-estero.jpg");
+      background-position: center center;
+    }
+
+    .group-tucuman {
+      background-image: url("/Prueba_2/assets/whatsapp-tucuman.jpg");
+      background-position: center center;
+    }
+
     @media (max-width: 960px) {
       .groups-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -194,7 +283,7 @@
       }
 
       .group-card {
-        min-height: 125px;
+        min-height: 136px;
       }
     }
   </style>
@@ -238,67 +327,67 @@
             <a href="https://chat.whatsapp.com/FDny0SGJoi5GQsotZevSiC" target="_blank" rel="noopener noreferrer">Click aca</a>
           </div>
         </article>
-        <article class="group-card">
+        <article class="group-card has-photo group-caba">
           <div>
             <h2>Grupo CABA</h2>
             <a href="https://chat.whatsapp.com/BkushJxKUC4AoKJeJ5zP2t" target="_blank" rel="noopener noreferrer">Click aca</a>
           </div>
         </article>
-        <article class="group-card">
+        <article class="group-card has-photo group-cordoba">
           <div>
             <h2>Grupo Cordoba</h2>
             <a href="https://chat.whatsapp.com/DgMM0rD0I9TDsRRdZNtVDT" target="_blank" rel="noopener noreferrer">Click aca</a>
           </div>
         </article>
-        <article class="group-card">
+        <article class="group-card has-photo group-entre-rios">
           <div>
             <h2>Grupo Entre Rios</h2>
             <a href="https://chat.whatsapp.com/FdHg6GJyLxf8w2ixi4d6Ug" target="_blank" rel="noopener noreferrer">Click aca</a>
           </div>
         </article>
-        <article class="group-card">
+        <article class="group-card has-photo group-mar-del-plata">
           <div>
             <h2>Grupo Mar del Plata</h2>
             <a href="https://chat.whatsapp.com/JbQnGOHFcsuBEc2kgKRuBy" target="_blank" rel="noopener noreferrer">Click aca</a>
           </div>
         </article>
-        <article class="group-card">
+        <article class="group-card has-photo group-mendoza">
           <div>
             <h2>Grupo Mendoza</h2>
             <a href="https://chat.whatsapp.com/GOoRw0Fg6wUEtHNBEWZtXe" target="_blank" rel="noopener noreferrer">Click aca</a>
           </div>
         </article>
-        <article class="group-card">
+        <article class="group-card has-photo group-rosario">
           <div>
             <h2>Grupo Rosario</h2>
             <a href="https://chat.whatsapp.com/K0Vmvsp3h9WKQ5wC7BiWbb" target="_blank" rel="noopener noreferrer">Click aca</a>
           </div>
         </article>
-        <article class="group-card">
+        <article class="group-card has-photo group-salta">
           <div>
             <h2>Grupo Salta</h2>
             <a href="https://chat.whatsapp.com/B6f4WKgEuGT2jT5jZnXaH4" target="_blank" rel="noopener noreferrer">Click aca</a>
           </div>
         </article>
-        <article class="group-card">
+        <article class="group-card has-photo group-san-nicolas">
           <div>
             <h2>Grupo San Nicolas</h2>
             <a href="https://chat.whatsapp.com/LqKTlh7gbX3JJt0DevpKz5" target="_blank" rel="noopener noreferrer">Click aca</a>
           </div>
         </article>
-        <article class="group-card">
+        <article class="group-card has-photo group-santa-fe">
           <div>
             <h2>Grupo Santa Fe</h2>
             <a href="https://chat.whatsapp.com/GzMhTCyUQypJsxlleO7Mil?mode=hqrt2" target="_blank" rel="noopener noreferrer">Click aca</a>
           </div>
         </article>
-        <article class="group-card">
+        <article class="group-card has-photo group-santiago">
           <div>
             <h2>Grupo Santiago del Estero</h2>
             <a href="https://chat.whatsapp.com/I2gwcL8dIcSCtmTTrU0tHG" target="_blank" rel="noopener noreferrer">Click aca</a>
           </div>
         </article>
-        <article class="group-card">
+        <article class="group-card has-photo group-tucuman">
           <div>
             <h2>Grupo Tucuman</h2>
             <a href="https://chat.whatsapp.com/EmeQq9f9FvdJHOZVuHMiFH" target="_blank" rel="noopener noreferrer">Click aca</a>
