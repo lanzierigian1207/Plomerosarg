@@ -73,13 +73,17 @@
       width: 44px;
       height: 44px;
       border-radius: 12px;
-      display: grid;
-      place-items: center;
-      font-family: "Bebas Neue", sans-serif;
-      font-size: 1.5rem;
-      color: #fff;
-      background: linear-gradient(135deg, #0a3f86, #0d63cf);
-      box-shadow: 0 12px 24px rgba(13, 99, 207, 0.3);
+      overflow: hidden;
+      background: #ffffff;
+      border: 1px solid #cfe0f6;
+      box-shadow: 0 12px 24px rgba(13, 99, 207, 0.22);
+    }
+
+    .brand-badge img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .nav-btn {
@@ -199,7 +203,9 @@
   <header class="site-header">
     <div class="container header-inner">
       <a class="brand" href="https://www.plomerosarg.com/">
-        <span class="brand-badge">PA</span>
+        <span class="brand-badge">
+          <img src="/Prueba_2/assets/logo-plomeros-circular.png" alt="Logo Plomeros ARG">
+        </span>
         <span>PLOMEROS ARG</span>
       </a>
       <a class="nav-btn" href="https://www.plomerosarg.com/">Volver al inicio</a>
