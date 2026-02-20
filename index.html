@@ -439,13 +439,21 @@
     .overview-card .icon {
       width: 52px;
       height: 52px;
-      border-radius: 12px;
+      border-radius: 50%;
       display: grid;
       place-items: center;
       margin-bottom: 0.8rem;
-      font-weight: 800;
-      color: #fff;
-      background: linear-gradient(135deg, var(--blue-700), var(--blue-900));
+      background: #ffffff;
+      border: 1px solid #c7dbff;
+      padding: 3px;
+      box-shadow: 0 8px 16px rgba(12, 77, 162, 0.14);
+    }
+
+    .overview-card .icon img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
     }
 
     .overview-card h3 {
@@ -922,17 +930,17 @@
         </div>
         <div class="overview-grid">
           <article class="overview-card animate">
-            <div class="icon">01</div>
+            <div class="icon"><img src="/Prueba_2/assets/logo-plomeros-circular.png" alt="Logo Plomeros ARG"></div>
             <h3><a class="overview-link" href="/listado-precios.html">Listado de Precios</a></h3>
             <p>Ac&aacute; encontr&aacute;s los precios recomendados para enero de 2026.</p>
           </article>
           <article class="overview-card animate">
-            <div class="icon">02</div>
+            <div class="icon"><img src="/Prueba_2/assets/logo-plomeros-circular.png" alt="Logo Plomeros ARG"></div>
             <h3><a class="overview-link" href="/encuentros.html">Pr&oacute;ximos Encuentros</a></h3>
             <p>Ac&aacute; encontrar&aacute;s los futuros encuentros del a&ntilde;o.</p>
           </article>
           <article class="overview-card animate">
-            <div class="icon">03</div>
+            <div class="icon"><img src="/Prueba_2/assets/logo-plomeros-circular.png" alt="Logo Plomeros ARG"></div>
             <h3><a class="overview-link" href="/datos-empresas.html">Datos de Empresas</a></h3>
             <p>Calculadora de materiales, gu&iacute;a de costos sugeridos y checklist de inspecci&oacute;n para obras nuevas y remodelaciones.</p>
           </article>
