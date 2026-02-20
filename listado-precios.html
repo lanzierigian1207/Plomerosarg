@@ -121,14 +121,18 @@
       max-width: 66ch;
     }
 
-    .placeholder {
+    .prices-gallery {
       margin-top: 1rem;
-      border: 1px dashed #a7c1e4;
-      background: #f7fbff;
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .price-image {
+      width: 100%;
       border-radius: 12px;
-      padding: 0.9rem;
-      color: #33537a;
-      font-weight: 700;
+      border: 1px solid #c7daf3;
+      box-shadow: 0 14px 24px rgba(5, 42, 97, 0.16);
+      display: block;
     }
   </style>
 </head>
@@ -149,8 +153,11 @@
     <div class="container">
       <section class="panel">
         <h1>Listado de Precios</h1>
-        <p>Esta pagina ya quedo creada y conectada desde la portada. Pasame el contenido y te la termino como quieras.</p>
-        <div class="placeholder">Pendiente de contenido final</div>
+        <p>Aca encontras los precios recomendados para Enero 2026</p>
+        <div class="prices-gallery">
+          <img class="price-image" src="/Prueba_2/assets/precios-enero-1.avif" alt="Listado de precios recomendado Enero 2026 - pagina 1">
+          <img class="price-image" src="/Prueba_2/assets/precios-enero-2.avif" alt="Listado de precios recomendado Enero 2026 - pagina 2">
+        </div>
       </section>
     </div>
   </main>
