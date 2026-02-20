@@ -485,71 +485,82 @@
       color: var(--muted);
       font-size: 0.95rem;
     }
-
     .connected {
       padding: 3rem 0;
     }
 
-    .connected-box {
-      background: #012b68;
-      color: #fff;
-      border-radius: 20px;
-      box-shadow: 0 22px 36px rgba(2, 43, 104, 0.32);
-      padding: clamp(1.2rem, 2.5vw, 2rem);
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 1rem;
-      overflow: hidden;
+    .gallery-slider {
       position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      background: #012b68;
+      box-shadow: 0 22px 36px rgba(2, 43, 104, 0.32);
+      height: clamp(280px, 58vw, 620px);
+      isolation: isolate;
     }
 
-    .connected-box::before {
-      content: "";
+    .gallery-slide {
       position: absolute;
-      width: 460px;
-      height: 460px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.12), transparent 66%);
-      left: -240px;
-      top: -220px;
-      pointer-events: none;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.8s ease;
     }
 
-    .connected h3 {
-      font-family: "Bebas Neue", sans-serif;
-      letter-spacing: 0.06em;
-      font-size: clamp(2rem, 3.8vw, 3.2rem);
-      line-height: 0.92;
-      margin-bottom: 0.5rem;
+    .gallery-slide.active {
+      opacity: 1;
     }
 
-    .connected p {
-      color: rgba(255, 255, 255, 0.9);
-      max-width: 44ch;
-    }
-
-    .podcast-card {
-      background: rgba(255, 255, 255, 0.09);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 14px;
-      padding: 1rem;
+    .gallery-slide.placeholder {
       display: flex;
-      flex-direction: column;
+      align-items: center;
       justify-content: center;
-      gap: 0.6rem;
-    }
-
-    .podcast-card h4 {
-      font-size: 1.1rem;
-      margin-bottom: 0.3rem;
-    }
-
-    .podcast-card a {
-      color: #fff;
-      text-decoration: none;
+      padding: 1rem;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 0.82rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
       font-weight: 700;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.5);
-      width: fit-content;
+      background: linear-gradient(135deg, #0a3b87, #012b68);
+    }
+
+    .gallery-slide.placeholder::before {
+      content: "Imagen no disponible";
+    }
+
+    .gallery-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      background: #031b42;
+    }
+
+    .gallery-dots {
+      position: absolute;
+      left: 50%;
+      bottom: 12px;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 0.45rem;
+      padding: 0.35rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(1, 17, 44, 0.44);
+      z-index: 2;
+    }
+
+    .gallery-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      border: 0;
+      padding: 0;
+      background: rgba(255, 255, 255, 0.45);
+      cursor: pointer;
+    }
+
+    .gallery-dot.active {
+      background: #fff;
     }
 
     .news {
@@ -802,8 +813,8 @@
         transform: translateY(0);
       }
 
-      .connected-box {
-        grid-template-columns: 1fr;
+      .gallery-slider {
+        height: clamp(260px, 78vw, 520px);
       }
     }
 
@@ -823,6 +834,10 @@
       .topbar-inner {
         justify-content: center;
         text-align: center;
+      }
+
+      .gallery-slider {
+        height: clamp(260px, 94vw, 560px);
       }
     }
   </style>
@@ -918,7 +933,20 @@
       </div>
     </section>
     <section class="connected" id="institucional">
-      <div class="container"></div>
+      <div class="container">
+        <div class="gallery-slider" id="gallerySlider" aria-label="Galeria de encuentros Plomeros ARG">
+          <div class="gallery-slide active"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.53%20PM%20%281%29.jpeg" alt="Encuentro Plomeros ARG 1" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.53%20PM.jpeg" alt="Encuentro Plomeros ARG 2" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.54%20PM%20%281%29.jpeg" alt="Encuentro Plomeros ARG 3" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.54%20PM%20%282%29.jpeg" alt="Encuentro Plomeros ARG 4" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.54%20PM.jpeg" alt="Encuentro Plomeros ARG 5" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.55%20PM.jpeg" alt="Encuentro Plomeros ARG 6" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.56%20PM%20%281%29.jpeg" alt="Encuentro Plomeros ARG 7" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.56%20PM%20%282%29.jpeg" alt="Encuentro Plomeros ARG 8" loading="lazy"></div>
+          <div class="gallery-slide"><img src="/Prueba_2/assets/WhatsApp%20Image%202026-02-20%20at%2012.09.56%20PM.jpeg" alt="Encuentro Plomeros ARG 9" loading="lazy"></div>
+          <div class="gallery-dots" id="galleryDots"></div>
+        </div>
+      </div>
     </section>
 
     <section class="news" id="novedades">
@@ -1030,10 +1058,94 @@
     }, { threshold: 0.15 });
 
     animated.forEach((item) => observer.observe(item));
+
+    const gallerySlider = document.getElementById("gallerySlider");
+    const galleryDots = document.getElementById("galleryDots");
+
+    if (gallerySlider) {
+      const slides = Array.from(gallerySlider.querySelectorAll(".gallery-slide"));
+
+      slides.forEach((slide) => {
+        const image = slide.querySelector("img");
+
+        if (!image) {
+          return;
+        }
+
+        image.addEventListener("error", () => {
+          image.remove();
+          slide.classList.add("placeholder");
+        }, { once: true });
+      });
+
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let currentIndex = 0;
+      let autoplayId = null;
+
+      const setActiveSlide = (nextIndex) => {
+        currentIndex = nextIndex;
+
+        slides.forEach((slide, index) => {
+          slide.classList.toggle("active", index === currentIndex);
+        });
+
+        if (galleryDots) {
+          Array.from(galleryDots.children).forEach((dot, index) => {
+            dot.classList.toggle("active", index === currentIndex);
+          });
+        }
+      };
+
+      const stopAutoplay = () => {
+        if (autoplayId) {
+          clearInterval(autoplayId);
+          autoplayId = null;
+        }
+      };
+
+      const startAutoplay = () => {
+        if (slides.length < 2 || prefersReducedMotion) {
+          return;
+        }
+
+        stopAutoplay();
+        autoplayId = setInterval(() => {
+          const nextIndex = (currentIndex + 1) % slides.length;
+          setActiveSlide(nextIndex);
+        }, 3200);
+      };
+
+      if (galleryDots) {
+        slides.forEach((_, index) => {
+          const dot = document.createElement("button");
+          dot.type = "button";
+          dot.className = "gallery-dot";
+          dot.setAttribute("aria-label", `Ver imagen ${index + 1}`);
+
+          dot.addEventListener("click", () => {
+            setActiveSlide(index);
+            startAutoplay();
+          });
+
+          galleryDots.appendChild(dot);
+        });
+      }
+
+      gallerySlider.addEventListener("mouseenter", stopAutoplay);
+      gallerySlider.addEventListener("mouseleave", startAutoplay);
+      gallerySlider.addEventListener("focusin", stopAutoplay);
+      gallerySlider.addEventListener("focusout", startAutoplay);
+
+      setActiveSlide(0);
+      startAutoplay();
+    }
+
     year.textContent = new Date().getFullYear();
   </script>
 </body>
 </html>
+
+
 
 
 
