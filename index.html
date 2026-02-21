@@ -651,6 +651,66 @@
       border-bottom: 1px solid #9fc0ef;
     }
 
+    .contact-modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background: rgba(2, 18, 44, 0.58);
+      z-index: 250;
+    }
+
+    .contact-modal.open {
+      display: flex;
+    }
+
+    .contact-modal-card {
+      width: min(420px, 100%);
+      background: #fff;
+      border: 1px solid var(--stroke);
+      border-radius: 16px;
+      box-shadow: 0 22px 36px rgba(2, 22, 56, 0.25);
+      padding: 1.2rem 1.2rem 1rem;
+      position: relative;
+    }
+
+    .contact-modal-card h3 {
+      color: var(--blue-900);
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .contact-modal-card p {
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .contact-modal-card a {
+      color: var(--blue-700);
+      text-decoration: none;
+      font-weight: 800;
+      border-bottom: 1px solid #9fc0ef;
+    }
+
+    .contact-modal-close {
+      position: absolute;
+      top: 0.45rem;
+      right: 0.55rem;
+      border: 0;
+      background: transparent;
+      color: #3c4e69;
+      font-size: 1.5rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0.15rem 0.3rem;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+    }
+
     footer {
       background: #03214d;
       color: #d5e4ff;
@@ -831,7 +891,7 @@
       <nav class="main-nav" id="mainNav">
         <a href="#inicio">Inicio</a>
         <a href="#novedades">Novedades</a>
-        <a href="#contacto">Contacto</a>
+        <a href="#contacto" id="contactoBtn">Contacto</a>
         <a class="nav-btn" href="/whatsapp.html">WhatsApp</a>
       </nav>
     </div>
@@ -988,11 +1048,23 @@
     </div>
   </footer>
 
+  <div class="contact-modal" id="contactModal" aria-hidden="true">
+    <div class="contact-modal-card" role="dialog" aria-modal="true" aria-labelledby="contactModalTitle">
+      <button class="contact-modal-close" id="contactModalClose" type="button" aria-label="Cerrar cartel">&times;</button>
+      <h3 id="contactModalTitle">Mail de Contacto</h3>
+      <p>Para consultas y colaboraciones, escribinos al siguiente correo:</p>
+      <p><a href="mailto:contacto@plomerosarg.com">contacto@plomerosarg.com</a></p>
+    </div>
+  </div>
+
   <script>
     const menuToggle = document.getElementById("menuToggle");
     const mainNav = document.getElementById("mainNav");
     const year = document.getElementById("year");
     const animated = document.querySelectorAll(".animate");
+    const contactoBtn = document.getElementById("contactoBtn");
+    const contactModal = document.getElementById("contactModal");
+    const contactModalClose = document.getElementById("contactModalClose");
 
     menuToggle.addEventListener("click", () => {
       mainNav.classList.toggle("open");
@@ -1003,6 +1075,45 @@
         mainNav.classList.remove("open");
       });
     });
+
+    const openContactModal = () => {
+      if (!contactModal) {
+        return;
+      }
+      contactModal.classList.add("open");
+      contactModal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+    };
+
+    const closeContactModal = () => {
+      if (!contactModal) {
+        return;
+      }
+      contactModal.classList.remove("open");
+      contactModal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+    };
+
+    if (contactoBtn && contactModal && contactModalClose) {
+      contactoBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        openContactModal();
+      });
+
+      contactModalClose.addEventListener("click", closeContactModal);
+
+      contactModal.addEventListener("click", (event) => {
+        if (event.target === contactModal) {
+          closeContactModal();
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeContactModal();
+        }
+      });
+    }
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
