@@ -28,6 +28,8 @@ const ALLOWED_ORIGEN = new Set([
   "centro_formacion"
 ]);
 
+const { getCanonicalEventName, getEventStatus } = require("./_encuentros");
+
 function cleanText(value, maxLength = 120) {
   const text = String(value ?? "").trim().replace(/<[^>]*>/g, "");
   return text.length > maxLength ? text.slice(0, maxLength) : text;
@@ -286,7 +288,8 @@ module.exports = async (req, res) => {
   const payload = normalizeBody(req.body);
 
   const dni = normalizeDni(payload.dni);
-  const encuentro = cleanText(payload.encuentro, 80);
+  const encuentroInput = cleanText(payload.encuentro, 80);
+  const encuentro = getCanonicalEventName(encuentroInput);
   const nombre_apellido = cleanText(payload.nombre_apellido, 120);
   const mail = cleanText(payload.mail, 120).toLowerCase();
   const provincia = cleanText(payload.provincia, 40);
@@ -300,6 +303,7 @@ module.exports = async (req, res) => {
   if (
     !dni ||
     !encuentro ||
+    encuentro === "Sin evento" ||
     !nombre_apellido ||
     !mail ||
     !provincia ||
@@ -359,6 +363,27 @@ module.exports = async (req, res) => {
   };
 
   try {
+    const status = await getEventStatus({
+      supabaseUrl,
+      serviceRoleKey,
+      encuentro
+    });
+
+    if (!status.ok) {
+      return res.status(500).json({
+        ok: false,
+        error: "No se pudo validar el estado del encuentro.",
+        detail: status.error || "Error desconocido"
+      });
+    }
+
+    if (status.active === false) {
+      return res.status(409).json({
+        ok: false,
+        error: "Las inscripciones para este encuentro estan cerradas."
+      });
+    }
+
     const duplicatedDni = await existsDniInEncuentro({
       endpoint,
       serviceRoleKey,

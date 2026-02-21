@@ -16,6 +16,8 @@
       --accent: #0f4ea8;
       --accent-soft: #e4efff;
       --ok: #1f7a45;
+      --warn: #7f5a00;
+      --off: #8f241f;
     }
 
     * {
@@ -133,10 +135,11 @@
     }
 
     .event-meta {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .btn-event {
@@ -151,9 +154,48 @@
       cursor: pointer;
     }
 
+    .btn-toggle {
+      border-color: #d6b986;
+      color: #7d4f00;
+    }
+
+    .btn-toggle.is-on {
+      border-color: #c9e2d1;
+      color: var(--ok);
+    }
+
+    .btn-toggle.is-off {
+      border-color: #f1b5af;
+      color: var(--off);
+    }
+
     .btn-event:disabled {
       opacity: 0.45;
       cursor: not-allowed;
+    }
+
+    .event-state {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      padding: 6px 10px;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .event-state.is-on {
+      color: var(--ok);
+      border-color: #b8dec7;
+      background: #f5fff9;
+    }
+
+    .event-state.is-off {
+      color: var(--off);
+      border-color: #f1b5af;
+      background: #fff4f3;
     }
 
     .empty {
@@ -208,6 +250,12 @@
       color: #8f241f;
     }
 
+    .status.warning {
+      border-color: #ebd7ac;
+      background: #fff6df;
+      color: var(--warn);
+    }
+
     @media (max-width: 760px) {
       body {
         padding: 16px;
@@ -239,6 +287,7 @@
     const updatedAt = document.getElementById("updatedAt");
     const refreshBtn = document.getElementById("refreshBtn");
     let currentEventos = [];
+    const toggleInFlight = new Set();
 
     function escapeHtml(value) {
       return String(value ?? "")
@@ -257,6 +306,20 @@
         dateStyle: "short",
         timeStyle: "short"
       }).format(date);
+    }
+
+    function setStatusMessage(message, mode = "ok") {
+      statusBox.classList.remove("error", "warning");
+      if (mode === "error") {
+        statusBox.classList.add("error");
+      } else if (mode === "warning") {
+        statusBox.classList.add("warning");
+      }
+      statusBox.textContent = message;
+    }
+
+    function isEventActive(item) {
+      return item?.activo !== false;
     }
 
     function buildRows(rows) {
@@ -376,6 +439,17 @@
                 <h2 class="event-title">Evento ${escapeHtml(item.evento || "Sin evento")}</h2>
                 <div class="event-meta">
                   <span class="counter">${rows.length} inscriptos</span>
+                  <span class="event-state ${isEventActive(item) ? "is-on" : "is-off"}">
+                    ${isEventActive(item) ? "Activo" : "Inactivo"}
+                  </span>
+                  <button
+                    class="btn-event btn-toggle ${isEventActive(item) ? "is-on" : "is-off"}"
+                    type="button"
+                    data-toggle-event="${index}"
+                    ${toggleInFlight.has(index) ? "disabled" : ""}
+                  >
+                    ${isEventActive(item) ? "Desactivar" : "Activar"}
+                  </button>
                   <button
                     class="btn-event"
                     type="button"
@@ -418,8 +492,7 @@
     }
 
     async function loadData() {
-      statusBox.classList.remove("error");
-      statusBox.textContent = "Actualizando datos...";
+      setStatusMessage("Actualizando datos...");
       refreshBtn.disabled = true;
 
       try {
@@ -440,16 +513,69 @@
           : "Actualizado";
 
         renderEvents(data.eventos || []);
-        statusBox.textContent = "Datos cargados correctamente.";
+        if (data.status_warning) {
+          setStatusMessage(data.status_warning, "warning");
+        } else {
+          setStatusMessage("Datos cargados correctamente.");
+        }
       } catch (error) {
-        statusBox.classList.add("error");
-        statusBox.textContent = `Error: ${error.message}`;
+        setStatusMessage(`Error: ${error.message}`, "error");
       } finally {
         refreshBtn.disabled = false;
       }
     }
 
-    eventsContainer.addEventListener("click", (event) => {
+    async function toggleEvent(index) {
+      if (!Number.isInteger(index) || toggleInFlight.has(index)) return;
+
+      const selected = currentEventos[index];
+      if (!selected || !selected.evento) return;
+
+      const nextActive = !isEventActive(selected);
+      toggleInFlight.add(index);
+      renderEvents(currentEventos);
+
+      try {
+        const response = await fetch("/api/admin-inscripciones", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({
+            evento: selected.evento,
+            activo: nextActive
+          })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || !data.ok) {
+          const sqlHint = typeof data.sql === "string" && data.sql ? ` SQL: ${data.sql}` : "";
+          throw new Error((data.error || "No se pudo actualizar el estado.") + sqlHint);
+        }
+
+        selected.activo = data.activo !== false;
+        renderEvents(currentEventos);
+        setStatusMessage(
+          `Evento ${selected.evento}: ${selected.activo ? "activo" : "inactivo"}.`
+        );
+      } catch (error) {
+        setStatusMessage(`Error: ${error.message}`, "error");
+      } finally {
+        toggleInFlight.delete(index);
+        renderEvents(currentEventos);
+      }
+    }
+
+    eventsContainer.addEventListener("click", async (event) => {
+      const toggleButton = event.target.closest("[data-toggle-event]");
+      if (toggleButton) {
+        const toggleIndex = Number.parseInt(toggleButton.getAttribute("data-toggle-event"), 10);
+        await toggleEvent(toggleIndex);
+        return;
+      }
+
       const button = event.target.closest("[data-download-event]");
       if (!button) return;
 

@@ -1,10 +1,11 @@
-const KNOWN_EVENTS = [
-  "Bahía Blanca 11/3",
-  "Mar del Plata 14/3",
-  "Mendoza 9/5",
-  "Salta 6/6",
-  "San Luis 8/8"
-];
+const {
+  KNOWN_EVENTS,
+  cleanText,
+  getCanonicalEventName,
+  fetchEventStatusMap,
+  resolveEventActive,
+  upsertEventStatus
+} = require("./_encuentros");
 
 const PROFESION_LABELS = {
   plomero: "Plomero",
@@ -14,79 +15,56 @@ const PROFESION_LABELS = {
   medio_oficial_plomero: "Medio Oficial Plomero",
   maestro_mayor_obra: "Maestro Mayor de Obra",
   arquitecto_ingeniero: "Arquitecto/Ingeniero",
-  estudiante_centro_formacion: "Estudiante de centro de formación",
+  estudiante_centro_formacion: "Estudiante de centro de formacion",
   expositor: "Expositor",
   otros: "Otros"
 };
 
-function cleanText(value, maxLength = 120) {
-  const text = String(value ?? "").trim().replace(/<[^>]*>/g, "");
-  return text.length > maxLength ? text.slice(0, maxLength) : text;
+const STATUS_TABLE_SQL = [
+  "create table if not exists public.encuentros_estado (",
+  "  encuentro text primary key,",
+  "  activo boolean not null default true,",
+  "  updated_at timestamptz not null default now()",
+  ");"
+].join("\n");
+
+function normalizeBody(body) {
+  if (!body) return {};
+
+  if (typeof body === "string") {
+    try {
+      const parsed = JSON.parse(body);
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+
+  if (typeof body === "object") {
+    return body;
+  }
+
+  return {};
 }
 
-function normalizeEventKey(value) {
-  return String(value ?? "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^\w\s/.-]/g, " ")
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-const EVENT_CANONICAL_BY_KEY = new Map(
-  KNOWN_EVENTS.map((eventName) => [normalizeEventKey(eventName), eventName])
-);
-
-const EVENT_FALLBACK_MATCHERS = [
-  {
-    name: "Bahía Blanca 11/3",
-    matches: (key) =>
-      key.includes("bahia blanca 11/3") ||
-      (key.includes("bah") && key.includes("blanca") && key.includes("11/3"))
-  },
-  {
-    name: "Mar del Plata 14/3",
-    matches: (key) =>
-      key.includes("mar del plata 14/3") ||
-      (key.includes("mar") && key.includes("plata") && key.includes("14/3"))
-  },
-  {
-    name: "Mendoza 9/5",
-    matches: (key) =>
-      key.includes("mendoza 9/5") || (key.includes("mendoza") && key.includes("9/5"))
-  },
-  {
-    name: "Salta 6/6",
-    matches: (key) =>
-      key.includes("salta 6/6") || (key.includes("salta") && key.includes("6/6"))
-  },
-  {
-    name: "San Luis 8/8",
-    matches: (key) =>
-      key.includes("san luis 8/8") ||
-      (key.includes("san") && key.includes("luis") && key.includes("8/8"))
-  }
-];
-
-function getCanonicalEventName(value) {
-  const raw = cleanText(value, 80);
-  const key = normalizeEventKey(raw);
-
-  if (!key) {
-    return "Sin evento";
+function parseBooleanInput(value) {
+  if (typeof value === "boolean") {
+    return value;
   }
 
-  if (EVENT_CANONICAL_BY_KEY.has(key)) {
-    return EVENT_CANONICAL_BY_KEY.get(key);
+  const normalized = String(value ?? "")
+    .trim()
+    .toLowerCase();
+
+  if (["1", "true", "si", "s", "on", "activo", "activar"].includes(normalized)) {
+    return true;
   }
 
-  const fallback = EVENT_FALLBACK_MATCHERS.find((item) => item.matches(key));
-  if (fallback) {
-    return fallback.name;
+  if (["0", "false", "no", "n", "off", "inactivo", "desactivar"].includes(normalized)) {
+    return false;
   }
 
-  return raw;
+  return null;
 }
 
 function formatProfesion(value) {
@@ -121,14 +99,7 @@ function compareRegistrationOrder(a, b) {
   return String(a.id ?? "").localeCompare(String(b.id ?? ""), "es");
 }
 
-module.exports = async (req, res) => {
-  if (req.method !== "GET") {
-    return res.status(405).json({
-      ok: false,
-      error: "Método no permitido. Usá GET."
-    });
-  }
-
+async function handleGet(req, res) {
   const supabaseUrl = process.env.SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -155,16 +126,19 @@ module.exports = async (req, res) => {
   endpoint.searchParams.set("limit", String(limit));
 
   try {
-    const response = await fetch(endpoint.toString(), {
-      method: "GET",
-      headers: {
-        apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`
-      }
-    });
+    const [inscripcionesResponse, statusResult] = await Promise.all([
+      fetch(endpoint.toString(), {
+        method: "GET",
+        headers: {
+          apikey: serviceRoleKey,
+          Authorization: `Bearer ${serviceRoleKey}`
+        }
+      }),
+      fetchEventStatusMap({ supabaseUrl, serviceRoleKey })
+    ]);
 
-    if (!response.ok) {
-      const detail = await response.text().catch(() => "");
+    if (!inscripcionesResponse.ok) {
+      const detail = await inscripcionesResponse.text().catch(() => "");
       return res.status(500).json({
         ok: false,
         error: "No se pudo consultar la base de datos.",
@@ -172,7 +146,7 @@ module.exports = async (req, res) => {
       });
     }
 
-    const rows = await response.json().catch(() => []);
+    const rows = await inscripcionesResponse.json().catch(() => []);
     const grouped = new Map();
 
     for (const row of Array.isArray(rows) ? rows : []) {
@@ -209,7 +183,14 @@ module.exports = async (req, res) => {
       ...(grouped.has("Sin evento") ? ["Sin evento"] : [])
     ];
 
-    const eventos = orderedEvents.map((eventName) => {
+    const statusEvents = [...statusResult.map.keys()].filter(
+      (name) => !orderedEvents.includes(name) && name !== "Sin evento"
+    );
+
+    statusEvents.sort((a, b) => a.localeCompare(b, "es"));
+    const fullOrder = [...orderedEvents, ...statusEvents];
+
+    const eventos = fullOrder.map((eventName) => {
       const inscripciones = (grouped.get(eventName) || [])
         .slice()
         .sort(compareRegistrationOrder)
@@ -221,6 +202,10 @@ module.exports = async (req, res) => {
       return {
         evento: eventName,
         contador: inscripciones.length,
+        activo: resolveEventActive({
+          eventName,
+          statusMap: statusResult.map
+        }),
         inscripciones
       };
     });
@@ -229,6 +214,8 @@ module.exports = async (req, res) => {
       ok: true,
       total: Array.isArray(rows) ? rows.length : 0,
       eventos,
+      status_available: statusResult.available,
+      status_warning: statusResult.warning || "",
       generated_at: new Date().toISOString()
     });
   } catch (error) {
@@ -238,4 +225,79 @@ module.exports = async (req, res) => {
       detail: error instanceof Error ? error.message : "Error desconocido"
     });
   }
+}
+
+async function handlePost(req, res) {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    return res.status(500).json({
+      ok: false,
+      error: "Faltan variables de entorno de Supabase."
+    });
+  }
+
+  const payload = normalizeBody(req.body);
+  const eventInput = cleanText(payload.evento, 80);
+  const activeValue = parseBooleanInput(payload.activo);
+
+  if (!eventInput) {
+    return res.status(422).json({
+      ok: false,
+      error: "Tenes que indicar un encuentro."
+    });
+  }
+
+  if (activeValue === null) {
+    return res.status(422).json({
+      ok: false,
+      error: "Tenes que indicar activo true/false."
+    });
+  }
+
+  const saved = await upsertEventStatus({
+    supabaseUrl,
+    serviceRoleKey,
+    encuentro: eventInput,
+    activo: activeValue
+  });
+
+  if (!saved.ok) {
+    if (saved.tableMissing) {
+      return res.status(500).json({
+        ok: false,
+        error:
+          "No existe la tabla de estados de encuentros. Creala una sola vez en Supabase y volve a intentar.",
+        sql: STATUS_TABLE_SQL
+      });
+    }
+
+    return res.status(500).json({
+      ok: false,
+      error: saved.error || "No se pudo guardar el estado del encuentro."
+    });
+  }
+
+  return res.status(200).json({
+    ok: true,
+    evento: saved.eventName,
+    activo: saved.active,
+    updated_at: new Date().toISOString()
+  });
+}
+
+module.exports = async (req, res) => {
+  if (req.method === "GET") {
+    return handleGet(req, res);
+  }
+
+  if (req.method === "POST") {
+    return handlePost(req, res);
+  }
+
+  return res.status(405).json({
+    ok: false,
+    error: "Metodo no permitido. Usa GET o POST."
+  });
 };
