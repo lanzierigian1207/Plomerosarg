@@ -29,6 +29,19 @@ const ALLOWED_ORIGEN = new Set([
 ]);
 
 const { getCanonicalEventName, getEventStatus } = require("./_encuentros");
+const DEFAULT_WHATSAPP_GROUP_URL =
+  "https://wa.me/5491100000000?text=Hola%2C%20quiero%20sumarme%20al%20grupo%20del%20encuentro";
+const WHATSAPP_GROUP_MATCHERS = [
+  {
+    key: "bahia blanca",
+    url: "https://chat.whatsapp.com/BS5tb0BVbZfAKYibMz2Yh3?mode=gi_t"
+  },
+  {
+    key: "mar del plata",
+    url: "https://chat.whatsapp.com/JbQnGOHFcsuBEc2kgKRuBy"
+  }
+];
+const DEFAULT_REGISTRO_RESET_AT = "2026-02-21T20:33:01.000Z";
 
 function cleanText(value, maxLength = 120) {
   const text = String(value ?? "").trim().replace(/<[^>]*>/g, "");
@@ -52,6 +65,16 @@ function normalizeProfesion(value) {
 
 function normalizeDni(value) {
   return cleanText(value, 20).replace(/\D+/g, "");
+}
+
+function normalizeLookupText(value) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^\w\s/.-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function normalizeBody(body) {
@@ -126,7 +149,8 @@ async function getRegistroNumeroPorEncuentro({
   endpoint,
   serviceRoleKey,
   encuentro,
-  id
+  id,
+  resetAt
 }) {
   const numericId = Number.parseInt(String(id ?? ""), 10);
 
@@ -138,6 +162,9 @@ async function getRegistroNumeroPorEncuentro({
   lookupUrl.searchParams.set("select", "id");
   lookupUrl.searchParams.set("encuentro", `eq.${encuentro}`);
   lookupUrl.searchParams.set("id", `lte.${numericId}`);
+  if (resetAt) {
+    lookupUrl.searchParams.set("created_at", `gte.${resetAt}`);
+  }
 
   const response = await fetch(lookupUrl.toString(), {
     method: "GET",
@@ -155,11 +182,23 @@ async function getRegistroNumeroPorEncuentro({
 
   const total = parseContentRangeTotal(response.headers.get("content-range"));
   if (total !== null) {
-    return total;
+    return Math.max(total - 1, 0);
   }
 
   const rows = await response.json().catch(() => []);
-  return Array.isArray(rows) ? rows.length : null;
+  return Array.isArray(rows) ? Math.max(rows.length - 1, 0) : null;
+}
+
+function getRegistroResetAt() {
+  const configured = cleanText(process.env.REGISTRO_RESET_AT, 80);
+  const rawValue = configured || DEFAULT_REGISTRO_RESET_AT;
+  const parsed = new Date(rawValue);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return DEFAULT_REGISTRO_RESET_AT;
+  }
+
+  return parsed.toISOString();
 }
 
 function getClientIp(req) {
@@ -192,13 +231,24 @@ function escapeHtml(text) {
     .replace(/'/g, "&#39;");
 }
 
+function resolveWhatsappGroupUrl(encuentro) {
+  const normalizedEncuentro = normalizeLookupText(encuentro);
+  const matched = WHATSAPP_GROUP_MATCHERS.find((item) =>
+    normalizedEncuentro.includes(item.key)
+  );
+
+  if (matched) {
+    return matched.url;
+  }
+
+  return process.env.MAIL_WHATSAPP_GRUPO_URL || DEFAULT_WHATSAPP_GROUP_URL;
+}
+
 async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) {
   const resendApiKey = process.env.RESEND_API_KEY;
   const mailFrom = process.env.MAIL_FROM;
   const replyTo = process.env.MAIL_REPLY_TO;
-  const whatsappGroupUrl =
-    process.env.MAIL_WHATSAPP_GRUPO_URL ||
-    "https://wa.me/5491100000000?text=Hola%2C%20quiero%20sumarme%20al%20grupo%20del%20encuentro";
+  const whatsappGroupUrl = resolveWhatsappGroupUrl(encuentro);
   const logoUrl = "https://plomerosarg.com/Prueba_2/assets/logo-plomeros-circular.png";
   const normalizedTo = cleanText(to, 120).toLowerCase();
 
@@ -235,7 +285,7 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
       <p style="margin:0 0 10px;">Que tengan buen d&iacute;a</p>
       <p style="margin:0 0 16px;">Saludos Equipo de Plomeros y Sanitaristas</p>
       <p style="margin:0 0 14px;color:#5b6b80;font-size:13px;">
-        N&uacute;mero de registro: <strong>${escapeHtml(numeroRegistro || "pendiente")}</strong>
+        N&uacute;mero de registro: <strong>${escapeHtml(numeroRegistro ?? "pendiente")}</strong>
       </p>
       <img
         src="${safeLogoUrl}"
@@ -427,21 +477,21 @@ module.exports = async (req, res) => {
 
     const inserted = await response.json().catch(() => []);
     const id = Array.isArray(inserted) && inserted[0] ? inserted[0].id : null;
-    let numeroRegistro = id;
+    let numeroRegistro = 0;
+    const registroResetAt = getRegistroResetAt();
 
     try {
       const registroPorEncuentro = await getRegistroNumeroPorEncuentro({
         endpoint,
         serviceRoleKey,
         encuentro,
-        id
+        id,
+        resetAt: registroResetAt
       });
       if (registroPorEncuentro !== null) {
         numeroRegistro = registroPorEncuentro;
       }
-    } catch {
-      numeroRegistro = id;
-    }
+    } catch {}
 
     const mailResult = await sendConfirmationEmail({
       to: mail,
