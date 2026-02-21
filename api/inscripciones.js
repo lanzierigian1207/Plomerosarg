@@ -110,6 +110,56 @@ async function existsDniInEncuentro({ endpoint, serviceRoleKey, dni, encuentro }
   return Array.isArray(rows) && rows.length > 0;
 }
 
+function parseContentRangeTotal(contentRange) {
+  const match = String(contentRange ?? "").match(/\/(\d+)$/);
+  if (!match) {
+    return null;
+  }
+
+  const total = Number.parseInt(match[1], 10);
+  return Number.isFinite(total) ? total : null;
+}
+
+async function getRegistroNumeroPorEncuentro({
+  endpoint,
+  serviceRoleKey,
+  encuentro,
+  id
+}) {
+  const numericId = Number.parseInt(String(id ?? ""), 10);
+
+  if (!encuentro || !Number.isFinite(numericId)) {
+    return null;
+  }
+
+  const lookupUrl = new URL(endpoint);
+  lookupUrl.searchParams.set("select", "id");
+  lookupUrl.searchParams.set("encuentro", `eq.${encuentro}`);
+  lookupUrl.searchParams.set("id", `lte.${numericId}`);
+
+  const response = await fetch(lookupUrl.toString(), {
+    method: "GET",
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      Prefer: "count=exact"
+    }
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`No se pudo calcular el número de registro: ${detail}`);
+  }
+
+  const total = parseContentRangeTotal(response.headers.get("content-range"));
+  if (total !== null) {
+    return total;
+  }
+
+  const rows = await response.json().catch(() => []);
+  return Array.isArray(rows) ? rows.length : null;
+}
+
 function getClientIp(req) {
   const forwarded = req.headers["x-forwarded-for"];
 
@@ -140,7 +190,7 @@ function escapeHtml(text) {
     .replace(/'/g, "&#39;");
 }
 
-async function sendConfirmationEmail({ to, nombre, encuentro, id }) {
+async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) {
   const resendApiKey = process.env.RESEND_API_KEY;
   const mailFrom = process.env.MAIL_FROM;
   const replyTo = process.env.MAIL_REPLY_TO;
@@ -183,7 +233,7 @@ async function sendConfirmationEmail({ to, nombre, encuentro, id }) {
       <p style="margin:0 0 10px;">Que tengan buen d&iacute;a</p>
       <p style="margin:0 0 16px;">Saludos Equipo de Plomeros y Sanitaristas</p>
       <p style="margin:0 0 14px;color:#5b6b80;font-size:13px;">
-        N&uacute;mero de registro: <strong>${escapeHtml(id || "pendiente")}</strong>
+        N&uacute;mero de registro: <strong>${escapeHtml(numeroRegistro || "pendiente")}</strong>
       </p>
       <img
         src="${safeLogoUrl}"
@@ -352,17 +402,34 @@ module.exports = async (req, res) => {
 
     const inserted = await response.json().catch(() => []);
     const id = Array.isArray(inserted) && inserted[0] ? inserted[0].id : null;
+    let numeroRegistro = id;
+
+    try {
+      const registroPorEncuentro = await getRegistroNumeroPorEncuentro({
+        endpoint,
+        serviceRoleKey,
+        encuentro,
+        id
+      });
+      if (registroPorEncuentro !== null) {
+        numeroRegistro = registroPorEncuentro;
+      }
+    } catch {
+      numeroRegistro = id;
+    }
+
     const mailResult = await sendConfirmationEmail({
       to: mail,
       nombre: nombre_apellido,
       encuentro,
-      id
+      numeroRegistro
     });
 
     return res.status(200).json({
       ok: true,
       message: "Inscripción guardada correctamente.",
       id,
+      numero_registro: numeroRegistro,
       mail_enviado: mailResult.sent
     });
   } catch (error) {
