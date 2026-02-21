@@ -212,6 +212,7 @@
       cursor: not-allowed;
       box-shadow: none;
       transform: none;
+      pointer-events: none;
     }
 
     @media (max-width: 680px) {
@@ -238,58 +239,78 @@
       </div>
     </div>
 
-    <div class="event event-hero event-bahia">
+    <div
+      class="event event-hero event-bahia"
+      data-encuentro="Bahia Blanca 11/3"
+      data-inscripcion="inscripcion-bahia-blanca.html"
+    >
       <h2 class="event-title">
         <span>Bah&iacute;a Blanca 11/3</span>
         <span class="event-number">Encuentro 27</span>
       </h2>
-      <p>Inscripci&oacute;n abierta para el encuentro en Bah&iacute;a Blanca.</p>
+      <p class="event-status">Inscripci&oacute;n abierta para el encuentro en Bah&iacute;a Blanca.</p>
       <div class="actions">
         <a class="btn btn-primary" href="inscripcion-bahia-blanca.html">Inscribirme</a>
       </div>
     </div>
 
-    <div class="event event-hero event-mar-del-plata">
+    <div
+      class="event event-hero event-mar-del-plata"
+      data-encuentro="Mar del Plata 14/3"
+      data-inscripcion="inscripcion-mar-del-plata.html"
+    >
       <h2 class="event-title">
         <span>Mar del Plata 14/3</span>
         <span class="event-number">Encuentro 28</span>
       </h2>
-      <p>Inscripci&oacute;n abierta para el encuentro en Mar del Plata.</p>
+      <p class="event-status">Inscripci&oacute;n abierta para el encuentro en Mar del Plata.</p>
       <div class="actions">
         <a class="btn btn-primary" href="inscripcion-mar-del-plata.html">Inscribirme</a>
       </div>
     </div>
 
-    <div class="event event-hero event-mendoza">
+    <div
+      class="event event-hero event-mendoza"
+      data-encuentro="Mendoza 9/5"
+      data-inscripcion="inscripcion-mendoza.html"
+    >
       <h2 class="event-title">
         <span>Mendoza 9/5</span>
         <span class="event-number">Encuentro 29</span>
       </h2>
-      <p>Inscripci&oacute;n abierta para el encuentro en Mendoza.</p>
+      <p class="event-status">Inscripci&oacute;n abierta para el encuentro en Mendoza.</p>
       <div class="actions">
-        <button class="btn btn-disabled" type="button" disabled>Pr&oacute;ximamente</button>
+        <a class="btn btn-primary btn-disabled" href="inscripcion-mendoza.html">Pr&oacute;ximamente</a>
       </div>
     </div>
 
-    <div class="event event-hero event-salta">
+    <div
+      class="event event-hero event-salta"
+      data-encuentro="Salta 6/6"
+      data-inscripcion="inscripcion-salta.html"
+    >
       <h2 class="event-title">
         <span>Salta 6/6</span>
         <span class="event-number">Encuentro 30</span>
       </h2>
-      <p>Inscripci&oacute;n abierta para el encuentro en Salta.</p>
+      <p class="event-status">Inscripci&oacute;n abierta para el encuentro en Salta.</p>
       <div class="actions">
-        <button class="btn btn-disabled" type="button" disabled>Pr&oacute;ximamente</button>
+        <a class="btn btn-primary btn-disabled" href="inscripcion-salta.html">Pr&oacute;ximamente</a>
       </div>
     </div>
 
-    <div class="event event-hero event-san-luis">
+    <div
+      class="event event-hero event-san-luis"
+      data-encuentro="San Luis 8/8"
+      data-inscripcion="inscripcion-san-luis.html"
+    >
       <h2 class="event-title">
         <span>San Luis 8/8</span>
         <span class="event-number">Encuentro 31</span>
       </h2>
-      <p>Inscripci&oacute;n abierta para el encuentro en San Luis.</p>
+      <p class="event-status">Inscripci&oacute;n abierta para el encuentro en San Luis.</p>
       <div class="actions">
-        <button class="btn btn-disabled" type="button" disabled>Pr&oacute;ximamente</button>
+        <a class="btn btn-primary btn-disabled" href="inscripcion-san-luis.html">Pr&oacute;ximamente</a>
       </div>
     </div>
 
@@ -297,6 +318,93 @@
       <a class="btn btn-secondary" href="/">Volver al inicio</a>
     </div>
   </main>
+
+  <script>
+    const normalizeEventKey = (value) => {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^\w\s/.-]/g, " ")
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+    };
+
+    const eventCards = Array.from(document.querySelectorAll(".event[data-encuentro]"));
+
+    const setEventState = (card, isActive) => {
+      const button = card.querySelector(".actions .btn");
+      const status = card.querySelector(".event-status");
+
+      if (!button) {
+        return;
+      }
+
+      if (!button.dataset.originalHref) {
+        button.dataset.originalHref =
+          card.getAttribute("data-inscripcion") ||
+          button.getAttribute("href") ||
+          "";
+      }
+
+      if (isActive) {
+        button.classList.remove("btn-disabled");
+        button.textContent = "Inscribirme";
+        if (button.dataset.originalHref) {
+          button.setAttribute("href", button.dataset.originalHref);
+        }
+        button.removeAttribute("aria-disabled");
+        if (status) {
+          status.textContent = "Inscripcion abierta para este encuentro.";
+        }
+        return;
+      }
+
+      button.classList.add("btn-disabled");
+      button.textContent = "Inactivo";
+      button.removeAttribute("href");
+      button.setAttribute("aria-disabled", "true");
+      if (status) {
+        status.textContent = "Inscripcion cerrada temporalmente por administracion.";
+      }
+    };
+
+    const loadEncounterStatus = async () => {
+      if (!eventCards.length) {
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/encuentros-estado", {
+          method: "GET",
+          headers: { "Accept": "application/json" },
+          cache: "no-store"
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok || !Array.isArray(data.eventos)) {
+          return;
+        }
+
+        const eventStateMap = new Map(
+          data.eventos.map((item) => [
+            normalizeEventKey(item?.evento),
+            item?.activo !== false
+          ])
+        );
+
+        eventCards.forEach((card) => {
+          const eventName = card.getAttribute("data-encuentro") || "";
+          const key = normalizeEventKey(eventName);
+          const isActive = eventStateMap.has(key) ? eventStateMap.get(key) : true;
+          setEventState(card, isActive);
+        });
+      } catch {
+      }
+    };
+
+    loadEncounterStatus();
+  </script>
 </body>
 </html>
 

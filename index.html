@@ -912,30 +912,50 @@
           <h3>Futuros Encuentros</h3>
           <p>Seleccion&aacute; un encuentro:</p>
           <div class="hero-events">
-            <article class="hero-event hero-event-bahia">
+            <article
+              class="hero-event hero-event-bahia"
+              data-encuentro="Bahia Blanca 11/3"
+              data-inscripcion="/inscripcion-bahia-blanca.html"
+            >
               <h4>Bah&iacute;a Blanca 11/3</h4>
-              <p>Inscripci&oacute;n abierta.</p>
+              <p class="hero-event-status">Inscripci&oacute;n abierta.</p>
               <a class="hero-event-btn" href="/inscripcion-bahia-blanca.html">Inscribirme</a>
             </article>
-            <article class="hero-event hero-event-mar-del-plata">
+            <article
+              class="hero-event hero-event-mar-del-plata"
+              data-encuentro="Mar del Plata 14/3"
+              data-inscripcion="/inscripcion-mar-del-plata.html"
+            >
               <h4>Mar del Plata 14/3</h4>
-              <p>Inscripci&oacute;n abierta.</p>
+              <p class="hero-event-status">Inscripci&oacute;n abierta.</p>
               <a class="hero-event-btn" href="/inscripcion-mar-del-plata.html">Inscribirme</a>
             </article>
-            <article class="hero-event hero-event-mendoza">
+            <article
+              class="hero-event hero-event-mendoza"
+              data-encuentro="Mendoza 9/5"
+              data-inscripcion="/inscripcion-mendoza.html"
+            >
               <h4>Mendoza 9/5</h4>
-              <p>Inscripci&oacute;n abierta.</p>
-              <span class="hero-event-btn is-disabled">Pr&oacute;ximamente</span>
+              <p class="hero-event-status">Inscripci&oacute;n abierta.</p>
+              <a class="hero-event-btn is-disabled" href="/inscripcion-mendoza.html">Pr&oacute;ximamente</a>
             </article>
-            <article class="hero-event hero-event-salta">
+            <article
+              class="hero-event hero-event-salta"
+              data-encuentro="Salta 6/6"
+              data-inscripcion="/inscripcion-salta.html"
+            >
               <h4>Salta 6/6</h4>
-              <p>Inscripci&oacute;n abierta.</p>
-              <span class="hero-event-btn is-disabled">Pr&oacute;ximamente</span>
+              <p class="hero-event-status">Inscripci&oacute;n abierta.</p>
+              <a class="hero-event-btn is-disabled" href="/inscripcion-salta.html">Pr&oacute;ximamente</a>
             </article>
-            <article class="hero-event hero-event-san-luis">
+            <article
+              class="hero-event hero-event-san-luis"
+              data-encuentro="San Luis 8/8"
+              data-inscripcion="/inscripcion-san-luis.html"
+            >
               <h4>San Luis 8/8</h4>
-              <p>Inscripci&oacute;n abierta.</p>
-              <span class="hero-event-btn is-disabled">Pr&oacute;ximamente</span>
+              <p class="hero-event-status">Inscripci&oacute;n abierta.</p>
+              <a class="hero-event-btn is-disabled" href="/inscripcion-san-luis.html">Pr&oacute;ximamente</a>
             </article>
           </div>
         </aside>
@@ -1116,6 +1136,91 @@
         }
       });
     }
+
+    const normalizeEventKey = (value) => {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^\w\s/.-]/g, " ")
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+    };
+
+    const heroEventCards = Array.from(document.querySelectorAll(".hero-event[data-encuentro]"));
+
+    const setHeroEventState = (card, isActive) => {
+      const button = card.querySelector(".hero-event-btn");
+      const status = card.querySelector(".hero-event-status");
+
+      if (!button) {
+        return;
+      }
+
+      if (!button.dataset.originalHref) {
+        button.dataset.originalHref =
+          card.getAttribute("data-inscripcion") ||
+          button.getAttribute("href") ||
+          "";
+      }
+
+      if (isActive) {
+        button.classList.remove("is-disabled");
+        button.textContent = "Inscribirme";
+        if (button.dataset.originalHref) {
+          button.setAttribute("href", button.dataset.originalHref);
+        }
+        button.removeAttribute("aria-disabled");
+        if (status) {
+          status.textContent = "Inscripcion abierta.";
+        }
+        return;
+      }
+
+      button.classList.add("is-disabled");
+      button.textContent = "Inactivo";
+      button.removeAttribute("href");
+      button.setAttribute("aria-disabled", "true");
+      if (status) {
+        status.textContent = "Inscripcion cerrada temporalmente.";
+      }
+    };
+
+    const loadEncuentroButtons = async () => {
+      if (!heroEventCards.length) {
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/encuentros-estado", {
+          method: "GET",
+          headers: { "Accept": "application/json" },
+          cache: "no-store"
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok || !Array.isArray(data.eventos)) {
+          return;
+        }
+
+        const eventStateMap = new Map(
+          data.eventos.map((item) => [
+            normalizeEventKey(item?.evento),
+            item?.activo !== false
+          ])
+        );
+
+        heroEventCards.forEach((card) => {
+          const eventName = card.getAttribute("data-encuentro") || "";
+          const key = normalizeEventKey(eventName);
+          const isActive = eventStateMap.has(key) ? eventStateMap.get(key) : true;
+          setHeroEventState(card, isActive);
+        });
+      } catch {
+      }
+    };
+
+    loadEncuentroButtons();
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
