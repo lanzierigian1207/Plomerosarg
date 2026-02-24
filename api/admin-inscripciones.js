@@ -17,6 +17,7 @@ const PROFESION_LABELS = {
   arquitecto_ingeniero: "Arquitecto/Ingeniero",
   estudiante_centro_formacion: "Estudiante de centro de formacion",
   expositor: "Expositor",
+  staff: "STAFF",
   otros: "Otros"
 };
 

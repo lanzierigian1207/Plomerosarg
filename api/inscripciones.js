@@ -17,6 +17,7 @@ const ALLOWED_PROFESION = new Set([
   "arquitecto_ingeniero",
   "estudiante_centro_formacion",
   "expositor",
+  "staff",
   "otros"
 ]);
 
