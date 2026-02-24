@@ -36,8 +36,6 @@ const MAIL_EVENT_EXTRAS = [
     eventKey: "bahia blanca 11/3",
     locationAddress: "Cam. de la Carrindanga 3802, B8000 Bah\u00eda Blanca",
     locationLinkLabel: "Ve el lugar en google",
-    whatsappRequiredNotice:
-      "Para terminar la Inscripci\u00f3n es Obligatorio entrar al grupo de whatsapp",
     ingresoHorarioLabel: "Horario de Ingreso",
     ingresoHorario: "14hrs",
     hideBuenDiaLine: true,
@@ -49,8 +47,6 @@ const MAIL_EVENT_EXTRAS = [
     eventKey: "mar del plata 14/3",
     locationAddress: "Av. Pedro Luro 8851, B7606 Mar del Plata",
     locationLinkLabel: "Ve el lugar en google",
-    whatsappRequiredNotice:
-      "Para terminar la Inscripci\u00f3n es Obligatorio entrar al grupo de whatsapp",
     ingresoHorarioLabel: "Horario de Entrada",
     ingresoHorario: "8:30hrs",
     hideBuenDiaLine: true,
@@ -296,9 +292,6 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
   const safeLogoUrl = escapeHtml(logoUrl);
   const safeEventLocationAddress = escapeHtml(eventExtras?.locationAddress || "");
   const safeEventLocationLinkLabel = escapeHtml(eventExtras?.locationLinkLabel || "");
-  const safeEventWhatsappRequiredNotice = escapeHtml(
-    eventExtras?.whatsappRequiredNotice || ""
-  );
   const safeEventIngresoHorarioLabel = escapeHtml(
     eventExtras?.ingresoHorarioLabel || "Horario de Ingreso"
   );
@@ -332,10 +325,19 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
     eventExtras?.hideBuenDiaLine === true
       ? ""
       : `<p style="margin:0 0 10px;">Que tengan buen d&iacute;a</p>`;
-  const eventWhatsappRequiredNoticeHtml =
-    eventExtras?.whatsappRequiredNotice
-      ? `<p style="margin:0 0 14px;color:#111111;font-size:13px;font-weight:700;">${safeEventWhatsappRequiredNotice}</p>`
-      : "";
+  const eventWhatsappIntroHtml = eventExtras
+    ? `
+      <p style="margin:0 0 12px;color:#c62828;font-size:16px;font-weight:600;line-height:1.5;">
+        Para terminar la inscripci&oacute;n, unite al grupo exclusivo de WhatsApp y empez&aacute; a vivir la experiencia del encuentro.
+        Vas a poder hacer consultas, participar de sorteos y estar al d&iacute;a con informaci&oacute;n y comunicados.
+      </p>
+    `
+    : `
+      <p>
+        Ingrese al grupo de WhatsApp exclusivo para empezar a vivir la experiencia del encuentro para
+        consultas, sorteo, informaci&oacute;n y comunicados:
+      </p>
+    `;
   const eventLocationHtml = eventExtras
     ? `
       <p style="margin:0 0 12px;">
@@ -361,10 +363,7 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
       <p>Hola ${safeNombre}</p>
       <p>Ya est&aacute; confirmada su vacante para el encuentro <strong>${safeEncuentro}</strong>.</p>
       ${eventLocationHtml}
-      <p>
-        Ingrese al grupo de WhatsApp exclusivo para empezar a vivir la experiencia del encuentro para
-        consultas, sorteo, informaci&oacute;n y comunicados:
-      </p>
+      ${eventWhatsappIntroHtml}
       <p style="margin:10px 0 14px;">
         <a
           href="${safeWhatsappGroupUrl}"
@@ -375,7 +374,6 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
           Ingresar al grupo de WhatsApp
         </a>
       </p>
-      ${eventWhatsappRequiredNoticeHtml}
       <p style="margin:0 0 14px;color:#c62828;font-weight:800;">
         Unos d&iacute;as antes del encuentro recibir&aacute; un mail para que confirme su asistencia.
       </p>
