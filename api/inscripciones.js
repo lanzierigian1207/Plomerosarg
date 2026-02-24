@@ -327,7 +327,7 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
       : `<p style="margin:0 0 10px;">Que tengan buen d&iacute;a</p>`;
   const eventWhatsappIntroHtml = eventExtras
     ? `
-      <p style="margin:0 0 12px;padding:12px 14px;border-radius:10px;border:1px solid #ef9a9a;background:#ffebee;color:#b71c1c;font-size:16px;font-weight:800;line-height:1.5;">
+      <p style="margin:0 0 12px;color:#c62828;font-size:16px;font-weight:600;line-height:1.5;">
         Para terminar la inscripci&oacute;n, unite al grupo exclusivo de WhatsApp y empez&aacute; a vivir la experiencia del encuentro.
         Vas a poder hacer consultas, participar de sorteos y estar al d&iacute;a con informaci&oacute;n y comunicados.
       </p>
