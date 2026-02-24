@@ -37,7 +37,9 @@ const MAIL_EVENT_EXTRAS = [
     eventKey: "bahia blanca 11/3",
     locationAddress: "Cam. de la Carrindanga 3802, B8000 Bah\u00eda Blanca",
     locationLinkLabel: "Ve el lugar en google",
+    ingresoHorarioLabel: "Horario de Ingreso",
     ingresoHorario: "14hrs",
+    hideBuenDiaLine: true,
     locationUrl: "https://share.google/viNow9oZuZHkSdo9C",
     imageUrl:
       "https://plomerosarg.com/Prueba_2/assets/WhatsApp%20Image%202026-02-23%20at%2010.13.50%20PM.jpeg"
@@ -45,9 +47,13 @@ const MAIL_EVENT_EXTRAS = [
   {
     eventKey: "mar del plata 14/3",
     locationAddress: "Av. Pedro Luro 8851, B7606 Mar del Plata",
+    locationLinkLabel: "Ve el lugar en google",
+    ingresoHorarioLabel: "Horario de Entrada",
+    ingresoHorario: "8:30hrs",
+    hideBuenDiaLine: true,
     locationUrl: "https://share.google/KA62Zn0H6wtiLd0La",
     imageUrl:
-      "https://plomerosarg.com/Prueba_2/assets/WhatsApp%20Image%202026-02-23%20at%2011.58.12%20AM.jpeg"
+      "https://plomerosarg.com/Prueba_2/assets/WhatsApp%20Image%202026-02-23%20at%2010.13.49%20PM.jpeg"
   }
 ];
 const WHATSAPP_GROUP_MATCHERS = [
@@ -287,6 +293,9 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
   const safeLogoUrl = escapeHtml(logoUrl);
   const safeEventLocationAddress = escapeHtml(eventExtras?.locationAddress || "");
   const safeEventLocationLinkLabel = escapeHtml(eventExtras?.locationLinkLabel || "");
+  const safeEventIngresoHorarioLabel = escapeHtml(
+    eventExtras?.ingresoHorarioLabel || "Horario de Ingreso"
+  );
   const safeEventIngresoHorario = escapeHtml(eventExtras?.ingresoHorario || "");
   const safeEventLocationUrl = escapeHtml(eventExtras?.locationUrl || "");
   const safeEventMailImageUrl = escapeHtml(eventExtras?.imageUrl || "");
@@ -310,9 +319,13 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
     eventExtras?.ingresoHorario
       ? `
         <br />
-        <strong>Horario de Ingreso:</strong> ${safeEventIngresoHorario}
+        <strong>${safeEventIngresoHorarioLabel}:</strong> ${safeEventIngresoHorario}
       `
       : "";
+  const eventBuenDiaHtml =
+    eventExtras?.hideBuenDiaLine === true
+      ? ""
+      : `<p style="margin:0 0 10px;">Que tengan buen d&iacute;a</p>`;
   const eventLocationHtml = eventExtras
     ? `
       <p style="margin:0 0 12px;">
@@ -355,7 +368,7 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
       <p style="margin:0 0 14px;color:#c62828;font-weight:800;">
         Unos d&iacute;as antes del encuentro recibir&aacute; un mail para que confirme su asistencia.
       </p>
-      <p style="margin:0 0 10px;">Que tengan buen d&iacute;a</p>
+      ${eventBuenDiaHtml}
       <p style="margin:0 0 16px;">Saludos Equipo de Plomeros y Sanitaristas</p>
       <p style="margin:0 0 14px;color:#5b6b80;font-size:13px;">
         N&uacute;mero de registro: <strong>${escapeHtml(numeroRegistro ?? "pendiente")}</strong>
