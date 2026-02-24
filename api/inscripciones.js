@@ -35,6 +35,7 @@ const DEFAULT_WHATSAPP_GROUP_URL =
 const MAIL_EVENT_EXTRAS = [
   {
     eventKey: "bahia blanca 11/3",
+    locationAddress: "Cam. de la Carrindanga 3802, B8000 Bahía Blanca",
     locationUrl: "https://share.google/viNow9oZuZHkSdo9C",
     imageUrl:
       "https://plomerosarg.com/Prueba_2/assets/WhatsApp%20Image%202026-02-23%20at%2011.58.11%20AM.jpeg"
@@ -281,12 +282,13 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
   const safeEncuentro = escapeHtml(formatEncuentroLabel(encuentro) || "encuentro");
   const safeWhatsappGroupUrl = escapeHtml(whatsappGroupUrl);
   const safeLogoUrl = escapeHtml(logoUrl);
+  const safeEventLocationAddress = escapeHtml(eventExtras?.locationAddress || "");
   const safeEventLocationUrl = escapeHtml(eventExtras?.locationUrl || "");
   const safeEventMailImageUrl = escapeHtml(eventExtras?.imageUrl || "");
   const eventLocationHtml = eventExtras
     ? `
       <p style="margin:0 0 12px;">
-        <strong>Lugar del Encuentro:</strong>
+        <strong>Lugar del Encuentro:</strong>${eventExtras.locationAddress ? ` ${safeEventLocationAddress}<br />` : " "}
         <a href="${safeEventLocationUrl}" target="_blank" rel="noopener noreferrer">
           ${safeEventLocationUrl}
         </a>
