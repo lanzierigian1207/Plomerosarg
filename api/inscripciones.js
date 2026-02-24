@@ -31,6 +31,9 @@ const ALLOWED_ORIGEN = new Set([
 const { getCanonicalEventName, getEventStatus } = require("./_encuentros");
 const DEFAULT_WHATSAPP_GROUP_URL =
   "https://wa.me/5491100000000?text=Hola%2C%20quiero%20sumarme%20al%20grupo%20del%20encuentro";
+const BAHIA_BLANCA_LOCATION_URL = "https://share.google/viNow9oZuZHkSdo9C";
+const BAHIA_BLANCA_MAIL_IMAGE_URL =
+  "https://plomerosarg.com/Prueba_2/assets/WhatsApp%20Image%202026-02-23%20at%2011.58.11%20AM.jpeg";
 const WHATSAPP_GROUP_MATCHERS = [
   {
     key: "bahia blanca",
@@ -244,12 +247,17 @@ function resolveWhatsappGroupUrl(encuentro) {
   return process.env.MAIL_WHATSAPP_GRUPO_URL || DEFAULT_WHATSAPP_GROUP_URL;
 }
 
+function isBahiaBlanca113(encuentro) {
+  return normalizeLookupText(getCanonicalEventName(encuentro)) === "bahia blanca 11/3";
+}
+
 async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) {
   const resendApiKey = process.env.RESEND_API_KEY;
   const mailFrom = process.env.MAIL_FROM;
   const replyTo = process.env.MAIL_REPLY_TO;
   const whatsappGroupUrl = resolveWhatsappGroupUrl(encuentro);
   const logoUrl = "https://plomerosarg.com/Prueba_2/assets/logo-plomeros-circular.png";
+  const includeBahiaExtras = isBahiaBlanca113(encuentro);
   const normalizedTo = cleanText(to, 120).toLowerCase();
 
   if (!resendApiKey || !mailFrom || !normalizedTo) {
@@ -260,11 +268,34 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
   const safeEncuentro = escapeHtml(formatEncuentroLabel(encuentro) || "encuentro");
   const safeWhatsappGroupUrl = escapeHtml(whatsappGroupUrl);
   const safeLogoUrl = escapeHtml(logoUrl);
+  const safeBahiaLocationUrl = escapeHtml(BAHIA_BLANCA_LOCATION_URL);
+  const safeBahiaMailImageUrl = escapeHtml(BAHIA_BLANCA_MAIL_IMAGE_URL);
+  const bahiaLocationHtml = includeBahiaExtras
+    ? `
+      <p style="margin:0 0 12px;">
+        <strong>Lugar del Encuentro:</strong>
+        <a href="${safeBahiaLocationUrl}" target="_blank" rel="noopener noreferrer">
+          ${safeBahiaLocationUrl}
+        </a>
+      </p>
+    `
+    : "";
+  const bahiaFlyerHtml = includeBahiaExtras
+    ? `
+      <img
+        src="${safeBahiaMailImageUrl}"
+        alt="Flyer Encuentro Bah&iacute;a Blanca 11 de marzo"
+        width="520"
+        style="display:block;width:100%;max-width:520px;height:auto;margin:12px auto 16px;border:0;outline:none;text-decoration:none;border-radius:12px;"
+      />
+    `
+    : "";
   const html = `
     <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.55;color:#10263f">
       <h2 style="margin:0 0 12px">Inscripci&oacute;n confirmada</h2>
       <p>Hola ${safeNombre}</p>
       <p>Ya est&aacute; confirmada su vacante para el encuentro <strong>${safeEncuentro}</strong>.</p>
+      ${bahiaLocationHtml}
       <p>
         Ingrese al grupo de WhatsApp exclusivo para empezar a vivir la experiencia del encuentro para
         consultas, sorteo, informaci&oacute;n y comunicados:
@@ -287,6 +318,7 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
       <p style="margin:0 0 14px;color:#5b6b80;font-size:13px;">
         N&uacute;mero de registro: <strong>${escapeHtml(numeroRegistro ?? "pendiente")}</strong>
       </p>
+      ${bahiaFlyerHtml}
       <img
         src="${safeLogoUrl}"
         alt="Logo Plomeros ARG"
