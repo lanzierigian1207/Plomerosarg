@@ -277,41 +277,84 @@ async function handlePost(req, res) {
       });
     }
 
+    const listUrl = new URL(`${supabaseUrl.replace(/\/$/, "")}/rest/v1/inscripciones`);
+    listUrl.searchParams.set("select", "id,encuentro");
+    listUrl.searchParams.set("limit", "10000");
+
+    const listResponse = await fetch(listUrl.toString(), {
+      method: "GET",
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`
+      }
+    });
+
+    if (!listResponse.ok) {
+      const detail = await listResponse.text().catch(() => "");
+      return res.status(500).json({
+        ok: false,
+        error: "No se pudo listar inscripciones antes del borrado.",
+        detail
+      });
+    }
+
+    const allRows = await listResponse.json().catch(() => []);
+    const activeEventSet = new Set(activeEvents);
+    const idsByEvent = new Map(activeEvents.map((eventName) => [eventName, []]));
+
+    for (const row of Array.isArray(allRows) ? allRows : []) {
+      const id = Number.parseInt(String(row?.id ?? ""), 10);
+      if (!Number.isFinite(id)) continue;
+
+      const canonicalEvent = getCanonicalEventName(row?.encuentro);
+      if (!activeEventSet.has(canonicalEvent)) continue;
+
+      idsByEvent.get(canonicalEvent).push(id);
+    }
+
     const results = [];
     let deletedTotal = 0;
 
     for (const activeEvent of activeEvents) {
-      const deleteUrl = new URL(
-        `${supabaseUrl.replace(/\/$/, "")}/rest/v1/inscripciones`
-      );
-      deleteUrl.searchParams.set("select", "id,encuentro,created_at");
-      deleteUrl.searchParams.set("encuentro", `eq.${activeEvent}`);
+      const eventIds = idsByEvent.get(activeEvent) || [];
+      let deletedCount = 0;
 
-      const deleteResponse = await fetch(deleteUrl.toString(), {
-        method: "DELETE",
-        headers: {
-          apikey: serviceRoleKey,
-          Authorization: `Bearer ${serviceRoleKey}`,
-          Prefer: "return=representation"
-        }
-      });
+      for (let index = 0; index < eventIds.length; index += 200) {
+        const chunk = eventIds.slice(index, index + 200);
+        const deleteUrl = new URL(
+          `${supabaseUrl.replace(/\/$/, "")}/rest/v1/inscripciones`
+        );
+        deleteUrl.searchParams.set("select", "id");
+        deleteUrl.searchParams.set("id", `in.(${chunk.join(",")})`);
 
-      if (!deleteResponse.ok) {
-        const detail = await deleteResponse.text().catch(() => "");
-        return res.status(500).json({
-          ok: false,
-          error: `No se pudo borrar inscripciones del encuentro ${activeEvent}.`,
-          detail
+        const deleteResponse = await fetch(deleteUrl.toString(), {
+          method: "DELETE",
+          headers: {
+            apikey: serviceRoleKey,
+            Authorization: `Bearer ${serviceRoleKey}`,
+            Prefer: "return=representation"
+          }
         });
+
+        if (!deleteResponse.ok) {
+          const detail = await deleteResponse.text().catch(() => "");
+          return res.status(500).json({
+            ok: false,
+            error: `No se pudo borrar inscripciones del encuentro ${activeEvent}.`,
+            detail
+          });
+        }
+
+        const deletedRows = await deleteResponse.json().catch(() => []);
+        deletedCount += Array.isArray(deletedRows) ? deletedRows.length : 0;
       }
 
-      const deletedRows = await deleteResponse.json().catch(() => []);
-      const deletedCount = Array.isArray(deletedRows) ? deletedRows.length : 0;
       deletedTotal += deletedCount;
 
       results.push({
         evento: activeEvent,
-        deleted: deletedCount
+        deleted: deletedCount,
+        encontrados: eventIds.length
       });
     }
 
