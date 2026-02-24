@@ -334,7 +334,7 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
       : `<p style="margin:0 0 10px;">Que tengan buen d&iacute;a</p>`;
   const eventWhatsappRequiredNoticeHtml =
     eventExtras?.whatsappRequiredNotice
-      ? `<p style="margin:0 0 14px;color:#6b7280;font-size:13px;">${safeEventWhatsappRequiredNotice}</p>`
+      ? `<p style="margin:0 0 14px;color:#111111;font-size:13px;font-weight:700;">${safeEventWhatsappRequiredNotice}</p>`
       : "";
   const eventLocationHtml = eventExtras
     ? `
