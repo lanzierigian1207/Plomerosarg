@@ -419,7 +419,7 @@
         .filter(Boolean);
 
       if (profesiones.length === 0) {
-        successMessage.textContent = "Seleccion&aacute; al menos una profesi&oacute;n.";
+        successMessage.textContent = "Seleccion\u00e1 al menos una profesi\u00f3n.";
         successMessage.classList.add("error");
         successMessage.style.display = "block";
         return;
@@ -458,7 +458,7 @@
           throw new Error(data.error || "No fue posible guardar la inscripci&oacute;n.");
         }
 
-        successMessage.textContent = "Gracias por la inscripci&oacute;n. En breve les llegar&aacute; la informaci&oacute;n.";
+        successMessage.textContent = "Gracias por la inscripci\u00f3n. En breve les llegar\u00e1 la informaci\u00f3n.";
         successMessage.style.display = "block";
         form.reset();
       } catch (error) {
