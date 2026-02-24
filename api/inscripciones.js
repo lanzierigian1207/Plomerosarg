@@ -35,10 +35,12 @@ const DEFAULT_WHATSAPP_GROUP_URL =
 const MAIL_EVENT_EXTRAS = [
   {
     eventKey: "bahia blanca 11/3",
-    locationAddress: "Cam. de la Carrindanga 3802, B8000 Bahía Blanca",
+    locationAddress: "Cam. de la Carrindanga 3802, B8000 Bah\u00eda Blanca",
+    locationLinkLabel: "Ve el lugar en google",
+    ingresoHorario: "14hrs",
     locationUrl: "https://share.google/viNow9oZuZHkSdo9C",
     imageUrl:
-      "https://plomerosarg.com/Prueba_2/assets/WhatsApp%20Image%202026-02-23%20at%2011.58.11%20AM.jpeg"
+      "https://plomerosarg.com/Prueba_2/assets/WhatsApp%20Image%202026-02-23%20at%2010.13.50%20PM.jpeg"
   },
   {
     eventKey: "mar del plata 14/3",
@@ -199,11 +201,11 @@ async function getRegistroNumeroPorEncuentro({
 
   const total = parseContentRangeTotal(response.headers.get("content-range"));
   if (total !== null) {
-    return Math.max(total - 1, 0);
+    return Math.max(total, 0);
   }
 
   const rows = await response.json().catch(() => []);
-  return Array.isArray(rows) ? Math.max(rows.length - 1, 0) : null;
+  return Array.isArray(rows) ? Math.max(rows.length, 0) : null;
 }
 
 function getRegistroResetAt() {
@@ -284,15 +286,39 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
   const safeWhatsappGroupUrl = escapeHtml(whatsappGroupUrl);
   const safeLogoUrl = escapeHtml(logoUrl);
   const safeEventLocationAddress = escapeHtml(eventExtras?.locationAddress || "");
+  const safeEventLocationLinkLabel = escapeHtml(eventExtras?.locationLinkLabel || "");
+  const safeEventIngresoHorario = escapeHtml(eventExtras?.ingresoHorario || "");
   const safeEventLocationUrl = escapeHtml(eventExtras?.locationUrl || "");
   const safeEventMailImageUrl = escapeHtml(eventExtras?.imageUrl || "");
-  const eventLocationHtml = eventExtras
-    ? `
-      <p style="margin:0 0 12px;">
-        <strong>Lugar del Encuentro:</strong>${eventExtras.locationAddress ? ` ${safeEventLocationAddress}<br />` : " "}
+  const eventLocationUrlLineHtml = eventExtras
+    ? eventExtras.locationLinkLabel
+      ? `
+        <br />
+        <strong>${safeEventLocationLinkLabel}:</strong>
         <a href="${safeEventLocationUrl}" target="_blank" rel="noopener noreferrer">
           ${safeEventLocationUrl}
         </a>
+      `
+      : `
+        <br />
+        <a href="${safeEventLocationUrl}" target="_blank" rel="noopener noreferrer">
+          ${safeEventLocationUrl}
+        </a>
+      `
+    : "";
+  const eventIngresoHorarioHtml =
+    eventExtras?.ingresoHorario
+      ? `
+        <br />
+        <strong>Horario de Ingreso:</strong> ${safeEventIngresoHorario}
+      `
+      : "";
+  const eventLocationHtml = eventExtras
+    ? `
+      <p style="margin:0 0 12px;">
+        <strong>Lugar del Encuentro:</strong>${eventExtras.locationAddress ? ` ${safeEventLocationAddress}` : ""}
+        ${eventLocationUrlLineHtml}
+        ${eventIngresoHorarioHtml}
       </p>
     `
     : "";
