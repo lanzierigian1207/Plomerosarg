@@ -42,6 +42,7 @@ const MAIL_EVENT_EXTRAS = [
   },
   {
     eventKey: "mar del plata 14/3",
+    locationAddress: "Av. Pedro Luro 8851, B7606 Mar del Plata",
     locationUrl: "https://share.google/KA62Zn0H6wtiLd0La",
     imageUrl:
       "https://plomerosarg.com/Prueba_2/assets/WhatsApp%20Image%202026-02-23%20at%2011.58.12%20AM.jpeg"
