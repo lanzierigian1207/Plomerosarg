@@ -380,7 +380,7 @@
         <button class="btn btn-primary" type="submit">Enviar</button>
         <a class="btn btn-secondary" href="encuentros.html">Volver a Encuentros</a>
       </div>
-      <p class="success-message" id="successMessage" role="status">Gracias por la inscripci&oacute;n. En breve les llegar&aacute; la informaci&oacute;n.</p>
+      <p class="success-message" id="successMessage" role="status">Gracias por la incripci&oacute;, Fijarse en el Spam o No deseados que les llegara un mail con la confirmaci&oacute;n</p>
     </form>
   </main>
   <script>
@@ -438,7 +438,7 @@
           throw new Error(data.error || "No fue posible guardar la inscripci&oacute;n.");
         }
 
-        successMessage.textContent = "Gracias por la inscripci\u00f3n. En breve les llegar\u00e1 la informaci\u00f3n.";
+        successMessage.textContent = "Gracias por la incripci\u00f3, Fijarse en el Spam o No deseados que les llegara un mail con la confirmaci\u00f3n.";
         successMessage.style.display = "block";
         form.reset();
       } catch (error) {
