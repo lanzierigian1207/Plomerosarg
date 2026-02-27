@@ -31,6 +31,8 @@ const ALLOWED_ORIGEN = new Set([
 const { getCanonicalEventName, getEventStatus } = require("./_encuentros");
 const DEFAULT_WHATSAPP_GROUP_URL =
   "https://wa.me/5491100000000?text=Hola%2C%20quiero%20sumarme%20al%20grupo%20del%20encuentro";
+const DEFAULT_DONATION_NOTICE =
+  "Trae uno o dos alimentos no perecederos para donar a una institución de la zona";
 const MAIL_EVENT_EXTRAS = [
   {
     eventKey: "bahia blanca 11/3",
@@ -292,6 +294,9 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
   const safeLogoUrl = escapeHtml(logoUrl);
   const safeEventLocationAddress = escapeHtml(eventExtras?.locationAddress || "");
   const safeEventLocationLinkLabel = escapeHtml(eventExtras?.locationLinkLabel || "");
+  const safeEventDonationNotice = escapeHtml(
+    eventExtras?.donationNotice || DEFAULT_DONATION_NOTICE
+  );
   const safeEventIngresoHorarioLabel = escapeHtml(
     eventExtras?.ingresoHorarioLabel || "Horario de Ingreso"
   );
@@ -338,6 +343,7 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
         consultas, sorteo, informaci&oacute;n y comunicados:
       </p>
     `;
+  const eventDonationNoticeHtml = `<p style="margin:0 0 12px;">${safeEventDonationNotice}</p>`;
   const eventLocationHtml = eventExtras
     ? `
       <p style="margin:0 0 12px;">
@@ -363,6 +369,7 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
       <p>Hola ${safeNombre}</p>
       <p>Ya est&aacute; confirmada su vacante para el encuentro <strong>${safeEncuentro}</strong>.</p>
       ${eventLocationHtml}
+      ${eventDonationNoticeHtml}
       ${eventWhatsappIntroHtml}
       <p style="margin:10px 0 14px;">
         <a
