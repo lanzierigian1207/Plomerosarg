@@ -32,7 +32,7 @@ const { getCanonicalEventName, getEventStatus } = require("./_encuentros");
 const DEFAULT_WHATSAPP_GROUP_URL =
   "https://wa.me/5491100000000?text=Hola%2C%20quiero%20sumarme%20al%20grupo%20del%20encuentro";
 const DEFAULT_DONATION_NOTICE =
-  "Trae uno o dos alimentos no perecederos para donar a una institución de la zona";
+  "Traer uno o dos alimentos no perecederos para donar a una institución de la zona";
 const MAIL_EVENT_EXTRAS = [
   {
     eventKey: "bahia blanca 11/3",
@@ -344,7 +344,7 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
       </p>
     `;
   const eventDonationNoticeHtml =
-    `<p style="margin:0 0 12px;padding:10px 12px;border-left:4px solid #d32f2f;background:#fff5f5;color:#b71c1c;font-weight:800;font-size:15px;">${safeEventDonationNotice}</p>`;
+    `<p style="margin:0 0 12px;padding:10px 12px;border-left:4px solid #111111;background:#f6f6f6;color:#111111;font-weight:900;font-size:15px;">${safeEventDonationNotice}</p>`;
   const eventLocationHtml = eventExtras
     ? `
       <p style="margin:0 0 12px;">
