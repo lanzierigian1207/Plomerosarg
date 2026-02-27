@@ -343,7 +343,8 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
         consultas, sorteo, informaci&oacute;n y comunicados:
       </p>
     `;
-  const eventDonationNoticeHtml = `<p style="margin:0 0 12px;">${safeEventDonationNotice}</p>`;
+  const eventDonationNoticeHtml =
+    `<p style="margin:0 0 12px;padding:10px 12px;border-left:4px solid #d32f2f;background:#fff5f5;color:#b71c1c;font-weight:800;font-size:15px;">${safeEventDonationNotice}</p>`;
   const eventLocationHtml = eventExtras
     ? `
       <p style="margin:0 0 12px;">
