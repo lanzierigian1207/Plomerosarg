@@ -208,6 +208,23 @@
       overflow: auto;
     }
 
+    .rows-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 12px 16px 16px;
+      border-top: 1px solid #edf2f8;
+      background: #fbfdff;
+    }
+
+    .rows-info {
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-right: 6px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -286,8 +303,10 @@
     const totalValue = document.getElementById("totalValue");
     const updatedAt = document.getElementById("updatedAt");
     const refreshBtn = document.getElementById("refreshBtn");
+    const DEFAULT_VISIBLE_ROWS = 25;
     let currentEventos = [];
     const toggleInFlight = new Set();
+    const visibleRowsByEvent = new Map();
 
     function escapeHtml(value) {
       return String(value ?? "")
@@ -320,6 +339,26 @@
 
     function isEventActive(item) {
       return item?.activo !== false;
+    }
+
+    function getEventKey(item, index) {
+      return `${String(item?.evento || "evento").toLowerCase()}::${index}`;
+    }
+
+    function getVisibleRows(item, index, totalRows) {
+      const key = getEventKey(item, index);
+      const savedValue = Number.parseInt(String(visibleRowsByEvent.get(key) ?? ""), 10);
+      const baseValue = Number.isFinite(savedValue) ? savedValue : DEFAULT_VISIBLE_ROWS;
+      const nextValue = Math.max(0, Math.min(baseValue, totalRows));
+      visibleRowsByEvent.set(key, nextValue);
+      return nextValue;
+    }
+
+    function setVisibleRows(item, index, nextValue) {
+      const key = getEventKey(item, index);
+      const totalRows = Array.isArray(item?.inscripciones) ? item.inscripciones.length : 0;
+      const clamped = Math.max(0, Math.min(Number(nextValue) || 0, totalRows));
+      visibleRowsByEvent.set(key, clamped);
     }
 
     function buildRows(rows) {
@@ -433,6 +472,10 @@
       eventsContainer.innerHTML = eventos
         .map((item, index) => {
           const rows = Array.isArray(item.inscripciones) ? item.inscripciones : [];
+          const visibleRows = getVisibleRows(item, index, rows.length);
+          const rowsToRender = rows.slice(0, visibleRows);
+          const canShowMore = visibleRows < rows.length;
+          const canShowLess = visibleRows > Math.min(DEFAULT_VISIBLE_ROWS, rows.length);
           return `
             <article class="event-card">
               <header class="event-head">
@@ -479,9 +522,28 @@
                           </tr>
                         </thead>
                         <tbody>
-                          ${buildRows(rows)}
+                          ${buildRows(rowsToRender)}
                         </tbody>
                       </table>
+                    </div>
+                    <div class="rows-controls">
+                      <span class="rows-info">Mostrando ${visibleRows} de ${rows.length}</span>
+                      <button
+                        class="btn-event"
+                        type="button"
+                        data-show-more="${index}"
+                        ${canShowMore ? "" : "disabled"}
+                      >
+                        Ver m&aacute;s
+                      </button>
+                      <button
+                        class="btn-event"
+                        type="button"
+                        data-show-less="${index}"
+                        ${canShowLess ? "" : "disabled"}
+                      >
+                        Ver menos
+                      </button>
                     </div>
                   `
               }
@@ -576,10 +638,33 @@
         return;
       }
 
-      const button = event.target.closest("[data-download-event]");
-      if (!button) return;
+      const showMoreButton = event.target.closest("[data-show-more]");
+      if (showMoreButton) {
+        const showMoreIndex = Number.parseInt(showMoreButton.getAttribute("data-show-more"), 10);
+        if (!Number.isInteger(showMoreIndex)) return;
+        const selected = currentEventos[showMoreIndex];
+        if (!selected) return;
+        const totalRows = Array.isArray(selected.inscripciones) ? selected.inscripciones.length : 0;
+        setVisibleRows(selected, showMoreIndex, totalRows);
+        renderEvents(currentEventos);
+        return;
+      }
 
-      const index = Number.parseInt(button.getAttribute("data-download-event"), 10);
+      const showLessButton = event.target.closest("[data-show-less]");
+      if (showLessButton) {
+        const showLessIndex = Number.parseInt(showLessButton.getAttribute("data-show-less"), 10);
+        if (!Number.isInteger(showLessIndex)) return;
+        const selected = currentEventos[showLessIndex];
+        if (!selected) return;
+        setVisibleRows(selected, showLessIndex, DEFAULT_VISIBLE_ROWS);
+        renderEvents(currentEventos);
+        return;
+      }
+
+      const downloadButton = event.target.closest("[data-download-event]");
+      if (!downloadButton) return;
+
+      const index = Number.parseInt(downloadButton.getAttribute("data-download-event"), 10);
       if (!Number.isInteger(index)) return;
 
       const selected = currentEventos[index];
