@@ -481,58 +481,61 @@
       return attendanceConfirmedByEvent.get(key);
     }
 
-    function searchAttendanceByRegistro(item, index, rawNumero) {
+    function normalizeDniValue(value) {
+      return String(value ?? "").replace(/\D+/g, "").trim();
+    }
+
+    function searchAttendanceByDni(item, index, rawDni) {
       const state = getAttendanceLookup(item, index);
-      const cleaned = String(rawNumero ?? "").trim();
-      const numericNumero = Number.parseInt(cleaned, 10);
+      const cleaned = normalizeDniValue(rawDni);
 
       state.searched = true;
       state.numero = cleaned;
       state.row = null;
       state.error = "";
 
-      if (!Number.isFinite(numericNumero) || numericNumero <= 0) {
-        state.error = "Ingresa un numero de registro valido.";
+      if (!cleaned) {
+        state.error = "Ingresa un DNI valido.";
         return;
       }
 
       const rows = Array.isArray(item?.inscripciones) ? item.inscripciones : [];
       const found = rows.find((entry) => {
-        const rowNumero = Number.parseInt(String(entry.id_evento ?? ""), 10);
-        return Number.isFinite(rowNumero) && rowNumero === numericNumero;
+        const rowDni = normalizeDniValue(entry.dni);
+        return rowDni === cleaned;
       }) || null;
 
       if (!found) {
-        state.error = "No se encontro una persona con ese numero de registro en este encuentro.";
+        state.error = "No se encontro una persona con ese DNI en este encuentro.";
         return;
       }
 
       state.row = found;
-      state.numero = String(numericNumero);
+      state.numero = cleaned;
     }
 
-    function confirmAttendance(item, index, numero) {
-      const normalizedNumero = Number.parseInt(String(numero ?? ""), 10);
-      if (!Number.isFinite(normalizedNumero)) return;
+    function confirmAttendance(item, index, dni) {
+      const normalizedDni = normalizeDniValue(dni);
+      if (!normalizedDni) return;
       const confirmed = getAttendanceConfirmedSet(item, index);
-      confirmed.add(normalizedNumero);
+      confirmed.add(normalizedDni);
     }
 
-    function setAttendanceConfirmed(item, index, numero, checked) {
-      const normalizedNumero = Number.parseInt(String(numero ?? ""), 10);
-      if (!Number.isFinite(normalizedNumero)) return;
+    function setAttendanceConfirmed(item, index, dni, checked) {
+      const normalizedDni = normalizeDniValue(dni);
+      if (!normalizedDni) return;
       const confirmed = getAttendanceConfirmedSet(item, index);
       if (checked) {
-        confirmed.add(normalizedNumero);
+        confirmed.add(normalizedDni);
       } else {
-        confirmed.delete(normalizedNumero);
+        confirmed.delete(normalizedDni);
       }
     }
 
-    function isAttendanceConfirmed(item, index, numero) {
-      const normalizedNumero = Number.parseInt(String(numero ?? ""), 10);
-      if (!Number.isFinite(normalizedNumero)) return false;
-      return getAttendanceConfirmedSet(item, index).has(normalizedNumero);
+    function isAttendanceConfirmed(item, index, dni) {
+      const normalizedDni = normalizeDniValue(dni);
+      if (!normalizedDni) return false;
+      return getAttendanceConfirmedSet(item, index).has(normalizedDni);
     }
 
     function buildAttendanceResultHtml(item, index) {
@@ -544,7 +547,7 @@
       const state = getAttendanceLookup(item, index);
 
       if (!state.searched) {
-        return `<p class="attendance-hint">Ingresa un numero de registro para ver los datos.</p>`;
+        return `<p class="attendance-hint">Ingresa un DNI para ver los datos.</p>`;
       }
 
       if (state.error) {
@@ -552,18 +555,16 @@
       }
 
       if (!state.row) {
-        return `<p class="attendance-hint">No se encontro informacion del registro buscado.</p>`;
+        return `<p class="attendance-hint">No se encontro informacion del DNI buscado.</p>`;
       }
 
       const row = state.row;
-      const numeroRegistro = Number.parseInt(String(row.id_evento ?? ""), 10);
-      const confirmed = isAttendanceConfirmed(item, index, numeroRegistro);
+      const confirmed = isAttendanceConfirmed(item, index, row.dni);
 
       return `
         <div class="attendance-result">
-          <p class="attendance-row"><strong>Numero de registro:</strong> ${escapeHtml(row.id_evento ?? "-")}</p>
-          <p class="attendance-row"><strong>Nombre y apellido:</strong> ${escapeHtml(row.nombre_apellido || "-")}</p>
           <p class="attendance-row"><strong>DNI:</strong> ${escapeHtml(row.dni || "-")}</p>
+          <p class="attendance-row"><strong>Nombre y apellido:</strong> ${escapeHtml(row.nombre_apellido || "-")}</p>
           <p class="attendance-row"><strong>Mail:</strong> ${escapeHtml(row.mail || "-")}</p>
           <p class="attendance-row"><strong>Localidad:</strong> ${escapeHtml(row.localidad || "-")}</p>
           <div class="attendance-check-wrap">
@@ -571,7 +572,7 @@
               class="btn-attendance-check ${confirmed ? "is-done" : ""}"
               type="button"
               data-attendance-confirm="${index}"
-              data-attendance-numero="${escapeHtml(row.id_evento ?? "")}"
+              data-attendance-dni="${escapeHtml(row.dni ?? "")}"
             >
               ${confirmed ? "&#10003; Asistencia marcada" : "&#10003;"}
             </button>
@@ -597,8 +598,8 @@
                 class="attendance-checkbox"
                 type="checkbox"
                 data-attendance-row-toggle="${eventIndex}"
-                data-attendance-numero="${escapeHtml(item.id_evento ?? "")}"
-                ${isAttendanceConfirmed(eventItem, eventIndex, item.id_evento) ? "checked" : ""}
+                data-attendance-dni="${escapeHtml(item.dni ?? "")}"
+                ${isAttendanceConfirmed(eventItem, eventIndex, item.dni) ? "checked" : ""}
               />
             </td>
           </tr>
@@ -737,11 +738,10 @@
                 <div class="attendance-form">
                   <input
                     class="attendance-input"
-                    type="number"
-                    min="1"
-                    step="1"
+                    type="text"
+                    inputmode="numeric"
                     data-attendance-input="${index}"
-                    placeholder="Numero de registro"
+                    placeholder="DNI"
                     value="${escapeHtml(attendanceLookup.numero || "")}"
                     ${rows.length === 0 ? "disabled" : ""}
                   />
@@ -904,7 +904,7 @@
 
         const input = eventsContainer.querySelector(`[data-attendance-input="${searchIndex}"]`);
         const inputValue = input ? input.value : "";
-        searchAttendanceByRegistro(selected, searchIndex, inputValue);
+        searchAttendanceByDni(selected, searchIndex, inputValue);
         renderEvents(currentEventos);
         return;
       }
@@ -918,8 +918,8 @@
         if (!Number.isInteger(confirmIndex)) return;
         const selected = currentEventos[confirmIndex];
         if (!selected) return;
-        const registroNumero = attendanceConfirmButton.getAttribute("data-attendance-numero");
-        confirmAttendance(selected, confirmIndex, registroNumero);
+        const dniValue = attendanceConfirmButton.getAttribute("data-attendance-dni");
+        confirmAttendance(selected, confirmIndex, dniValue);
         renderEvents(currentEventos);
         return;
       }
@@ -972,11 +972,11 @@
       const selected = currentEventos[rowIndex];
       if (!selected) return;
 
-      const registroNumero = attendanceRowCheckbox.getAttribute("data-attendance-numero");
+      const dniValue = attendanceRowCheckbox.getAttribute("data-attendance-dni");
       setAttendanceConfirmed(
         selected,
         rowIndex,
-        registroNumero,
+        dniValue,
         Boolean(attendanceRowCheckbox.checked)
       );
       renderEvents(currentEventos);
