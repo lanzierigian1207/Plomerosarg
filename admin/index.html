@@ -225,6 +225,89 @@
       margin-right: 6px;
     }
 
+    .attendance-box {
+      margin: 14px 16px 0;
+      padding: 12px;
+      border: 1px solid #dbe6f5;
+      border-radius: 10px;
+      background: #f7fbff;
+    }
+
+    .attendance-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .attendance-form {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .attendance-input {
+      width: 190px;
+      max-width: 100%;
+      border: 1px solid #afc4e5;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font: inherit;
+      font-size: 0.9rem;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .attendance-hint {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 600;
+    }
+
+    .attendance-error {
+      margin-top: 8px;
+      color: #8f241f;
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .attendance-result {
+      margin-top: 10px;
+      border: 1px solid #dbe6f5;
+      border-radius: 10px;
+      background: #ffffff;
+      padding: 10px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .attendance-row {
+      font-size: 0.9rem;
+      color: #213750;
+    }
+
+    .attendance-check-wrap {
+      margin-top: 4px;
+    }
+
+    .btn-attendance-check {
+      border: 0;
+      border-radius: 999px;
+      background: #188645;
+      color: #fff;
+      padding: 7px 13px;
+      font: inherit;
+      font-size: 0.85rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .btn-attendance-check.is-done {
+      background: #0f6f38;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -307,6 +390,8 @@
     let currentEventos = [];
     const toggleInFlight = new Set();
     const visibleRowsByEvent = new Map();
+    const attendanceLookupByEvent = new Map();
+    const attendanceConfirmedByEvent = new Map();
 
     function escapeHtml(value) {
       return String(value ?? "")
@@ -359,6 +444,115 @@
       const totalRows = Array.isArray(item?.inscripciones) ? item.inscripciones.length : 0;
       const clamped = Math.max(0, Math.min(Number(nextValue) || 0, totalRows));
       visibleRowsByEvent.set(key, clamped);
+    }
+
+    function getAttendanceLookup(item, index) {
+      const key = getEventKey(item, index);
+      if (!attendanceLookupByEvent.has(key)) {
+        attendanceLookupByEvent.set(key, {
+          searched: false,
+          numero: "",
+          row: null,
+          error: ""
+        });
+      }
+      return attendanceLookupByEvent.get(key);
+    }
+
+    function getAttendanceConfirmedSet(item, index) {
+      const key = getEventKey(item, index);
+      if (!attendanceConfirmedByEvent.has(key)) {
+        attendanceConfirmedByEvent.set(key, new Set());
+      }
+      return attendanceConfirmedByEvent.get(key);
+    }
+
+    function searchAttendanceByRegistro(item, index, rawNumero) {
+      const state = getAttendanceLookup(item, index);
+      const cleaned = String(rawNumero ?? "").trim();
+      const numericNumero = Number.parseInt(cleaned, 10);
+
+      state.searched = true;
+      state.numero = cleaned;
+      state.row = null;
+      state.error = "";
+
+      if (!Number.isFinite(numericNumero) || numericNumero <= 0) {
+        state.error = "Ingresa un numero de registro valido.";
+        return;
+      }
+
+      const rows = Array.isArray(item?.inscripciones) ? item.inscripciones : [];
+      const found = rows.find((entry) => {
+        const rowNumero = Number.parseInt(String(entry.id_evento ?? ""), 10);
+        return Number.isFinite(rowNumero) && rowNumero === numericNumero;
+      }) || null;
+
+      if (!found) {
+        state.error = "No se encontro una persona con ese numero de registro en este encuentro.";
+        return;
+      }
+
+      state.row = found;
+      state.numero = String(numericNumero);
+    }
+
+    function confirmAttendance(item, index, numero) {
+      const normalizedNumero = Number.parseInt(String(numero ?? ""), 10);
+      if (!Number.isFinite(normalizedNumero)) return;
+      const confirmed = getAttendanceConfirmedSet(item, index);
+      confirmed.add(normalizedNumero);
+    }
+
+    function isAttendanceConfirmed(item, index, numero) {
+      const normalizedNumero = Number.parseInt(String(numero ?? ""), 10);
+      if (!Number.isFinite(normalizedNumero)) return false;
+      return getAttendanceConfirmedSet(item, index).has(normalizedNumero);
+    }
+
+    function buildAttendanceResultHtml(item, index) {
+      const rows = Array.isArray(item?.inscripciones) ? item.inscripciones : [];
+      if (rows.length === 0) {
+        return `<p class="attendance-hint">No hay inscriptos para buscar en este encuentro.</p>`;
+      }
+
+      const state = getAttendanceLookup(item, index);
+
+      if (!state.searched) {
+        return `<p class="attendance-hint">Ingresa un numero de registro para ver los datos.</p>`;
+      }
+
+      if (state.error) {
+        return `<p class="attendance-error">${escapeHtml(state.error)}</p>`;
+      }
+
+      if (!state.row) {
+        return `<p class="attendance-hint">No se encontro informacion del registro buscado.</p>`;
+      }
+
+      const row = state.row;
+      const numeroRegistro = Number.parseInt(String(row.id_evento ?? ""), 10);
+      const confirmed = isAttendanceConfirmed(item, index, numeroRegistro);
+
+      return `
+        <div class="attendance-result">
+          <p class="attendance-row"><strong>Numero de registro:</strong> ${escapeHtml(row.id_evento ?? "-")}</p>
+          <p class="attendance-row"><strong>Nombre y apellido:</strong> ${escapeHtml(row.nombre_apellido || "-")}</p>
+          <p class="attendance-row"><strong>DNI:</strong> ${escapeHtml(row.dni || "-")}</p>
+          <p class="attendance-row"><strong>Mail:</strong> ${escapeHtml(row.mail || "-")}</p>
+          <p class="attendance-row"><strong>Localidad:</strong> ${escapeHtml(row.localidad || "-")}</p>
+          <div class="attendance-check-wrap">
+            <button
+              class="btn-attendance-check ${confirmed ? "is-done" : ""}"
+              type="button"
+              data-attendance-confirm="${index}"
+              data-attendance-numero="${escapeHtml(row.id_evento ?? "")}"
+            >
+              ${confirmed ? "&#10003; Asistencia marcada" : "&#10003;"}
+            </button>
+          </div>
+        </div>
+      `;
     }
 
     function buildRows(rows) {
@@ -476,6 +670,7 @@
           const rowsToRender = rows.slice(0, visibleRows);
           const canShowMore = visibleRows < rows.length;
           const canShowLess = visibleRows > Math.min(DEFAULT_VISIBLE_ROWS, rows.length);
+          const attendanceLookup = getAttendanceLookup(item, index);
           return `
             <article class="event-card">
               <header class="event-head">
@@ -503,6 +698,30 @@
                   </button>
                 </div>
               </header>
+              <section class="attendance-box">
+                <h3 class="attendance-title">Asistencia encuentro</h3>
+                <div class="attendance-form">
+                  <input
+                    class="attendance-input"
+                    type="number"
+                    min="1"
+                    step="1"
+                    data-attendance-input="${index}"
+                    placeholder="Numero de registro"
+                    value="${escapeHtml(attendanceLookup.numero || "")}"
+                    ${rows.length === 0 ? "disabled" : ""}
+                  />
+                  <button
+                    class="btn-event"
+                    type="button"
+                    data-attendance-search="${index}"
+                    ${rows.length === 0 ? "disabled" : ""}
+                  >
+                    Buscar
+                  </button>
+                </div>
+                ${buildAttendanceResultHtml(item, index)}
+              </section>
               ${
                 rows.length === 0
                   ? `<p class="empty">No hay inscripciones en este evento.</p>`
@@ -635,6 +854,38 @@
       if (toggleButton) {
         const toggleIndex = Number.parseInt(toggleButton.getAttribute("data-toggle-event"), 10);
         await toggleEvent(toggleIndex);
+        return;
+      }
+
+      const attendanceSearchButton = event.target.closest("[data-attendance-search]");
+      if (attendanceSearchButton) {
+        const searchIndex = Number.parseInt(
+          attendanceSearchButton.getAttribute("data-attendance-search"),
+          10
+        );
+        if (!Number.isInteger(searchIndex)) return;
+        const selected = currentEventos[searchIndex];
+        if (!selected) return;
+
+        const input = eventsContainer.querySelector(`[data-attendance-input="${searchIndex}"]`);
+        const inputValue = input ? input.value : "";
+        searchAttendanceByRegistro(selected, searchIndex, inputValue);
+        renderEvents(currentEventos);
+        return;
+      }
+
+      const attendanceConfirmButton = event.target.closest("[data-attendance-confirm]");
+      if (attendanceConfirmButton) {
+        const confirmIndex = Number.parseInt(
+          attendanceConfirmButton.getAttribute("data-attendance-confirm"),
+          10
+        );
+        if (!Number.isInteger(confirmIndex)) return;
+        const selected = currentEventos[confirmIndex];
+        if (!selected) return;
+        const registroNumero = attendanceConfirmButton.getAttribute("data-attendance-numero");
+        confirmAttendance(selected, confirmIndex, registroNumero);
+        renderEvents(currentEventos);
         return;
       }
 
