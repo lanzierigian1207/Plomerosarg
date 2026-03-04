@@ -335,6 +335,20 @@
       color: #213750;
     }
 
+    .attendance-col {
+      text-align: center;
+      width: 88px;
+      white-space: nowrap;
+    }
+
+    .attendance-checkbox {
+      width: 16px;
+      height: 16px;
+      accent-color: #188645;
+      cursor: pointer;
+      vertical-align: middle;
+    }
+
     .status {
       background: #fff;
       border: 1px solid var(--line);
@@ -504,6 +518,17 @@
       confirmed.add(normalizedNumero);
     }
 
+    function setAttendanceConfirmed(item, index, numero, checked) {
+      const normalizedNumero = Number.parseInt(String(numero ?? ""), 10);
+      if (!Number.isFinite(normalizedNumero)) return;
+      const confirmed = getAttendanceConfirmedSet(item, index);
+      if (checked) {
+        confirmed.add(normalizedNumero);
+      } else {
+        confirmed.delete(normalizedNumero);
+      }
+    }
+
     function isAttendanceConfirmed(item, index, numero) {
       const normalizedNumero = Number.parseInt(String(numero ?? ""), 10);
       if (!Number.isFinite(normalizedNumero)) return false;
@@ -555,7 +580,7 @@
       `;
     }
 
-    function buildRows(rows) {
+    function buildRows(rows, eventItem, eventIndex) {
       return rows
         .map((item) => `
           <tr>
@@ -567,6 +592,15 @@
             <td>${escapeHtml(item.provincia || "-")}</td>
             <td>${escapeHtml(item.localidad || "-")}</td>
             <td>${escapeHtml(item.profesion_label || item.profesion || "-")}</td>
+            <td class="attendance-col">
+              <input
+                class="attendance-checkbox"
+                type="checkbox"
+                data-attendance-row-toggle="${eventIndex}"
+                data-attendance-numero="${escapeHtml(item.id_evento ?? "")}"
+                ${isAttendanceConfirmed(eventItem, eventIndex, item.id_evento) ? "checked" : ""}
+              />
+            </td>
           </tr>
         `)
         .join("");
@@ -738,10 +772,11 @@
                             <th>Provincia</th>
                             <th>Localidad</th>
                             <th>Profesión</th>
+                            <th class="attendance-col">Asistio</th>
                           </tr>
                         </thead>
                         <tbody>
-                          ${buildRows(rowsToRender)}
+                          ${buildRows(rowsToRender, item, index)}
                         </tbody>
                       </table>
                     </div>
@@ -922,6 +957,29 @@
       if (!selected) return;
 
       downloadEventExcel(selected.evento || "evento", selected.inscripciones || []);
+    });
+
+    eventsContainer.addEventListener("change", (event) => {
+      const attendanceRowCheckbox = event.target.closest("[data-attendance-row-toggle]");
+      if (!attendanceRowCheckbox) return;
+
+      const rowIndex = Number.parseInt(
+        attendanceRowCheckbox.getAttribute("data-attendance-row-toggle"),
+        10
+      );
+      if (!Number.isInteger(rowIndex)) return;
+
+      const selected = currentEventos[rowIndex];
+      if (!selected) return;
+
+      const registroNumero = attendanceRowCheckbox.getAttribute("data-attendance-numero");
+      setAttendanceConfirmed(
+        selected,
+        rowIndex,
+        registroNumero,
+        Boolean(attendanceRowCheckbox.checked)
+      );
+      renderEvents(currentEventos);
     });
 
     refreshBtn.addEventListener("click", loadData);
