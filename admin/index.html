@@ -93,6 +93,41 @@
       cursor: pointer;
     }
 
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .view-switch {
+      display: inline-flex;
+      gap: 6px;
+      padding: 4px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-view {
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      padding: 7px 12px;
+      font: inherit;
+      font-size: 0.86rem;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-view.is-active {
+      background: #ffffff;
+      color: var(--accent);
+      border-color: #ffffff;
+    }
+
     .events {
       display: grid;
       gap: 14px;
@@ -387,7 +422,13 @@
           <span id="updatedAt">Sin actualización</span>
         </div>
       </div>
-      <button class="btn" id="refreshBtn" type="button">Actualizar</button>
+      <div class="top-actions">
+        <div class="view-switch" role="tablist" aria-label="Vista del panel">
+          <button class="btn-view is-active" id="viewInscripcionesBtn" type="button">Inscripciones</button>
+          <button class="btn-view" id="viewAsistenciaBtn" type="button">Asistencia Encuentros</button>
+        </div>
+        <button class="btn" id="refreshBtn" type="button">Actualizar</button>
+      </div>
     </header>
 
     <div class="status" id="status">Cargando datos...</div>
@@ -400,7 +441,12 @@
     const totalValue = document.getElementById("totalValue");
     const updatedAt = document.getElementById("updatedAt");
     const refreshBtn = document.getElementById("refreshBtn");
+    const viewInscripcionesBtn = document.getElementById("viewInscripcionesBtn");
+    const viewAsistenciaBtn = document.getElementById("viewAsistenciaBtn");
     const DEFAULT_VISIBLE_ROWS = 25;
+    const PANEL_VIEW_INSCRIPCIONES = "inscripciones";
+    const PANEL_VIEW_ASISTENCIA = "asistencia";
+    let currentPanelView = PANEL_VIEW_INSCRIPCIONES;
     let currentEventos = [];
     const toggleInFlight = new Set();
     const visibleRowsByEvent = new Map();
@@ -434,6 +480,32 @@
         statusBox.classList.add("warning");
       }
       statusBox.textContent = message;
+    }
+
+    function renderViewButtons() {
+      viewInscripcionesBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_INSCRIPCIONES);
+      viewAsistenciaBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_ASISTENCIA);
+      viewInscripcionesBtn.setAttribute(
+        "aria-pressed",
+        currentPanelView === PANEL_VIEW_INSCRIPCIONES ? "true" : "false"
+      );
+      viewAsistenciaBtn.setAttribute(
+        "aria-pressed",
+        currentPanelView === PANEL_VIEW_ASISTENCIA ? "true" : "false"
+      );
+    }
+
+    function setPanelView(nextView) {
+      if (
+        nextView !== PANEL_VIEW_INSCRIPCIONES &&
+        nextView !== PANEL_VIEW_ASISTENCIA
+      ) {
+        return;
+      }
+      if (currentPanelView === nextView) return;
+      currentPanelView = nextView;
+      renderViewButtons();
+      renderEvents(currentEventos);
     }
 
     function isEventActive(item) {
@@ -706,6 +778,80 @@
           const canShowMore = visibleRows < rows.length;
           const canShowLess = visibleRows > Math.min(DEFAULT_VISIBLE_ROWS, rows.length);
           const attendanceLookup = getAttendanceLookup(item, index);
+          const showInscripciones = currentPanelView === PANEL_VIEW_INSCRIPCIONES;
+          const showAsistencia = currentPanelView === PANEL_VIEW_ASISTENCIA;
+
+          const attendanceSectionHtml = `
+            <section class="attendance-box">
+              <h3 class="attendance-title">Asistencia encuentro</h3>
+              <div class="attendance-form">
+                <input
+                  class="attendance-input"
+                  type="text"
+                  inputmode="numeric"
+                  data-attendance-input="${index}"
+                  placeholder="DNI"
+                  value="${escapeHtml(attendanceLookup.numero || "")}"
+                  ${rows.length === 0 ? "disabled" : ""}
+                />
+                <button
+                  class="btn-event"
+                  type="button"
+                  data-attendance-search="${index}"
+                  ${rows.length === 0 ? "disabled" : ""}
+                >
+                  Buscar
+                </button>
+              </div>
+              ${buildAttendanceResultHtml(item, index)}
+            </section>
+          `;
+
+          const inscripcionesSectionHtml =
+            rows.length === 0
+              ? `<p class="empty">No hay inscripciones en este evento.</p>`
+              : `
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>ID encuentro</th>
+                        <th>Fecha</th>
+                        <th>Nombre y apellido</th>
+                        <th>DNI</th>
+                        <th>Mail</th>
+                        <th>Provincia</th>
+                        <th>Localidad</th>
+                        <th>Profesión</th>
+                        <th class="attendance-col">Asistio</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${buildRows(rowsToRender, item, index)}
+                    </tbody>
+                  </table>
+                </div>
+                <div class="rows-controls">
+                  <span class="rows-info">Mostrando ${visibleRows} de ${rows.length}</span>
+                  <button
+                    class="btn-event"
+                    type="button"
+                    data-show-more="${index}"
+                    ${canShowMore ? "" : "disabled"}
+                  >
+                    Ver m&aacute;s
+                  </button>
+                  <button
+                    class="btn-event"
+                    type="button"
+                    data-show-less="${index}"
+                    ${canShowLess ? "" : "disabled"}
+                  >
+                    Ver menos
+                  </button>
+                </div>
+              `;
+
           return `
             <article class="event-card">
               <header class="event-head">
@@ -723,84 +869,24 @@
                   >
                     ${isEventActive(item) ? "Desactivar" : "Activar"}
                   </button>
-                  <button
-                    class="btn-event"
-                    type="button"
-                    data-download-event="${index}"
-                    ${rows.length === 0 ? "disabled" : ""}
-                  >
-                    Descargar Excel
-                  </button>
+                  ${
+                    showInscripciones
+                      ? `
+                        <button
+                          class="btn-event"
+                          type="button"
+                          data-download-event="${index}"
+                          ${rows.length === 0 ? "disabled" : ""}
+                        >
+                          Descargar Excel
+                        </button>
+                      `
+                      : ""
+                  }
                 </div>
               </header>
-              <section class="attendance-box">
-                <h3 class="attendance-title">Asistencia encuentro</h3>
-                <div class="attendance-form">
-                  <input
-                    class="attendance-input"
-                    type="text"
-                    inputmode="numeric"
-                    data-attendance-input="${index}"
-                    placeholder="DNI"
-                    value="${escapeHtml(attendanceLookup.numero || "")}"
-                    ${rows.length === 0 ? "disabled" : ""}
-                  />
-                  <button
-                    class="btn-event"
-                    type="button"
-                    data-attendance-search="${index}"
-                    ${rows.length === 0 ? "disabled" : ""}
-                  >
-                    Buscar
-                  </button>
-                </div>
-                ${buildAttendanceResultHtml(item, index)}
-              </section>
-              ${
-                rows.length === 0
-                  ? `<p class="empty">No hay inscripciones en este evento.</p>`
-                  : `
-                    <div class="table-wrap">
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>ID encuentro</th>
-                            <th>Fecha</th>
-                            <th>Nombre y apellido</th>
-                            <th>DNI</th>
-                            <th>Mail</th>
-                            <th>Provincia</th>
-                            <th>Localidad</th>
-                            <th>Profesión</th>
-                            <th class="attendance-col">Asistio</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          ${buildRows(rowsToRender, item, index)}
-                        </tbody>
-                      </table>
-                    </div>
-                    <div class="rows-controls">
-                      <span class="rows-info">Mostrando ${visibleRows} de ${rows.length}</span>
-                      <button
-                        class="btn-event"
-                        type="button"
-                        data-show-more="${index}"
-                        ${canShowMore ? "" : "disabled"}
-                      >
-                        Ver m&aacute;s
-                      </button>
-                      <button
-                        class="btn-event"
-                        type="button"
-                        data-show-less="${index}"
-                        ${canShowLess ? "" : "disabled"}
-                      >
-                        Ver menos
-                      </button>
-                    </div>
-                  `
-              }
+              ${showAsistencia ? attendanceSectionHtml : ""}
+              ${showInscripciones ? inscripcionesSectionHtml : ""}
             </article>
           `;
         })
@@ -982,6 +1068,15 @@
       renderEvents(currentEventos);
     });
 
+    viewInscripcionesBtn.addEventListener("click", () => {
+      setPanelView(PANEL_VIEW_INSCRIPCIONES);
+    });
+
+    viewAsistenciaBtn.addEventListener("click", () => {
+      setPanelView(PANEL_VIEW_ASISTENCIA);
+    });
+
+    renderViewButtons();
     refreshBtn.addEventListener("click", loadData);
     loadData();
   </script>
