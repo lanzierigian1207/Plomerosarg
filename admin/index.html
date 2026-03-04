@@ -428,6 +428,10 @@
           <button class="btn-view" id="viewAsistenciaBtn" type="button">Asistencia Encuentros</button>
         </div>
         <button class="btn" id="refreshBtn" type="button">Actualizar</button>
+        <form method="post" action="/api/admin">
+          <input type="hidden" name="action" value="logout">
+          <button class="btn" type="submit">Cerrar sesión</button>
+        </form>
       </div>
     </header>
 
