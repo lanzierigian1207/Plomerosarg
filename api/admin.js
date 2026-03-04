@@ -602,7 +602,7 @@ module.exports = async (req, res) => {
       `${COOKIE_NAME}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`
     );
     res.status(302);
-    res.setHeader("Location", "/admin");
+    res.setHeader("Location", "/api/admin");
     return res.end();
   }
 

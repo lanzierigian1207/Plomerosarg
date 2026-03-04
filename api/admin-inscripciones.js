@@ -1,3 +1,5 @@
+const crypto = require("crypto");
+
 const {
   KNOWN_EVENTS,
   cleanText,
@@ -6,6 +8,8 @@ const {
   resolveEventActive,
   upsertEventStatus
 } = require("./_encuentros");
+
+const COOKIE_NAME = "admin_session";
 
 const PROFESION_LABELS = {
   plomero: "Plomero",
@@ -27,6 +31,54 @@ const STATUS_TABLE_SQL = [
   "  updated_at timestamptz not null default now()",
   ");"
 ].join("\n");
+
+function parseCookies(req) {
+  const raw = String(req?.headers?.cookie || "");
+  const cookies = {};
+
+  raw.split(";").forEach((part) => {
+    const index = part.indexOf("=");
+    if (index <= 0) return;
+    const key = part.slice(0, index).trim();
+    const value = part.slice(index + 1).trim();
+    cookies[key] = decodeURIComponent(value);
+  });
+
+  return cookies;
+}
+
+function timingSafeEqual(a, b) {
+  const buffA = Buffer.from(String(a || ""));
+  const buffB = Buffer.from(String(b || ""));
+  if (buffA.length !== buffB.length) return false;
+  return crypto.timingSafeEqual(buffA, buffB);
+}
+
+function sign(value, secret) {
+  return crypto.createHmac("sha256", secret).update(value).digest("base64url");
+}
+
+function decodeToken(token, secret) {
+  if (!token || typeof token !== "string" || !token.includes(".")) {
+    return null;
+  }
+
+  const [payload, signature] = token.split(".");
+  if (!payload || !signature) return null;
+
+  const expected = sign(payload, secret);
+  if (!timingSafeEqual(signature, expected)) return null;
+
+  try {
+    const decoded = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+    if (!decoded || typeof decoded !== "object") return null;
+    if (typeof decoded.exp !== "number") return null;
+    if (Date.now() > decoded.exp) return null;
+    return decoded;
+  } catch {
+    return null;
+  }
+}
 
 function normalizeBody(body) {
   if (!body) return {};
@@ -288,6 +340,24 @@ async function handlePost(req, res) {
 }
 
 module.exports = async (req, res) => {
+  const adminSessionSecret = String(process.env.ADMIN_SESSION_SECRET || "").trim();
+
+  if (!adminSessionSecret) {
+    return res.status(500).json({
+      ok: false,
+      error: "Falta ADMIN_SESSION_SECRET para validar la sesion admin."
+    });
+  }
+
+  const cookies = parseCookies(req);
+  const session = decodeToken(cookies[COOKIE_NAME], adminSessionSecret);
+  if (!session) {
+    return res.status(401).json({
+      ok: false,
+      error: "No autorizado. Inicia sesion en /api/admin."
+    });
+  }
+
   if (req.method === "GET") {
     return handleGet(req, res);
   }
