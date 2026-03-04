@@ -2,6 +2,8 @@ const crypto = require("crypto");
 
 const COOKIE_NAME = "admin_session";
 const SESSION_MAX_AGE = 60 * 60 * 12;
+const ROLE_ADMIN = "admin";
+const ROLE_ASISTENCIA = "asistencia";
 
 const EXPORT_COLUMNS = [
   { key: "id", label: "ID" },
@@ -43,9 +45,22 @@ function sign(value, secret) {
   return crypto.createHmac("sha256", secret).update(value).digest("base64url");
 }
 
-function createToken(username, secret) {
+function normalizeAdminRole(value) {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase();
+
+  if (normalized === ROLE_ASISTENCIA) {
+    return ROLE_ASISTENCIA;
+  }
+
+  return ROLE_ADMIN;
+}
+
+function createToken(username, role, secret) {
   const payloadObject = {
     u: username,
+    r: normalizeAdminRole(role),
     exp: Date.now() + SESSION_MAX_AGE * 1000
   };
 
@@ -99,7 +114,8 @@ function parseAdminsFromJson(value) {
       .filter((item) => item && typeof item === "object")
       .map((item) => ({
         username: String(item.username || "").trim(),
-        password: String(item.password || "")
+        password: String(item.password || ""),
+        role: normalizeAdminRole(item.role)
       }))
       .filter((item) => item.username && item.password);
   } catch {
@@ -120,7 +136,7 @@ function parseAdminsFromList(value) {
       const username = entry.slice(0, index).trim();
       const password = entry.slice(index + 1);
       if (!username || !password) return null;
-      return { username, password };
+      return { username, password, role: ROLE_ADMIN };
     })
     .filter(Boolean);
 }
@@ -135,16 +151,18 @@ function getAdminCredentials(env) {
   const singleUser = String(env.ADMIN_USER || "").trim();
   const singlePass = String(env.ADMIN_PASSWORD || "");
   if (singleUser && singlePass) {
-    return [{ username: singleUser, password: singlePass }];
+    return [{ username: singleUser, password: singlePass, role: ROLE_ADMIN }];
   }
 
   return [];
 }
 
-function hasValidCredentials(username, password, admins) {
-  return admins.some((admin) => {
-    return timingSafeEqual(username, admin.username) && timingSafeEqual(password, admin.password);
-  });
+function findAdminByCredentials(username, password, admins) {
+  return (
+    admins.find((admin) => {
+      return timingSafeEqual(username, admin.username) && timingSafeEqual(password, admin.password);
+    }) || null
+  );
 }
 
 function getSearchParams(req) {
@@ -338,6 +356,95 @@ function loginView(errorMessage = "") {
       </div>
       <button type="submit">Entrar</button>
     </form>
+  </main>
+</body>
+</html>`;
+}
+
+function asistenciaOnlyView() {
+  return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Asistencia | Plomeros ARG</title>
+  <style>
+    :root {
+      --ink: #0f2f57;
+      --bg: #dff1ff;
+      --card: #ffffff;
+      --line: #dbe6f2;
+      --accent: #0d63c7;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      font-family: "Barlow", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+    .card {
+      width: min(560px, 100%);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 16px 28px rgba(15, 47, 87, 0.12);
+      display: grid;
+      gap: 12px;
+    }
+    h1 {
+      font-size: clamp(1.6rem, 4.2vw, 2rem);
+      line-height: 1.15;
+    }
+    p {
+      color: #355d88;
+      line-height: 1.5;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 2px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      text-decoration: none;
+      padding: 10px 14px;
+      font: inherit;
+      font-weight: 700;
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-ghost {
+      background: #fff;
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+    form { margin: 0; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Usuario de Asistencia</h1>
+    <p>Este usuario solo tiene acceso al panel de asistencia de encuentros.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="/admin/index.html">Ir a Asistencia Encuentros</a>
+      <form method="post" action="/api/admin">
+        <input type="hidden" name="action" value="logout">
+        <button class="btn btn-ghost" type="submit">Cerrar sesion</button>
+      </form>
+    </div>
   </main>
 </body>
 </html>`;
@@ -563,6 +670,7 @@ module.exports = async (req, res) => {
   const cookies = parseCookies(req);
   const session = decodeToken(cookies[COOKIE_NAME], ADMIN_SESSION_SECRET);
   const isAuthenticated = Boolean(session);
+  const sessionRole = session ? normalizeAdminRole(session.r) : ROLE_ADMIN;
 
   if (req.method === "GET") {
     if (!isAuthenticated) {
@@ -570,6 +678,17 @@ module.exports = async (req, res) => {
     }
 
     const params = getSearchParams(req);
+    if (params.get("download") === "excel" && sessionRole !== ROLE_ADMIN) {
+      return res.status(403).json({
+        ok: false,
+        error: "No autorizado para descargar este contenido."
+      });
+    }
+
+    if (sessionRole === ROLE_ASISTENCIA) {
+      return sendHtml(res, 200, asistenciaOnlyView());
+    }
+
     const { rows, error } = await fetchInscripciones(process.env);
 
     if (params.get("download") === "excel") {
@@ -609,11 +728,17 @@ module.exports = async (req, res) => {
   const username = String(body.username || "").trim();
   const password = String(body.password || "");
 
-  if (!hasValidCredentials(username, password, ADMIN_CREDENTIALS)) {
+  const authenticatedAdmin = findAdminByCredentials(username, password, ADMIN_CREDENTIALS);
+
+  if (!authenticatedAdmin) {
     return sendHtml(res, 401, loginView("Credenciales invalidas."));
   }
 
-  const token = createToken(username, ADMIN_SESSION_SECRET);
+  const token = createToken(
+    authenticatedAdmin.username,
+    authenticatedAdmin.role,
+    ADMIN_SESSION_SECRET
+  );
   res.setHeader(
     "Set-Cookie",
     `${COOKIE_NAME}=${encodeURIComponent(token)}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SESSION_MAX_AGE}`

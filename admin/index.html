@@ -452,6 +452,7 @@
     const PANEL_VIEW_INSCRIPCIONES = "inscripciones";
     const PANEL_VIEW_ASISTENCIA = "asistencia";
     let currentPanelView = PANEL_VIEW_INSCRIPCIONES;
+    let currentAdminRole = "admin";
     let currentEventos = [];
     const toggleInFlight = new Set();
     const visibleRowsByEvent = new Map();
@@ -488,6 +489,11 @@
     }
 
     function renderViewButtons() {
+      const asistenciaOnly = currentAdminRole === "asistencia";
+      viewInscripcionesBtn.style.display = asistenciaOnly ? "none" : "inline-flex";
+      if (asistenciaOnly && currentPanelView !== PANEL_VIEW_ASISTENCIA) {
+        currentPanelView = PANEL_VIEW_ASISTENCIA;
+      }
       viewInscripcionesBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_INSCRIPCIONES);
       viewAsistenciaBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_ASISTENCIA);
       viewInscripcionesBtn.setAttribute(
@@ -501,6 +507,9 @@
     }
 
     function setPanelView(nextView) {
+      if (currentAdminRole === "asistencia" && nextView !== PANEL_VIEW_ASISTENCIA) {
+        nextView = PANEL_VIEW_ASISTENCIA;
+      }
       if (
         nextView !== PANEL_VIEW_INSCRIPCIONES &&
         nextView !== PANEL_VIEW_ASISTENCIA
@@ -783,7 +792,9 @@
           const canShowMore = visibleRows < rows.length;
           const canShowLess = visibleRows > Math.min(DEFAULT_VISIBLE_ROWS, rows.length);
           const attendanceLookup = getAttendanceLookup(item, index);
-          const showInscripciones = currentPanelView === PANEL_VIEW_INSCRIPCIONES;
+          const canViewInscripciones = currentAdminRole !== "asistencia";
+          const canManageEvents = currentAdminRole === "admin";
+          const showInscripciones = canViewInscripciones && currentPanelView === PANEL_VIEW_INSCRIPCIONES;
           const showAsistencia = currentPanelView === PANEL_VIEW_ASISTENCIA;
 
           const attendanceSectionHtml = `
@@ -866,16 +877,22 @@
                   <span class="event-state ${isEventActive(item) ? "is-on" : "is-off"}">
                     ${isEventActive(item) ? "Activo" : "Inactivo"}
                   </span>
-                  <button
-                    class="btn-event btn-toggle ${isEventActive(item) ? "is-on" : "is-off"}"
-                    type="button"
-                    data-toggle-event="${index}"
-                    ${toggleInFlight.has(index) ? "disabled" : ""}
-                  >
-                    ${isEventActive(item) ? "Desactivar" : "Activar"}
-                  </button>
                   ${
-                    showInscripciones
+                    canManageEvents
+                      ? `
+                        <button
+                          class="btn-event btn-toggle ${isEventActive(item) ? "is-on" : "is-off"}"
+                          type="button"
+                          data-toggle-event="${index}"
+                          ${toggleInFlight.has(index) ? "disabled" : ""}
+                        >
+                          ${isEventActive(item) ? "Desactivar" : "Activar"}
+                        </button>
+                      `
+                      : ""
+                  }
+                  ${
+                    showInscripciones && canManageEvents
                       ? `
                         <button
                           class="btn-event"
@@ -918,6 +935,14 @@
         if (!response.ok || !data.ok) {
           throw new Error(data.error || "No se pudo cargar el panel.");
         }
+
+        currentAdminRole = String(data.role || "admin").toLowerCase() === "asistencia"
+          ? "asistencia"
+          : "admin";
+        if (currentAdminRole === "asistencia") {
+          currentPanelView = PANEL_VIEW_ASISTENCIA;
+        }
+        renderViewButtons();
 
         totalValue.textContent = String(data.total ?? 0);
         updatedAt.textContent = data.generated_at

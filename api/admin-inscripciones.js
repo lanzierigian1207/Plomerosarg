@@ -10,6 +10,8 @@ const {
 } = require("./_encuentros");
 
 const COOKIE_NAME = "admin_session";
+const ROLE_ADMIN = "admin";
+const ROLE_ASISTENCIA = "asistencia";
 
 const PROFESION_LABELS = {
   plomero: "Plomero",
@@ -78,6 +80,18 @@ function decodeToken(token, secret) {
   } catch {
     return null;
   }
+}
+
+function normalizeAdminRole(value) {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase();
+
+  if (normalized === ROLE_ASISTENCIA) {
+    return ROLE_ASISTENCIA;
+  }
+
+  return ROLE_ADMIN;
 }
 
 function normalizeBody(body) {
@@ -151,7 +165,7 @@ function compareRegistrationOrder(a, b) {
   return String(a.id ?? "").localeCompare(String(b.id ?? ""), "es");
 }
 
-async function handleGet(req, res) {
+async function handleGet(req, res, adminRole) {
   const supabaseUrl = process.env.SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -262,10 +276,30 @@ async function handleGet(req, res) {
       };
     });
 
+    const limitedForAsistencia = adminRole === ROLE_ASISTENCIA;
+    const finalEventos = limitedForAsistencia
+      ? eventos.map((eventItem) => ({
+          ...eventItem,
+          inscripciones: (eventItem.inscripciones || []).map((row) => ({
+            id_evento: row.id_evento,
+            dni: row.dni,
+            nombre_apellido: row.nombre_apellido,
+            mail: row.mail,
+            localidad: row.localidad,
+            created_at: row.created_at
+          }))
+        }))
+      : eventos;
+
     return res.status(200).json({
       ok: true,
       total: Array.isArray(rows) ? rows.length : 0,
-      eventos,
+      eventos: finalEventos,
+      role: adminRole,
+      permissions: {
+        can_view_inscripciones: adminRole === ROLE_ADMIN,
+        can_manage_events: adminRole === ROLE_ADMIN
+      },
       status_available: statusResult.available,
       status_warning: statusResult.warning || "",
       generated_at: new Date().toISOString()
@@ -279,7 +313,14 @@ async function handleGet(req, res) {
   }
 }
 
-async function handlePost(req, res) {
+async function handlePost(req, res, adminRole) {
+  if (adminRole !== ROLE_ADMIN) {
+    return res.status(403).json({
+      ok: false,
+      error: "No autorizado para modificar el estado de encuentros."
+    });
+  }
+
   const supabaseUrl = process.env.SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -357,13 +398,14 @@ module.exports = async (req, res) => {
       error: "No autorizado. Inicia sesion en /api/admin."
     });
   }
+  const adminRole = normalizeAdminRole(session.r);
 
   if (req.method === "GET") {
-    return handleGet(req, res);
+    return handleGet(req, res, adminRole);
   }
 
   if (req.method === "POST") {
-    return handlePost(req, res);
+    return handlePost(req, res, adminRole);
   }
 
   return res.status(405).json({
