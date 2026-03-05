@@ -457,7 +457,6 @@
     const toggleInFlight = new Set();
     const visibleRowsByEvent = new Map();
     const attendanceLookupByEvent = new Map();
-    const attendanceConfirmedByEvent = new Map();
 
     function escapeHtml(value) {
       return String(value ?? "")
@@ -559,16 +558,15 @@
       return attendanceLookupByEvent.get(key);
     }
 
-    function getAttendanceConfirmedSet(item, index) {
-      const key = getEventKey(item, index);
-      if (!attendanceConfirmedByEvent.has(key)) {
-        attendanceConfirmedByEvent.set(key, new Set());
-      }
-      return attendanceConfirmedByEvent.get(key);
-    }
-
     function normalizeDniValue(value) {
       return String(value ?? "").replace(/\D+/g, "").trim();
+    }
+
+    function findInscriptoByDni(eventItem, dni) {
+      const normalizedDni = normalizeDniValue(dni);
+      if (!normalizedDni) return null;
+      const rows = Array.isArray(eventItem?.inscripciones) ? eventItem.inscripciones : [];
+      return rows.find((entry) => normalizeDniValue(entry.dni) === normalizedDni) || null;
     }
 
     function searchAttendanceByDni(item, index, rawDni) {
@@ -600,28 +598,41 @@
       state.numero = cleaned;
     }
 
-    function confirmAttendance(item, index, dni) {
-      const normalizedDni = normalizeDniValue(dni);
-      if (!normalizedDni) return;
-      const confirmed = getAttendanceConfirmedSet(item, index);
-      confirmed.add(normalizedDni);
+    function updateAttendanceStateLocally(eventItem, dni, asistio) {
+      const row = findInscriptoByDni(eventItem, dni);
+      if (!row) return;
+      row.asistio = asistio === true;
     }
 
-    function setAttendanceConfirmed(item, index, dni, checked) {
-      const normalizedDni = normalizeDniValue(dni);
-      if (!normalizedDni) return;
-      const confirmed = getAttendanceConfirmedSet(item, index);
-      if (checked) {
-        confirmed.add(normalizedDni);
-      } else {
-        confirmed.delete(normalizedDni);
+    async function persistAttendanceState(eventItem, dni, asistio) {
+      const response = await fetch("/api/admin-inscripciones", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          action: "set_attendance",
+          evento: eventItem?.evento || "",
+          dni,
+          asistio
+        })
+      });
+
+      if (response.status === 401) {
+        window.location.href = ADMIN_LOGIN_URL;
+        return { ok: false, redirected: true };
       }
-    }
 
-    function isAttendanceConfirmed(item, index, dni) {
-      const normalizedDni = normalizeDniValue(dni);
-      if (!normalizedDni) return false;
-      return getAttendanceConfirmedSet(item, index).has(normalizedDni);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || "No se pudo guardar la asistencia.");
+      }
+
+      return {
+        ok: true,
+        asistio: data.asistio === true
+      };
     }
 
     function buildAttendanceResultHtml(item, index) {
@@ -644,8 +655,9 @@
         return `<p class="attendance-hint">No se encontro informacion del DNI buscado.</p>`;
       }
 
-      const row = state.row;
-      const confirmed = isAttendanceConfirmed(item, index, row.dni);
+      const latestRow = findInscriptoByDni(item, state.row?.dni);
+      const row = latestRow || state.row;
+      const confirmed = row?.asistio === true;
 
       return `
         <div class="attendance-result">
@@ -685,7 +697,7 @@
                 type="checkbox"
                 data-attendance-row-toggle="${eventIndex}"
                 data-attendance-dni="${escapeHtml(item.dni ?? "")}"
-                ${isAttendanceConfirmed(eventItem, eventIndex, item.dni) ? "checked" : ""}
+                ${item.asistio === true ? "checked" : ""}
               />
             </td>
           </tr>
@@ -1045,8 +1057,20 @@
         const selected = currentEventos[confirmIndex];
         if (!selected) return;
         const dniValue = attendanceConfirmButton.getAttribute("data-attendance-dni");
-        confirmAttendance(selected, confirmIndex, dniValue);
-        renderEvents(currentEventos);
+        const normalizedDni = normalizeDniValue(dniValue);
+        if (!normalizedDni) return;
+
+        try {
+          attendanceConfirmButton.disabled = true;
+          const saveResult = await persistAttendanceState(selected, normalizedDni, true);
+          if (saveResult.redirected) return;
+          updateAttendanceStateLocally(selected, normalizedDni, saveResult.asistio);
+          setStatusMessage("Asistencia guardada correctamente.");
+        } catch (error) {
+          setStatusMessage(`Error: ${error.message}`, "error");
+        } finally {
+          renderEvents(currentEventos);
+        }
         return;
       }
 
@@ -1085,7 +1109,7 @@
       downloadEventExcel(selected.evento || "evento", selected.inscripciones || []);
     });
 
-    eventsContainer.addEventListener("change", (event) => {
+    eventsContainer.addEventListener("change", async (event) => {
       const attendanceRowCheckbox = event.target.closest("[data-attendance-row-toggle]");
       if (!attendanceRowCheckbox) return;
 
@@ -1099,13 +1123,21 @@
       if (!selected) return;
 
       const dniValue = attendanceRowCheckbox.getAttribute("data-attendance-dni");
-      setAttendanceConfirmed(
-        selected,
-        rowIndex,
-        dniValue,
-        Boolean(attendanceRowCheckbox.checked)
-      );
-      renderEvents(currentEventos);
+      const normalizedDni = normalizeDniValue(dniValue);
+      if (!normalizedDni) return;
+
+      try {
+        attendanceRowCheckbox.disabled = true;
+        const nextAsistio = Boolean(attendanceRowCheckbox.checked);
+        const saveResult = await persistAttendanceState(selected, normalizedDni, nextAsistio);
+        if (saveResult.redirected) return;
+        updateAttendanceStateLocally(selected, normalizedDni, saveResult.asistio);
+        setStatusMessage("Asistencia guardada correctamente.");
+      } catch (error) {
+        setStatusMessage(`Error: ${error.message}`, "error");
+      } finally {
+        renderEvents(currentEventos);
+      }
     });
 
     viewInscripcionesBtn.addEventListener("click", () => {

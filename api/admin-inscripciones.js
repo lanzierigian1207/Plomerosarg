@@ -12,6 +12,8 @@ const {
 const COOKIE_NAME = "admin_session";
 const ROLE_ADMIN = "admin";
 const ROLE_ASISTENCIA = "asistencia";
+const STATUS_TABLE = "encuentros_estado";
+const ATTENDANCE_KEY_PREFIX = "__attendance__::";
 
 const PROFESION_LABELS = {
   plomero: "Plomero",
@@ -33,6 +35,156 @@ const STATUS_TABLE_SQL = [
   "  updated_at timestamptz not null default now()",
   ");"
 ].join("\n");
+
+function normalizeDniValue(value) {
+  return String(value ?? "")
+    .replace(/\D+/g, "")
+    .trim();
+}
+
+function buildAttendanceMapKey(eventName, dni) {
+  const canonicalEvent = getCanonicalEventName(eventName);
+  const normalizedDni = normalizeDniValue(dni);
+  if (!canonicalEvent || canonicalEvent === "Sin evento" || !normalizedDni) {
+    return "";
+  }
+  return `${canonicalEvent}::${normalizedDni}`;
+}
+
+function buildAttendanceStorageKey(eventName, dni) {
+  const canonicalEvent = getCanonicalEventName(eventName);
+  const normalizedDni = normalizeDniValue(dni);
+  if (!canonicalEvent || canonicalEvent === "Sin evento" || !normalizedDni) {
+    return "";
+  }
+  return `${ATTENDANCE_KEY_PREFIX}${encodeURIComponent(canonicalEvent)}::${normalizedDni}`;
+}
+
+function parseAttendanceStorageKey(storageKey) {
+  const raw = String(storageKey ?? "");
+  if (!raw.startsWith(ATTENDANCE_KEY_PREFIX)) {
+    return null;
+  }
+
+  const tail = raw.slice(ATTENDANCE_KEY_PREFIX.length);
+  const separatorIndex = tail.lastIndexOf("::");
+  if (separatorIndex <= 0) {
+    return null;
+  }
+
+  const encodedEvent = tail.slice(0, separatorIndex);
+  const normalizedDni = normalizeDniValue(tail.slice(separatorIndex + 2));
+  if (!normalizedDni) {
+    return null;
+  }
+
+  let decodedEvent = "";
+  try {
+    decodedEvent = decodeURIComponent(encodedEvent);
+  } catch {
+    return null;
+  }
+
+  const canonicalEvent = getCanonicalEventName(decodedEvent);
+  if (!canonicalEvent || canonicalEvent === "Sin evento") {
+    return null;
+  }
+
+  return {
+    eventName: canonicalEvent,
+    dni: normalizedDni
+  };
+}
+
+async function fetchAttendanceStateMap({ supabaseUrl, serviceRoleKey }) {
+  const map = new Map();
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    return map;
+  }
+
+  const endpoint = new URL(
+    `${supabaseUrl.replace(/\/$/, "")}/rest/v1/${STATUS_TABLE}`
+  );
+  endpoint.searchParams.set("select", "encuentro,activo");
+  endpoint.searchParams.set("order", "encuentro.asc");
+  endpoint.searchParams.set("limit", "20000");
+
+  const response = await fetch(endpoint.toString(), {
+    method: "GET",
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`
+    }
+  });
+
+  if (!response.ok) {
+    return map;
+  }
+
+  const rows = await response.json().catch(() => []);
+  for (const row of Array.isArray(rows) ? rows : []) {
+    const parsed = parseAttendanceStorageKey(row.encuentro);
+    if (!parsed) continue;
+    const key = buildAttendanceMapKey(parsed.eventName, parsed.dni);
+    if (!key) continue;
+    map.set(key, row.activo !== false);
+  }
+
+  return map;
+}
+
+async function upsertAttendanceState({
+  supabaseUrl,
+  serviceRoleKey,
+  eventName,
+  dni,
+  asistio
+}) {
+  const storageKey = buildAttendanceStorageKey(eventName, dni);
+  if (!storageKey) {
+    return {
+      ok: false,
+      error: "Encuentro o DNI invalido.",
+      tableMissing: false
+    };
+  }
+
+  const endpoint = new URL(
+    `${supabaseUrl.replace(/\/$/, "")}/rest/v1/${STATUS_TABLE}`
+  );
+  endpoint.searchParams.set("on_conflict", "encuentro");
+
+  const response = await fetch(endpoint.toString(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      Prefer: "resolution=merge-duplicates,return=representation"
+    },
+    body: JSON.stringify([
+      {
+        encuentro: storageKey,
+        activo: asistio !== false
+      }
+    ])
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    return {
+      ok: false,
+      error: `No se pudo guardar la asistencia (${response.status}).`,
+      detail,
+      tableMissing: detail.toLowerCase().includes("does not exist")
+    };
+  }
+
+  return {
+    ok: true
+  };
+}
 
 function parseCookies(req) {
   const raw = String(req?.headers?.cookie || "");
@@ -192,7 +344,7 @@ async function handleGet(req, res, adminRole) {
   endpoint.searchParams.set("limit", String(limit));
 
   try {
-    const [inscripcionesResponse, statusResult] = await Promise.all([
+    const [inscripcionesResponse, statusResult, attendanceMap] = await Promise.all([
       fetch(endpoint.toString(), {
         method: "GET",
         headers: {
@@ -200,7 +352,8 @@ async function handleGet(req, res, adminRole) {
           Authorization: `Bearer ${serviceRoleKey}`
         }
       }),
-      fetchEventStatusMap({ supabaseUrl, serviceRoleKey })
+      fetchEventStatusMap({ supabaseUrl, serviceRoleKey }),
+      fetchAttendanceStateMap({ supabaseUrl, serviceRoleKey })
     ]);
 
     if (!inscripcionesResponse.ok) {
@@ -229,7 +382,9 @@ async function handleGet(req, res, adminRole) {
         profesion: cleanText(row.profesion, 300),
         profesion_label: formatProfesion(row.profesion),
         origen: cleanText(row.origen, 40),
-        created_at: row.created_at || null
+        created_at: row.created_at || null,
+        asistio:
+          attendanceMap.get(buildAttendanceMapKey(eventName, row.dni)) === true
       };
 
       if (!grouped.has(eventName)) {
@@ -286,7 +441,8 @@ async function handleGet(req, res, adminRole) {
             nombre_apellido: row.nombre_apellido,
             mail: row.mail,
             localidad: row.localidad,
-            created_at: row.created_at
+            created_at: row.created_at,
+            asistio: row.asistio === true
           }))
         }))
       : eventos;
@@ -314,13 +470,6 @@ async function handleGet(req, res, adminRole) {
 }
 
 async function handlePost(req, res, adminRole) {
-  if (adminRole !== ROLE_ADMIN) {
-    return res.status(403).json({
-      ok: false,
-      error: "No autorizado para modificar el estado de encuentros."
-    });
-  }
-
   const supabaseUrl = process.env.SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -332,6 +481,68 @@ async function handlePost(req, res, adminRole) {
   }
 
   const payload = normalizeBody(req.body);
+  const action = cleanText(payload.action, 40).toLowerCase();
+
+  if (action === "set_attendance") {
+    const eventInput = cleanText(payload.evento, 80);
+    const canonicalEvent = getCanonicalEventName(eventInput);
+    const dni = normalizeDniValue(payload.dni);
+    const asistio = parseBooleanInput(payload.asistio);
+
+    if (!canonicalEvent || canonicalEvent === "Sin evento") {
+      return res.status(422).json({
+        ok: false,
+        error: "Tenes que indicar un encuentro valido."
+      });
+    }
+
+    if (!dni) {
+      return res.status(422).json({
+        ok: false,
+        error: "Tenes que indicar un DNI valido."
+      });
+    }
+
+    if (asistio === null) {
+      return res.status(422).json({
+        ok: false,
+        error: "Tenes que indicar asistio true/false."
+      });
+    }
+
+    const savedAttendance = await upsertAttendanceState({
+      supabaseUrl,
+      serviceRoleKey,
+      eventName: canonicalEvent,
+      dni,
+      asistio
+    });
+
+    if (!savedAttendance.ok) {
+      return res.status(500).json({
+        ok: false,
+        error: savedAttendance.error || "No se pudo guardar la asistencia.",
+        detail: savedAttendance.detail || ""
+      });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      action: "set_attendance",
+      evento: canonicalEvent,
+      dni,
+      asistio: asistio === true,
+      updated_at: new Date().toISOString()
+    });
+  }
+
+  if (adminRole !== ROLE_ADMIN) {
+    return res.status(403).json({
+      ok: false,
+      error: "No autorizado para modificar el estado de encuentros."
+    });
+  }
+
   const eventInput = cleanText(payload.evento, 80);
   const activeValue = parseBooleanInput(payload.activo);
 
