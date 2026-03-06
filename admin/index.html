@@ -705,6 +705,7 @@
           <p class="attendance-row"><strong>Nombre y apellido:</strong> ${escapeHtml(row.nombre_apellido || "-")}</p>
           <p class="attendance-row"><strong>Mail:</strong> ${escapeHtml(row.mail || "-")}</p>
           <p class="attendance-row"><strong>Localidad:</strong> ${escapeHtml(row.localidad || "-")}</p>
+          <p class="attendance-row"><strong>Empresa:</strong> ${escapeHtml(row.expositor_info || "-")}</p>
           <p class="attendance-row"><strong>Reconfirmacion:</strong> ${row?.reconfirmado === true ? "Si" : "No"}</p>
           <div class="attendance-check-wrap">
             <button
@@ -732,6 +733,7 @@
             <td>${escapeHtml(item.provincia || "-")}</td>
             <td>${escapeHtml(item.localidad || "-")}</td>
             <td>${escapeHtml(item.profesion_label || item.profesion || "-")}</td>
+            <td>${escapeHtml(item.expositor_info || "-")}</td>
             <td class="attendance-col">
               <input
                 class="attendance-checkbox"
@@ -769,6 +771,7 @@
             <td>${escapeHtml(item.localidad || "-")}</td>
             <td>${escapeHtml(item.asociado || "-")}</td>
             <td>${escapeHtml(item.profesion_label || item.profesion || "-")}</td>
+            <td>${escapeHtml(item.expositor_info || "-")}</td>
             <td>${escapeHtml(item.origen || "-")}</td>
             <td>${item.asistio === true ? "Si" : "No"}</td>
             <td>${item.reconfirmado === true ? "Si" : "No"}</td>
@@ -792,7 +795,7 @@
             <table border="1">
               <thead>
                 <tr>
-                  <th colspan="12">Evento ${safeEventName}</th>
+                  <th colspan="13">Evento ${safeEventName}</th>
                 </tr>
                 <tr>
                   <th>ID encuentro</th>
@@ -804,6 +807,7 @@
                   <th>Localidad</th>
                   <th>Asociado</th>
                   <th>Profesión</th>
+                  <th>Empresa</th>
                   <th>Origen</th>
                   <th>Asistio</th>
                   <th>Reconfirmacion</th>
@@ -907,6 +911,7 @@
                         <th>Provincia</th>
                         <th>Localidad</th>
                         <th>Profesión</th>
+                        <th>Empresa</th>
                         <th class="attendance-col">Asistio</th>
                         <th class="reconfirm-col">Reconfirmacion</th>
                       </tr>

@@ -15,6 +15,10 @@ const ROLE_ASISTENCIA = "asistencia";
 const STATUS_TABLE = "encuentros_estado";
 const ATTENDANCE_KEY_PREFIX = "__attendance__::";
 const RECONFIRM_KEY_PREFIX = "__reconfirm__::";
+const INSCRIPCIONES_SELECT_BASE =
+  "id,encuentro,dni,nombre_apellido,mail,provincia,localidad,asociado,profesion,origen,acepto_terminos,created_at";
+const INSCRIPCIONES_SELECT_WITH_EXPOSITOR_INFO =
+  `${INSCRIPCIONES_SELECT_BASE},expositor_info`;
 
 const PROFESION_LABELS = {
   plomero: "Plomero",
@@ -337,6 +341,61 @@ function parseBooleanInput(value) {
   return null;
 }
 
+function isMissingExpositorInfoColumnError(detail) {
+  const normalized = String(detail ?? "").toLowerCase();
+  return (
+    normalized.includes("expositor_info") &&
+    (
+      normalized.includes("does not exist") ||
+      normalized.includes("schema cache") ||
+      normalized.includes("column")
+    )
+  );
+}
+
+async function fetchInscripcionesRows({ endpoint, serviceRoleKey }) {
+  const headers = {
+    apikey: serviceRoleKey,
+    Authorization: `Bearer ${serviceRoleKey}`
+  };
+
+  endpoint.searchParams.set("select", INSCRIPCIONES_SELECT_WITH_EXPOSITOR_INFO);
+  let response = await fetch(endpoint.toString(), {
+    method: "GET",
+    headers
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    if (!isMissingExpositorInfoColumnError(detail)) {
+      return {
+        ok: false,
+        detail
+      };
+    }
+
+    endpoint.searchParams.set("select", INSCRIPCIONES_SELECT_BASE);
+    response = await fetch(endpoint.toString(), {
+      method: "GET",
+      headers
+    });
+
+    if (!response.ok) {
+      const fallbackDetail = await response.text().catch(() => "");
+      return {
+        ok: false,
+        detail: fallbackDetail || detail
+      };
+    }
+  }
+
+  const rows = await response.json().catch(() => []);
+  return {
+    ok: true,
+    rows: Array.isArray(rows) ? rows : []
+  };
+}
+
 function formatProfesion(value) {
   return String(value ?? "")
     .split(",")
@@ -388,25 +447,18 @@ async function handleGet(req, res, adminRole) {
   const endpoint = new URL(
     `${supabaseUrl.replace(/\/$/, "")}/rest/v1/inscripciones`
   );
-  endpoint.searchParams.set(
-    "select",
-    "id,encuentro,dni,nombre_apellido,mail,provincia,localidad,asociado,profesion,origen,acepto_terminos,created_at"
-  );
   endpoint.searchParams.set("order", "id.asc");
   endpoint.searchParams.set("limit", String(limit));
 
   try {
-    const [inscripcionesResponse, statusResult, flagsState] = await Promise.all([
-      fetch(endpoint.toString(), {
-        method: "GET",
-        headers: {
-          apikey: serviceRoleKey,
-          Authorization: `Bearer ${serviceRoleKey}`
-        }
-      }),
+    const [statusResult, flagsState] = await Promise.all([
       fetchEventStatusMap({ supabaseUrl, serviceRoleKey }),
       fetchAttendanceAndReconfirmStateMaps({ supabaseUrl, serviceRoleKey })
     ]);
+    const inscripcionesResult = await fetchInscripcionesRows({
+      endpoint,
+      serviceRoleKey
+    });
     const attendanceMap = flagsState?.attendanceMap instanceof Map
       ? flagsState.attendanceMap
       : new Map();
@@ -414,16 +466,15 @@ async function handleGet(req, res, adminRole) {
       ? flagsState.reconfirmMap
       : new Map();
 
-    if (!inscripcionesResponse.ok) {
-      const detail = await inscripcionesResponse.text().catch(() => "");
+    if (!inscripcionesResult.ok) {
       return res.status(500).json({
         ok: false,
         error: "No se pudo consultar la base de datos.",
-        detail
+        detail: inscripcionesResult.detail || ""
       });
     }
 
-    const rows = await inscripcionesResponse.json().catch(() => []);
+    const rows = inscripcionesResult.rows;
     const grouped = new Map();
 
     for (const row of Array.isArray(rows) ? rows : []) {
@@ -439,6 +490,7 @@ async function handleGet(req, res, adminRole) {
         asociado: cleanText(row.asociado, 5),
         profesion: cleanText(row.profesion, 300),
         profesion_label: formatProfesion(row.profesion),
+        expositor_info: cleanText(row.expositor_info, 200),
         origen: cleanText(row.origen, 40),
         created_at: row.created_at || null,
         asistio:
