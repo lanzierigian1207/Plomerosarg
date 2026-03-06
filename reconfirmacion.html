@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Reconfirmación | Plomeros ARG</title>
+  <title>Reconfirmacion | Plomeros ARG</title>
   <style>
     :root {
       --bg: #eef4fb;
@@ -49,30 +49,48 @@
       line-height: 1.5;
     }
 
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: fit-content;
-      border-radius: 999px;
-      background: #e9f2ff;
-      color: var(--accent);
+    .input-wrap {
+      display: grid;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .input-label {
+      color: var(--ink);
       font-weight: 700;
-      font-size: 0.82rem;
-      padding: 6px 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      font-size: 0.92rem;
+    }
+
+    .input-field {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 11px 12px;
+      font: inherit;
+      color: var(--ink);
+      background: #ffffff;
+      outline: none;
+    }
+
+    .input-field:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(13, 99, 199, 0.14);
     }
   </style>
 </head>
 <body>
   <main>
-    <span class="tag">Nuevo acceso</span>
-    <h1>Página de Reconfirmación</h1>
-    <p>
-      Este acceso ya quedó activo en <strong>/reconfirmacion</strong>.
-      Pasame el flujo y el contenido que querés y lo armamos acá.
-    </p>
+    <h1>Reconfirmacion Encuentros</h1>
+    <p>Aca vas a poder Reconfirmar tu cupo para los encuentros de Plomeros ARG.</p>
+    <div class="input-wrap">
+      <label class="input-label" for="reconfirmacionDato">Casilla de reconfirmacion</label>
+      <input
+        class="input-field"
+        id="reconfirmacionDato"
+        type="text"
+        placeholder="Escribi aca"
+      />
+    </div>
   </main>
 </body>
 </html>
