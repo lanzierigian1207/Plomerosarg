@@ -382,6 +382,12 @@
       white-space: nowrap;
     }
 
+    .reconfirm-col {
+      text-align: center;
+      width: 128px;
+      white-space: nowrap;
+    }
+
     .attendance-checkbox {
       width: 16px;
       height: 16px;
@@ -426,6 +432,7 @@
         <div class="summary">
           <span class="pill">Total: <strong id="totalValue">0</strong></span>
           <span class="pill">Asistencias: <strong id="attendanceTotalValue">0</strong></span>
+          <span class="pill">Reconfirmados: <strong id="reconfirmTotalValue">0</strong></span>
           <span id="updatedAt">Sin actualización</span>
         </div>
       </div>
@@ -451,6 +458,7 @@
     const eventsContainer = document.getElementById("eventsContainer");
     const totalValue = document.getElementById("totalValue");
     const attendanceTotalValue = document.getElementById("attendanceTotalValue");
+    const reconfirmTotalValue = document.getElementById("reconfirmTotalValue");
     const updatedAt = document.getElementById("updatedAt");
     const refreshBtn = document.getElementById("refreshBtn");
     const viewInscripcionesBtn = document.getElementById("viewInscripcionesBtn");
@@ -504,6 +512,18 @@
           0
         );
         return total + eventAttendance;
+      }, 0);
+    }
+
+    function countReconfirm(eventos) {
+      if (!Array.isArray(eventos)) return 0;
+      return eventos.reduce((total, eventItem) => {
+        const rows = Array.isArray(eventItem?.inscripciones) ? eventItem.inscripciones : [];
+        const eventReconfirm = rows.reduce(
+          (sum, row) => sum + (row?.reconfirmado === true ? 1 : 0),
+          0
+        );
+        return total + eventReconfirm;
       }, 0);
     }
 
@@ -685,6 +705,7 @@
           <p class="attendance-row"><strong>Nombre y apellido:</strong> ${escapeHtml(row.nombre_apellido || "-")}</p>
           <p class="attendance-row"><strong>Mail:</strong> ${escapeHtml(row.mail || "-")}</p>
           <p class="attendance-row"><strong>Localidad:</strong> ${escapeHtml(row.localidad || "-")}</p>
+          <p class="attendance-row"><strong>Reconfirmacion:</strong> ${row?.reconfirmado === true ? "Si" : "No"}</p>
           <div class="attendance-check-wrap">
             <button
               class="btn-attendance-check ${confirmed ? "is-done" : ""}"
@@ -720,6 +741,7 @@
                 ${item.asistio === true ? "checked" : ""}
               />
             </td>
+            <td class="reconfirm-col">${item.reconfirmado === true ? "Si" : "No"}</td>
           </tr>
         `)
         .join("");
@@ -749,6 +771,7 @@
             <td>${escapeHtml(item.profesion_label || item.profesion || "-")}</td>
             <td>${escapeHtml(item.origen || "-")}</td>
             <td>${item.asistio === true ? "Si" : "No"}</td>
+            <td>${item.reconfirmado === true ? "Si" : "No"}</td>
           </tr>
         `)
         .join("");
@@ -769,7 +792,7 @@
             <table border="1">
               <thead>
                 <tr>
-                  <th colspan="11">Evento ${safeEventName}</th>
+                  <th colspan="12">Evento ${safeEventName}</th>
                 </tr>
                 <tr>
                   <th>ID encuentro</th>
@@ -783,6 +806,7 @@
                   <th>Profesión</th>
                   <th>Origen</th>
                   <th>Asistio</th>
+                  <th>Reconfirmacion</th>
                 </tr>
               </thead>
               <tbody>
@@ -809,6 +833,7 @@
     function renderEvents(eventos) {
       currentEventos = Array.isArray(eventos) ? eventos : [];
       attendanceTotalValue.textContent = String(countAttendance(currentEventos));
+      reconfirmTotalValue.textContent = String(countReconfirm(currentEventos));
 
       if (!Array.isArray(eventos) || eventos.length === 0) {
         eventsContainer.innerHTML = `
@@ -824,6 +849,10 @@
           const rows = Array.isArray(item.inscripciones) ? item.inscripciones : [];
           const attendanceCount = rows.reduce(
             (sum, row) => sum + (row?.asistio === true ? 1 : 0),
+            0
+          );
+          const reconfirmCount = rows.reduce(
+            (sum, row) => sum + (row?.reconfirmado === true ? 1 : 0),
             0
           );
           const visibleRows = getVisibleRows(item, index, rows.length);
@@ -879,6 +908,7 @@
                         <th>Localidad</th>
                         <th>Profesión</th>
                         <th class="attendance-col">Asistio</th>
+                        <th class="reconfirm-col">Reconfirmacion</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -914,6 +944,7 @@
                 <div class="event-meta">
                   <span class="counter">${rows.length} inscriptos</span>
                   <span class="counter counter-attendance">${attendanceCount} asistencias</span>
+                  <span class="counter counter-attendance">${reconfirmCount} reconfirmados</span>
                   <span class="event-state ${isEventActive(item) ? "is-on" : "is-off"}">
                     ${isEventActive(item) ? "Activo" : "Inactivo"}
                   </span>

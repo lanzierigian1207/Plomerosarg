@@ -1,6 +1,7 @@
 const { cleanText, getCanonicalEventName } = require("./_encuentros");
 
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
+const RECONFIRM_KEY_PREFIX = "__reconfirm__::";
 
 function normalizeDni(value) {
   return String(value ?? "")
@@ -47,6 +48,17 @@ function normalizeEncuentros(value) {
   }
 
   return result;
+}
+
+function buildReconfirmStorageKey(eventName, dni) {
+  const canonicalEvent = getCanonicalEventName(cleanText(eventName, 120));
+  const normalizedDni = normalizeDni(dni);
+
+  if (!canonicalEvent || canonicalEvent === "Sin evento" || !normalizedDni) {
+    return "";
+  }
+
+  return `${RECONFIRM_KEY_PREFIX}${encodeURIComponent(canonicalEvent)}::${normalizedDni}`;
 }
 
 function getPayload(req) {
@@ -233,6 +245,53 @@ async function sendReconfirmacionEmail({ to, nombre, encuentros }) {
   return { sent: true };
 }
 
+async function upsertReconfirmStates({
+  supabaseUrl,
+  serviceRoleKey,
+  dni,
+  encuentros
+}) {
+  const records = (Array.isArray(encuentros) ? encuentros : [])
+    .map((eventName) => {
+      const storageKey = buildReconfirmStorageKey(eventName, dni);
+      if (!storageKey) return null;
+      return {
+        encuentro: storageKey,
+        activo: true
+      };
+    })
+    .filter(Boolean);
+
+  if (records.length === 0) {
+    return { ok: false, error: "No hay encuentros validos para guardar reconfirmacion." };
+  }
+
+  const endpoint = new URL(`${supabaseUrl.replace(/\/$/, "")}/rest/v1/encuentros_estado`);
+  endpoint.searchParams.set("on_conflict", "encuentro");
+
+  const response = await fetch(endpoint.toString(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      Prefer: "resolution=merge-duplicates,return=representation"
+    },
+    body: JSON.stringify(records)
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    return {
+      ok: false,
+      error: `No se pudo guardar la reconfirmacion (${response.status}).`,
+      detail
+    };
+  }
+
+  return { ok: true };
+}
+
 module.exports = async (req, res) => {
   if (req.method !== "GET" && req.method !== "POST") {
     return res.status(405).json({
@@ -324,6 +383,21 @@ module.exports = async (req, res) => {
         return res.status(422).json({
           ok: false,
           error: "No encontramos un mail valido para este DNI."
+        });
+      }
+
+      const saveReconfirm = await upsertReconfirmStates({
+        supabaseUrl,
+        serviceRoleKey,
+        dni,
+        encuentros: encuentrosReconfirmados
+      });
+
+      if (!saveReconfirm.ok) {
+        return res.status(500).json({
+          ok: false,
+          error: saveReconfirm.error || "No se pudo guardar la reconfirmacion.",
+          detail: saveReconfirm.detail || ""
         });
       }
 

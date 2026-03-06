@@ -14,6 +14,7 @@ const ROLE_ADMIN = "admin";
 const ROLE_ASISTENCIA = "asistencia";
 const STATUS_TABLE = "encuentros_estado";
 const ATTENDANCE_KEY_PREFIX = "__attendance__::";
+const RECONFIRM_KEY_PREFIX = "__reconfirm__::";
 
 const PROFESION_LABELS = {
   plomero: "Plomero",
@@ -42,13 +43,17 @@ function normalizeDniValue(value) {
     .trim();
 }
 
-function buildAttendanceMapKey(eventName, dni) {
+function buildInscriptoMapKey(eventName, dni) {
   const canonicalEvent = getCanonicalEventName(eventName);
   const normalizedDni = normalizeDniValue(dni);
   if (!canonicalEvent || canonicalEvent === "Sin evento" || !normalizedDni) {
     return "";
   }
   return `${canonicalEvent}::${normalizedDni}`;
+}
+
+function buildAttendanceMapKey(eventName, dni) {
+  return buildInscriptoMapKey(eventName, dni);
 }
 
 function buildAttendanceStorageKey(eventName, dni) {
@@ -96,11 +101,48 @@ function parseAttendanceStorageKey(storageKey) {
   };
 }
 
-async function fetchAttendanceStateMap({ supabaseUrl, serviceRoleKey }) {
-  const map = new Map();
+function parseReconfirmStorageKey(storageKey) {
+  const raw = String(storageKey ?? "");
+  if (!raw.startsWith(RECONFIRM_KEY_PREFIX)) {
+    return null;
+  }
+
+  const tail = raw.slice(RECONFIRM_KEY_PREFIX.length);
+  const separatorIndex = tail.lastIndexOf("::");
+  if (separatorIndex <= 0) {
+    return null;
+  }
+
+  const encodedEvent = tail.slice(0, separatorIndex);
+  const normalizedDni = normalizeDniValue(tail.slice(separatorIndex + 2));
+  if (!normalizedDni) {
+    return null;
+  }
+
+  let decodedEvent = "";
+  try {
+    decodedEvent = decodeURIComponent(encodedEvent);
+  } catch {
+    return null;
+  }
+
+  const canonicalEvent = getCanonicalEventName(decodedEvent);
+  if (!canonicalEvent || canonicalEvent === "Sin evento") {
+    return null;
+  }
+
+  return {
+    eventName: canonicalEvent,
+    dni: normalizedDni
+  };
+}
+
+async function fetchAttendanceAndReconfirmStateMaps({ supabaseUrl, serviceRoleKey }) {
+  const attendanceMap = new Map();
+  const reconfirmMap = new Map();
 
   if (!supabaseUrl || !serviceRoleKey) {
-    return map;
+    return { attendanceMap, reconfirmMap };
   }
 
   const endpoint = new URL(
@@ -119,19 +161,29 @@ async function fetchAttendanceStateMap({ supabaseUrl, serviceRoleKey }) {
   });
 
   if (!response.ok) {
-    return map;
+    return { attendanceMap, reconfirmMap };
   }
 
   const rows = await response.json().catch(() => []);
   for (const row of Array.isArray(rows) ? rows : []) {
-    const parsed = parseAttendanceStorageKey(row.encuentro);
-    if (!parsed) continue;
-    const key = buildAttendanceMapKey(parsed.eventName, parsed.dni);
-    if (!key) continue;
-    map.set(key, row.activo !== false);
+    const parsedAttendance = parseAttendanceStorageKey(row.encuentro);
+    if (parsedAttendance) {
+      const attendanceKey = buildAttendanceMapKey(parsedAttendance.eventName, parsedAttendance.dni);
+      if (attendanceKey) {
+        attendanceMap.set(attendanceKey, row.activo !== false);
+      }
+    }
+
+    const parsedReconfirm = parseReconfirmStorageKey(row.encuentro);
+    if (parsedReconfirm) {
+      const reconfirmKey = buildInscriptoMapKey(parsedReconfirm.eventName, parsedReconfirm.dni);
+      if (reconfirmKey) {
+        reconfirmMap.set(reconfirmKey, row.activo !== false);
+      }
+    }
   }
 
-  return map;
+  return { attendanceMap, reconfirmMap };
 }
 
 async function upsertAttendanceState({
@@ -344,7 +396,7 @@ async function handleGet(req, res, adminRole) {
   endpoint.searchParams.set("limit", String(limit));
 
   try {
-    const [inscripcionesResponse, statusResult, attendanceMap] = await Promise.all([
+    const [inscripcionesResponse, statusResult, flagsState] = await Promise.all([
       fetch(endpoint.toString(), {
         method: "GET",
         headers: {
@@ -353,8 +405,14 @@ async function handleGet(req, res, adminRole) {
         }
       }),
       fetchEventStatusMap({ supabaseUrl, serviceRoleKey }),
-      fetchAttendanceStateMap({ supabaseUrl, serviceRoleKey })
+      fetchAttendanceAndReconfirmStateMaps({ supabaseUrl, serviceRoleKey })
     ]);
+    const attendanceMap = flagsState?.attendanceMap instanceof Map
+      ? flagsState.attendanceMap
+      : new Map();
+    const reconfirmMap = flagsState?.reconfirmMap instanceof Map
+      ? flagsState.reconfirmMap
+      : new Map();
 
     if (!inscripcionesResponse.ok) {
       const detail = await inscripcionesResponse.text().catch(() => "");
@@ -384,7 +442,9 @@ async function handleGet(req, res, adminRole) {
         origen: cleanText(row.origen, 40),
         created_at: row.created_at || null,
         asistio:
-          attendanceMap.get(buildAttendanceMapKey(eventName, row.dni)) === true
+          attendanceMap.get(buildAttendanceMapKey(eventName, row.dni)) === true,
+        reconfirmado:
+          reconfirmMap.get(buildInscriptoMapKey(eventName, row.dni)) === true
       };
 
       if (!grouped.has(eventName)) {
@@ -442,7 +502,8 @@ async function handleGet(req, res, adminRole) {
             mail: row.mail,
             localidad: row.localidad,
             created_at: row.created_at,
-            asistio: row.asistio === true
+            asistio: row.asistio === true,
+            reconfirmado: row.reconfirmado === true
           }))
         }))
       : eventos;
