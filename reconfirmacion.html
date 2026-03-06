@@ -41,6 +41,27 @@
       gap: 12px;
     }
 
+    .intro-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .intro-copy {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .intro-logo {
+      width: 92px;
+      height: 92px;
+      object-fit: contain;
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+
     h1 {
       font-size: clamp(1.7rem, 4vw, 2.2rem);
       line-height: 1.15;
@@ -203,12 +224,34 @@
     .reconfirmar-status.error {
       color: #ab2a22;
     }
+
+    @media (max-width: 560px) {
+      .intro-head {
+        align-items: flex-start;
+      }
+
+      .intro-logo {
+        width: 74px;
+        height: 74px;
+      }
+    }
   </style>
 </head>
 <body>
   <main>
-    <h1>Reconfirmaci&oacute;n Encuentros</h1>
-    <p>Ac&aacute; vas a poder reconfirmar tu cupo para los encuentros de Plomeros ARG.</p>
+    <section class="intro-head" aria-label="Encabezado reconfirmacion">
+      <div class="intro-copy">
+        <h1>Reconfirmaci&oacute;n Encuentros</h1>
+        <p>Ac&aacute; vas a poder reconfirmar tu cupo para los encuentros de Plomeros ARG.</p>
+      </div>
+      <img
+        class="intro-logo"
+        src="/Prueba_2/assets/logo-plomeros-circular.png"
+        alt="Logo Plomeros ARG"
+        width="92"
+        height="92"
+      />
+    </section>
 
     <form class="input-wrap" id="reconfirmacionForm" novalidate>
       <label class="input-label" for="reconfirmacionDato">N&uacute;mero de DNI</label>
