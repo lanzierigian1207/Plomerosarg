@@ -5,6 +5,10 @@
       "destination": "/whatsapp.html"
     },
     {
+      "source": "/reconfirmacion",
+      "destination": "/reconfirmacion.html"
+    },
+    {
       "source": "/admin/:path*",
       "destination": "/api/admin"
     }
