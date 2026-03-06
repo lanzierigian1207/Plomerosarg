@@ -748,6 +748,7 @@
             <td>${escapeHtml(item.asociado || "-")}</td>
             <td>${escapeHtml(item.profesion_label || item.profesion || "-")}</td>
             <td>${escapeHtml(item.origen || "-")}</td>
+            <td>${item.asistio === true ? "Si" : "No"}</td>
           </tr>
         `)
         .join("");
@@ -768,7 +769,7 @@
             <table border="1">
               <thead>
                 <tr>
-                  <th colspan="10">Evento ${safeEventName}</th>
+                  <th colspan="11">Evento ${safeEventName}</th>
                 </tr>
                 <tr>
                   <th>ID encuentro</th>
@@ -781,6 +782,7 @@
                   <th>Asociado</th>
                   <th>Profesión</th>
                   <th>Origen</th>
+                  <th>Asistio</th>
                 </tr>
               </thead>
               <tbody>
