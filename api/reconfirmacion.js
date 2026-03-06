@@ -61,6 +61,42 @@ function buildReconfirmStorageKey(eventName, dni) {
   return `${RECONFIRM_KEY_PREFIX}${encodeURIComponent(canonicalEvent)}::${normalizedDni}`;
 }
 
+function parseReconfirmStorageKey(storageKey) {
+  const raw = String(storageKey ?? "");
+  if (!raw.startsWith(RECONFIRM_KEY_PREFIX)) {
+    return null;
+  }
+
+  const tail = raw.slice(RECONFIRM_KEY_PREFIX.length);
+  const separatorIndex = tail.lastIndexOf("::");
+  if (separatorIndex <= 0) {
+    return null;
+  }
+
+  const encodedEvent = tail.slice(0, separatorIndex);
+  const normalizedDni = normalizeDni(tail.slice(separatorIndex + 2));
+  if (!normalizedDni) {
+    return null;
+  }
+
+  let decodedEvent = "";
+  try {
+    decodedEvent = decodeURIComponent(encodedEvent);
+  } catch {
+    return null;
+  }
+
+  const canonicalEvent = getCanonicalEventName(decodedEvent);
+  if (!canonicalEvent || canonicalEvent === "Sin evento") {
+    return null;
+  }
+
+  return {
+    eventName: canonicalEvent,
+    dni: normalizedDni
+  };
+}
+
 function getPayload(req) {
   if (req.method === "GET") {
     return req.query || {};
@@ -146,6 +182,22 @@ function buildEncuentrosSummary(rows) {
   );
 }
 
+function buildAlreadyReconfirmedMessage(encuentros) {
+  const list = Array.isArray(encuentros)
+    ? encuentros.map((item) => cleanText(item, 120)).filter(Boolean)
+    : [];
+
+  if (list.length === 0) {
+    return "Ya hiciste la reconfirmacion para este encuentro.";
+  }
+
+  if (list.length === 1) {
+    return `Ya hiciste la reconfirmaci\u00f3n para ${list[0]}.`;
+  }
+
+  return `Ya hiciste la reconfirmaci\u00f3n para ${list.join(", ")}.`;
+}
+
 async function fetchInscripcionesByDni({
   supabaseUrl,
   serviceRoleKey,
@@ -170,6 +222,45 @@ async function fetchInscripcionesByDni({
 
   const rows = await response.json().catch(() => []);
   return Array.isArray(rows) ? rows : [];
+}
+
+async function fetchReconfirmedEventsByDni({
+  supabaseUrl,
+  serviceRoleKey,
+  dni
+}) {
+  const normalizedDni = normalizeDni(dni);
+  const set = new Set();
+
+  if (!normalizedDni) {
+    return set;
+  }
+
+  const endpoint = new URL(`${supabaseUrl.replace(/\/$/, "")}/rest/v1/encuentros_estado`);
+  endpoint.searchParams.set("select", "encuentro,activo");
+  endpoint.searchParams.set("encuentro", `match.^${RECONFIRM_KEY_PREFIX}.*::${normalizedDni}$`);
+  endpoint.searchParams.set("limit", "500");
+
+  const response = await fetch(endpoint.toString(), {
+    method: "GET",
+    headers: buildHeaders(serviceRoleKey)
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(`No se pudo consultar reconfirmaciones previas. ${detail}`.trim());
+  }
+
+  const rows = await response.json().catch(() => []);
+  for (const row of Array.isArray(rows) ? rows : []) {
+    if (row?.activo === false) continue;
+    const parsed = parseReconfirmStorageKey(row?.encuentro);
+    if (!parsed) continue;
+    if (parsed.dni !== normalizedDni) continue;
+    set.add(parsed.eventName);
+  }
+
+  return set;
 }
 
 async function sendReconfirmacionEmail({ to, nombre, encuentros }) {
@@ -373,9 +464,30 @@ module.exports = async (req, res) => {
         });
       }
 
+      const alreadyReconfirmedSet = await fetchReconfirmedEventsByDni({
+        supabaseUrl,
+        serviceRoleKey,
+        dni
+      });
+      const encuentrosYaReconfirmados = encuentrosReconfirmados.filter((encuentro) =>
+        alreadyReconfirmedSet.has(encuentro)
+      );
+      const encuentrosPendientes = encuentrosReconfirmados.filter(
+        (encuentro) => !alreadyReconfirmedSet.has(encuentro)
+      );
+
+      if (encuentrosPendientes.length === 0) {
+        return res.status(409).json({
+          ok: false,
+          error: buildAlreadyReconfirmedMessage(encuentrosYaReconfirmados),
+          encuentros_ya_reconfirmados: encuentrosYaReconfirmados,
+          encuentros_no_encontrados: encuentrosNoEncontrados
+        });
+      }
+
       const rowsFiltradas = rows.filter((row) => {
         const canonical = cleanText(getCanonicalEventName(row.encuentro), 120);
-        return encuentrosReconfirmados.includes(canonical);
+        return encuentrosPendientes.includes(canonical);
       });
 
       const contacto = pickContacto(rowsFiltradas);
@@ -390,7 +502,7 @@ module.exports = async (req, res) => {
         supabaseUrl,
         serviceRoleKey,
         dni,
-        encuentros: encuentrosReconfirmados
+        encuentros: encuentrosPendientes
       });
 
       if (!saveReconfirm.ok) {
@@ -404,7 +516,7 @@ module.exports = async (req, res) => {
       const mailResult = await sendReconfirmacionEmail({
         to: contacto.mail,
         nombre: contacto.nombre,
-        encuentros: encuentrosReconfirmados
+        encuentros: encuentrosPendientes
       });
 
       if (!mailResult.sent) {
@@ -420,8 +532,13 @@ module.exports = async (req, res) => {
         sent: true,
         dni,
         nombre_apellido: contacto.nombre,
-        encuentros_reconfirmados: encuentrosReconfirmados,
-        encuentros_no_encontrados: encuentrosNoEncontrados
+        encuentros_reconfirmados: encuentrosPendientes,
+        encuentros_ya_reconfirmados: encuentrosYaReconfirmados,
+        encuentros_no_encontrados: encuentrosNoEncontrados,
+        warning:
+          encuentrosYaReconfirmados.length > 0
+            ? buildAlreadyReconfirmedMessage(encuentrosYaReconfirmados)
+            : ""
       });
     }
 

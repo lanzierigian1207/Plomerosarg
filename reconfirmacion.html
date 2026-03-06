@@ -249,6 +249,13 @@
       }).format(date);
     }
 
+    function formatEncuentrosLabel(encuentros) {
+      const list = Array.isArray(encuentros)
+        ? encuentros.map((item) => String(item || "").trim()).filter(Boolean)
+        : [];
+      return list.join(", ");
+    }
+
     function clearResultClasses() {
       resultBox.classList.remove("ok", "error");
     }
@@ -391,9 +398,21 @@
             throw new Error(result.error || "No se pudo enviar la reconfirmacion.");
           }
 
+          const confirmedLabel = formatEncuentrosLabel(result.encuentros_reconfirmados);
+          const alreadyLabel = formatEncuentrosLabel(result.encuentros_ya_reconfirmados);
           reconfirmStatus.classList.add("ok");
-          reconfirmStatus.textContent =
-            "Listo. Te enviamos un mail con la reconfirmacion de asistencia.";
+          if (confirmedLabel && alreadyLabel) {
+            reconfirmStatus.textContent =
+              `Reconfirmacion guardada para: ${confirmedLabel}. Ya hiciste la reconfirmacion para ${alreadyLabel}.`;
+          } else if (confirmedLabel) {
+            reconfirmStatus.textContent =
+              `Reconfirmacion guardada para: ${confirmedLabel}. Te enviamos un mail con la confirmacion.`;
+          } else if (alreadyLabel) {
+            reconfirmStatus.textContent = `Ya hiciste la reconfirmacion para ${alreadyLabel}.`;
+          } else {
+            reconfirmStatus.textContent =
+              "Listo. Te enviamos un mail con la reconfirmacion de asistencia.";
+          }
         } catch (error) {
           reconfirmStatus.classList.add("error");
           reconfirmStatus.textContent =
@@ -451,3 +470,4 @@
   </script>
 </body>
 </html>
+
