@@ -8,6 +8,7 @@ const KNOWN_EVENTS = [
 
 const EVENT_STATUS_TABLE = "encuentros_estado";
 const ATTENDANCE_KEY_PREFIX = "__attendance__::";
+const RECONFIRM_KEY_PREFIX = "__reconfirm__::";
 
 function cleanText(value, maxLength = 120) {
   const text = String(value ?? "").trim().replace(/<[^>]*>/g, "");
@@ -168,7 +169,11 @@ async function fetchEventStatusMap({ supabaseUrl, serviceRoleKey }) {
   const rows = await response.json().catch(() => []);
 
   for (const row of Array.isArray(rows) ? rows : []) {
-    if (String(row.encuentro || "").startsWith(ATTENDANCE_KEY_PREFIX)) {
+    const rawKey = String(row.encuentro || "");
+    if (
+      rawKey.startsWith(ATTENDANCE_KEY_PREFIX) ||
+      rawKey.startsWith(RECONFIRM_KEY_PREFIX)
+    ) {
       continue;
     }
     const eventName = getCanonicalEventName(row.encuentro);
