@@ -138,6 +138,35 @@
       gap: 4px;
       color: #24486f;
     }
+
+    .encuentros-select {
+      display: grid;
+      gap: 8px;
+    }
+
+    .encuentro-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      border: 1px solid #c9dcef;
+      border-radius: 10px;
+      background: #ffffff;
+      color: #24486f;
+      padding: 10px 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .encuentro-option input {
+      margin-top: 3px;
+      accent-color: var(--accent);
+    }
+
+    .selected-count {
+      color: #355d88;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
@@ -237,19 +266,43 @@
       resultBox.appendChild(dniRow);
 
       const intro = document.createElement("p");
-      intro.textContent = "Encuentros en los que estas inscripto:";
+      intro.textContent = "A que encuentro quieres Reconfirmar asistencias (Pueden ser los 2 encuentros)";
       resultBox.appendChild(intro);
 
-      const list = document.createElement("ul");
+      const list = document.createElement("div");
+      list.className = "encuentros-select";
+
+      const selectedCount = document.createElement("p");
+      selectedCount.className = "selected-count";
+      selectedCount.textContent = "Seleccionados: 0";
+
+      let selected = 0;
       for (const item of Array.isArray(data.encuentros) ? data.encuentros : []) {
-        const li = document.createElement("li");
         const dateLabel = formatDate(item.ultima_inscripcion);
-        li.textContent = dateLabel
+        const option = document.createElement("label");
+        option.className = "encuentro-option";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.name = "encuentro_reconfirmacion";
+        checkbox.value = item.encuentro || "";
+
+        checkbox.addEventListener("change", () => {
+          selected += checkbox.checked ? 1 : -1;
+          if (selected < 0) selected = 0;
+          selectedCount.textContent = `Seleccionados: ${selected}`;
+        });
+
+        const text = document.createElement("span");
+        text.textContent = dateLabel
           ? `${item.encuentro} (ultima inscripcion: ${dateLabel})`
           : `${item.encuentro}`;
-        list.appendChild(li);
+
+        option.append(checkbox, text);
+        list.appendChild(option);
       }
       resultBox.appendChild(list);
+      resultBox.appendChild(selectedCount);
     }
 
     form.addEventListener("submit", async (event) => {
