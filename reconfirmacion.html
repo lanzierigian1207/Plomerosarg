@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -11,6 +11,8 @@
       --ink: #12304f;
       --line: #cddced;
       --accent: #0d63c7;
+      --ok: #0f7a45;
+      --error: #ab2a22;
     }
 
     * {
@@ -29,14 +31,14 @@
     }
 
     main {
-      width: min(680px, 100%);
+      width: min(760px, 100%);
       border: 1px solid var(--line);
       border-radius: 16px;
       background: var(--card);
       padding: 26px;
       box-shadow: 0 16px 28px rgba(16, 55, 96, 0.12);
       display: grid;
-      gap: 10px;
+      gap: 12px;
     }
 
     h1 {
@@ -52,7 +54,7 @@
     .input-wrap {
       display: grid;
       gap: 8px;
-      margin-top: 6px;
+      margin-top: 8px;
     }
 
     .input-label {
@@ -61,8 +63,15 @@
       font-size: 0.92rem;
     }
 
+    .input-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
     .input-field {
-      width: 100%;
+      flex: 1;
+      min-width: 230px;
       border: 1px solid var(--line);
       border-radius: 10px;
       padding: 11px 12px;
@@ -76,21 +85,213 @@
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(13, 99, 199, 0.14);
     }
+
+    .btn {
+      border: 0;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #ffffff;
+      padding: 11px 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
+
+    .hint {
+      font-size: 0.88rem;
+      color: #57779f;
+    }
+
+    .resultado {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+      background: #f8fbff;
+    }
+
+    .resultado.ok {
+      border-color: #b7deca;
+      background: #f4fcf7;
+    }
+
+    .resultado.error {
+      border-color: #f0bbb7;
+      background: #fff3f2;
+    }
+
+    .resultado h2 {
+      font-size: 1.05rem;
+      line-height: 1.2;
+    }
+
+    .resultado ul {
+      margin-left: 18px;
+      display: grid;
+      gap: 4px;
+      color: #24486f;
+    }
   </style>
 </head>
 <body>
   <main>
     <h1>Reconfirmaci&oacute;n Encuentros</h1>
     <p>Ac&aacute; vas a poder reconfirmar tu cupo para los encuentros de Plomeros ARG.</p>
-    <div class="input-wrap">
+
+    <form class="input-wrap" id="reconfirmacionForm" novalidate>
       <label class="input-label" for="reconfirmacionDato">N&uacute;mero de DNI</label>
-      <input
-        class="input-field"
-        id="reconfirmacionDato"
-        type="text"
-        placeholder="Escrib&iacute; ac&aacute;"
-      />
-    </div>
+      <div class="input-row">
+        <input
+          class="input-field"
+          id="reconfirmacionDato"
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          placeholder="Escrib&iacute; ac&aacute;"
+        />
+        <button class="btn" id="reconfirmacionBtn" type="submit">Consultar</button>
+      </div>
+      <p class="hint">Ingres&aacute; solo n&uacute;meros, sin puntos.</p>
+    </form>
+
+    <section class="resultado" id="reconfirmacionResultado" hidden aria-live="polite"></section>
   </main>
+
+  <script>
+    const form = document.getElementById("reconfirmacionForm");
+    const dniInput = document.getElementById("reconfirmacionDato");
+    const submitBtn = document.getElementById("reconfirmacionBtn");
+    const resultBox = document.getElementById("reconfirmacionResultado");
+
+    function normalizeDni(value) {
+      return String(value ?? "").replace(/\D+/g, "").trim();
+    }
+
+    function formatDate(value) {
+      if (!value) return "";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "";
+      return new Intl.DateTimeFormat("es-AR", {
+        dateStyle: "short",
+        timeStyle: "short"
+      }).format(date);
+    }
+
+    function clearResultClasses() {
+      resultBox.classList.remove("ok", "error");
+    }
+
+    function renderError(message) {
+      clearResultClasses();
+      resultBox.classList.add("error");
+      resultBox.hidden = false;
+      resultBox.innerHTML = "";
+
+      const title = document.createElement("h2");
+      title.textContent = "No se pudo completar la consulta";
+      const text = document.createElement("p");
+      text.textContent = message;
+
+      resultBox.append(title, text);
+    }
+
+    function renderEmpty(dni) {
+      clearResultClasses();
+      resultBox.classList.add("ok");
+      resultBox.hidden = false;
+      resultBox.innerHTML = "";
+
+      const title = document.createElement("h2");
+      title.textContent = "Resultado de reconfirmacion";
+      const text = document.createElement("p");
+      text.textContent = `No encontramos inscripciones para el DNI ${dni}.`;
+
+      resultBox.append(title, text);
+    }
+
+    function renderFound(data) {
+      clearResultClasses();
+      resultBox.classList.add("ok");
+      resultBox.hidden = false;
+      resultBox.innerHTML = "";
+
+      const title = document.createElement("h2");
+      title.textContent = "Resultado de reconfirmacion";
+      resultBox.appendChild(title);
+
+      if (data.nombre_apellido) {
+        const name = document.createElement("p");
+        name.textContent = `Titular: ${data.nombre_apellido}`;
+        resultBox.appendChild(name);
+      }
+
+      const dniRow = document.createElement("p");
+      dniRow.textContent = `DNI consultado: ${data.dni || "-"}`;
+      resultBox.appendChild(dniRow);
+
+      const intro = document.createElement("p");
+      intro.textContent = "Encuentros en los que estas inscripto:";
+      resultBox.appendChild(intro);
+
+      const list = document.createElement("ul");
+      for (const item of Array.isArray(data.encuentros) ? data.encuentros : []) {
+        const li = document.createElement("li");
+        const dateLabel = formatDate(item.ultima_inscripcion);
+        li.textContent = dateLabel
+          ? `${item.encuentro} (ultima inscripcion: ${dateLabel})`
+          : `${item.encuentro}`;
+        list.appendChild(li);
+      }
+      resultBox.appendChild(list);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const dni = normalizeDni(dniInput.value);
+
+      if (!dni) {
+        renderError("Ingresa un numero de DNI valido.");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Consultando...";
+
+      try {
+        const response = await fetch("/api/reconfirmacion", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({ dni })
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error || "Error al consultar la base de datos.");
+        }
+
+        if (!data.found) {
+          renderEmpty(dni);
+          return;
+        }
+
+        renderFound(data);
+      } catch (error) {
+        renderError(error.message || "Error inesperado.");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Consultar";
+      }
+    });
+  </script>
 </body>
 </html>
