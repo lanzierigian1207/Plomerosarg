@@ -513,13 +513,6 @@ module.exports = async (req, res) => {
   if (!profesiones.every((item) => ALLOWED_PROFESION.has(item))) {
     return res.status(422).json({ ok: false, error: "Profesión inválida." });
   }
-
-  if (profesiones.includes("expositor") && !expositor_info) {
-    return res.status(422).json({
-      ok: false,
-      error: "Si elegis Expositor, completa el campo de detalle para expositor."
-    });
-  }
   if (!ALLOWED_ORIGEN.has(origen)) {
     return res.status(422).json({ ok: false, error: "Origen inválido." });
   }

@@ -360,12 +360,12 @@
       </div>
 
       <div class="field" id="expositorField" hidden>
-        <label class="required" for="expositor_info">Detalle para Expositor</label>
+        <label for="expositor_info">Detalle para Expositor</label>
         <input
           id="expositor_info"
           name="expositor_info"
           type="text"
-          placeholder="Complet&aacute; este campo si sos expositor"
+          placeholder="Pon la marca que representas"
           maxlength="200"
         >
       </div>
@@ -407,7 +407,6 @@
         expositorField.hidden = !isExpositorChecked;
       }
       if (expositorInput) {
-        expositorInput.required = isExpositorChecked;
         if (!isExpositorChecked) {
           expositorInput.value = "";
         }
@@ -437,15 +436,7 @@
         return;
       }
 
-      const isExpositor = profesiones.includes("expositor");
       const expositorInfo = String(formData.get("expositor_info") || "").trim();
-
-      if (isExpositor && !expositorInfo) {
-        successMessage.textContent = "Complet\u00e1 el campo de expositor.";
-        successMessage.classList.add("error");
-        successMessage.style.display = "block";
-        return;
-      }
       const payload = {
         encuentro: String(formData.get("encuentro") || "").trim(),
         dni: String(formData.get("dni") || "").trim(),
