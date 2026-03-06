@@ -167,6 +167,42 @@
       font-size: 0.9rem;
       font-weight: 700;
     }
+
+    .reconfirmar-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .reconfirmar-btn {
+      border: 0;
+      border-radius: 10px;
+      background: #0d63c7;
+      color: #ffffff;
+      padding: 10px 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .reconfirmar-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .reconfirmar-status {
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .reconfirmar-status.ok {
+      color: #0f7a45;
+    }
+
+    .reconfirmar-status.error {
+      color: #ab2a22;
+    }
   </style>
 </head>
 <body>
@@ -277,6 +313,20 @@
       selectedCount.textContent = "Seleccionados: 0";
 
       let selected = 0;
+      const selectedEvents = new Set();
+
+      const actions = document.createElement("div");
+      actions.className = "reconfirmar-actions";
+
+      const submitReconfirm = document.createElement("button");
+      submitReconfirm.type = "button";
+      submitReconfirm.className = "reconfirmar-btn";
+      submitReconfirm.textContent = "Enviar reconfirmacion";
+      submitReconfirm.disabled = true;
+
+      const reconfirmStatus = document.createElement("p");
+      reconfirmStatus.className = "reconfirmar-status";
+
       for (const item of Array.isArray(data.encuentros) ? data.encuentros : []) {
         const dateLabel = formatDate(item.ultima_inscripcion);
         const option = document.createElement("label");
@@ -288,9 +338,16 @@
         checkbox.value = item.encuentro || "";
 
         checkbox.addEventListener("change", () => {
-          selected += checkbox.checked ? 1 : -1;
-          if (selected < 0) selected = 0;
+          if (checkbox.checked) {
+            selectedEvents.add(checkbox.value);
+          } else {
+            selectedEvents.delete(checkbox.value);
+          }
+          selected = selectedEvents.size;
           selectedCount.textContent = `Seleccionados: ${selected}`;
+          submitReconfirm.disabled = selected === 0;
+          reconfirmStatus.textContent = "";
+          reconfirmStatus.className = "reconfirmar-status";
         });
 
         const text = document.createElement("span");
@@ -303,6 +360,52 @@
       }
       resultBox.appendChild(list);
       resultBox.appendChild(selectedCount);
+
+      submitReconfirm.addEventListener("click", async () => {
+        const encuentros = [...selectedEvents];
+        if (encuentros.length === 0) {
+          return;
+        }
+
+        submitReconfirm.disabled = true;
+        submitReconfirm.textContent = "Enviando...";
+        reconfirmStatus.textContent = "";
+        reconfirmStatus.className = "reconfirmar-status";
+
+        try {
+          const response = await fetch("/api/reconfirmacion", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+            body: JSON.stringify({
+              action: "reconfirmar",
+              dni: data.dni || "",
+              encuentros
+            })
+          });
+
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok || !result.ok) {
+            throw new Error(result.error || "No se pudo enviar la reconfirmacion.");
+          }
+
+          reconfirmStatus.classList.add("ok");
+          reconfirmStatus.textContent =
+            "Listo. Te enviamos un mail con la reconfirmacion de asistencia.";
+        } catch (error) {
+          reconfirmStatus.classList.add("error");
+          reconfirmStatus.textContent =
+            error.message || "No se pudo enviar la reconfirmacion.";
+        } finally {
+          submitReconfirm.textContent = "Enviar reconfirmacion";
+          submitReconfirm.disabled = selectedEvents.size === 0;
+        }
+      });
+
+      actions.append(submitReconfirm, reconfirmStatus);
+      resultBox.appendChild(actions);
     }
 
     form.addEventListener("submit", async (event) => {
