@@ -137,6 +137,31 @@ function isDuplicateConstraintError(detail) {
   );
 }
 
+function isMissingExpositorInfoColumnError(detail) {
+  const normalized = String(detail ?? "").toLowerCase();
+  return (
+    normalized.includes("expositor_info") &&
+    (
+      normalized.includes("does not exist") ||
+      normalized.includes("schema cache") ||
+      normalized.includes("column")
+    )
+  );
+}
+
+async function insertInscripcionRecord({ endpoint, serviceRoleKey, record }) {
+  return fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      Prefer: "return=representation"
+    },
+    body: JSON.stringify(record)
+  });
+}
+
 async function existsDniInEncuentro({ endpoint, serviceRoleKey, dni, encuentro }) {
   const lookupUrl = new URL(endpoint);
   lookupUrl.searchParams.set("select", "id");
@@ -451,6 +476,7 @@ module.exports = async (req, res) => {
   const asociado = cleanText(payload.asociado, 5);
   const profesiones = normalizeProfesion(payload.profesion);
   const profesion = profesiones.join(",");
+  const expositor_info = cleanText(payload.expositor_info, 200);
   const origen = cleanText(payload.origen, 40);
   const acepto_terminos = cleanText(payload.acepto_terminos, 5).toLowerCase() === "si";
 
@@ -488,6 +514,12 @@ module.exports = async (req, res) => {
     return res.status(422).json({ ok: false, error: "Profesión inválida." });
   }
 
+  if (profesiones.includes("expositor") && !expositor_info) {
+    return res.status(422).json({
+      ok: false,
+      error: "Si elegis Expositor, completa el campo de detalle para expositor."
+    });
+  }
   if (!ALLOWED_ORIGEN.has(origen)) {
     return res.status(422).json({ ok: false, error: "Origen inválido." });
   }
@@ -510,6 +542,7 @@ module.exports = async (req, res) => {
     localidad,
     asociado,
     profesion,
+    ...(expositor_info ? { expositor_info } : {}),
     origen,
     acepto_terminos: true,
     ip: cleanText(getClientIp(req), 120),
@@ -552,19 +585,33 @@ module.exports = async (req, res) => {
       });
     }
 
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`,
-        Prefer: "return=representation"
-      },
-      body: JSON.stringify(record)
+    let response = await insertInscripcionRecord({
+      endpoint,
+      serviceRoleKey,
+      record
     });
 
+    let detail = "";
     if (!response.ok) {
-      const detail = await response.text();
+      detail = await response.text();
+
+      if ("expositor_info" in record && isMissingExpositorInfoColumnError(detail)) {
+        const recordWithoutExpositorInfo = { ...record };
+        delete recordWithoutExpositorInfo.expositor_info;
+
+        response = await insertInscripcionRecord({
+          endpoint,
+          serviceRoleKey,
+          record: recordWithoutExpositorInfo
+        });
+
+        if (!response.ok) {
+          detail = await response.text();
+        }
+      }
+    }
+
+    if (!response.ok) {
       if (response.status === 409 || isDuplicateConstraintError(detail)) {
         return res.status(409).json({
           ok: false,
@@ -619,3 +666,4 @@ module.exports = async (req, res) => {
     });
   }
 };
+

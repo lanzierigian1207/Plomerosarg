@@ -359,6 +359,17 @@
         </div>
       </div>
 
+      <div class="field" id="expositorField" hidden>
+        <label class="required" for="expositor_info">Detalle para Expositor</label>
+        <input
+          id="expositor_info"
+          name="expositor_info"
+          type="text"
+          placeholder="Complet&aacute; este campo si sos expositor"
+          maxlength="200"
+        >
+      </div>
+
       <div class="field">
         <label class="required" for="origen">&iquest;D&oacute;nde nos conociste?</label>
         <select id="origen" name="origen" required>
@@ -386,6 +397,27 @@
   <script>
     const form = document.getElementById("inscripcionForm");
     const successMessage = document.getElementById("successMessage");
+    const expositorCheckbox = document.getElementById("profesion_expositor");
+    const expositorField = document.getElementById("expositorField");
+    const expositorInput = document.getElementById("expositor_info");
+
+    function toggleExpositorField() {
+      const isExpositorChecked = Boolean(expositorCheckbox && expositorCheckbox.checked);
+      if (expositorField) {
+        expositorField.hidden = !isExpositorChecked;
+      }
+      if (expositorInput) {
+        expositorInput.required = isExpositorChecked;
+        if (!isExpositorChecked) {
+          expositorInput.value = "";
+        }
+      }
+    }
+
+    if (expositorCheckbox) {
+      expositorCheckbox.addEventListener("change", toggleExpositorField);
+      toggleExpositorField();
+    }
 
     form.addEventListener("submit", async function (event) {
       event.preventDefault();
@@ -404,6 +436,16 @@
         successMessage.style.display = "block";
         return;
       }
+
+      const isExpositor = profesiones.includes("expositor");
+      const expositorInfo = String(formData.get("expositor_info") || "").trim();
+
+      if (isExpositor && !expositorInfo) {
+        successMessage.textContent = "Complet\u00e1 el campo de expositor.";
+        successMessage.classList.add("error");
+        successMessage.style.display = "block";
+        return;
+      }
       const payload = {
         encuentro: String(formData.get("encuentro") || "").trim(),
         dni: String(formData.get("dni") || "").trim(),
@@ -413,7 +455,7 @@
         localidad: String(formData.get("localidad") || "").trim(),
         asociado: String(formData.get("asociado") || "").trim(),
         profesion: profesiones,
-
+        expositor_info: expositorInfo,
         origen: String(formData.get("origen") || "").trim(),
         acepto_terminos: formData.get("acepto_terminos") ? "si" : ""
       };
@@ -441,6 +483,7 @@
         successMessage.innerHTML = "Inscripci&oacute;n Confirmada<br>Le llegar&aacute; un correo con la informaci&oacute;n<br><strong>IMPORTANTE:</strong> En el caso que no llegue a la bandeja principal, buscar en correo no deseado o SPAM, notificaciones, social.";
         successMessage.style.display = "block";
         form.reset();
+        toggleExpositorField();
       } catch (error) {
         successMessage.textContent = `Error: ${error.message}`;
         successMessage.classList.add("error");
@@ -450,5 +493,6 @@
   </script>
 </body>
 </html>
+
 
 
