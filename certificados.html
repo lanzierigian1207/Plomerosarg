@@ -487,7 +487,7 @@
         <p class="cert-otorgado">Otorgado a</p>
         <p class="cert-nombre" id="certNombre">Nombre Apellido</p>
         <p class="cert-text">
-          En este Encuentro de <strong>Plomeros Sanitaristas Argentinos N&deg; 27</strong> recibi&oacute;
+          En este Encuentro de <strong>Plomeros Sanitaristas Argentinos N&deg; <span id="certNumeroEncuentro">27</span></strong> recibi&oacute;
           capacitaciones t&eacute;cnicas de las siguientes empresas:
         </p>
 
@@ -523,9 +523,11 @@
   <script>
     const EVENT_DETAILS = {
       "bahia blanca 11/3": {
+        numero: "27",
         fecha: "Bahia Blanca, miercoles 11 de marzo de 2026"
       },
       "mar del plata 14/3": {
+        numero: "28",
         fecha: "Mar del Plata, viernes 14 de marzo de 2026"
       }
     };
@@ -536,6 +538,7 @@
     const formMessage = document.getElementById("formMessage");
     const certificadoPanel = document.getElementById("certificadoPanel");
     const certNombre = document.getElementById("certNombre");
+    const certNumeroEncuentro = document.getElementById("certNumeroEncuentro");
     const certEventoFecha = document.getElementById("certEventoFecha");
 
     function normalizeEventKey(value) {
@@ -590,6 +593,7 @@
       const eventInfo = EVENT_DETAILS[eventKey] || EVENT_DETAILS["bahia blanca 11/3"];
 
       certNombre.textContent = nameValue;
+      certNumeroEncuentro.textContent = eventInfo.numero || "27";
       certEventoFecha.textContent = eventInfo.fecha;
       certificadoPanel.hidden = false;
       certificadoPanel.scrollIntoView({ behavior: "smooth", block: "start" });
