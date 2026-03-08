@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/png" href="/Prueba_2/assets/logo-plomeros-circular.png">
   <link rel="apple-touch-icon" href="/Prueba_2/assets/logo-plomeros-circular.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@400;500;700;800&display=swap" rel="stylesheet">
   <title>Certificados | Plomeros ARG</title>
   <style>
     :root {
@@ -13,6 +16,8 @@
       --ink: #12304f;
       --line: #cddced;
       --accent: #0d63c7;
+      --accent-dark: #0b4d98;
+      --muted: #45698f;
     }
 
     * {
@@ -21,7 +26,7 @@
     }
 
     body {
-      font-family: "Barlow", sans-serif;
+      font-family: "Montserrat", sans-serif;
       background: var(--bg);
       color: var(--ink);
       min-height: 100vh;
@@ -31,14 +36,14 @@
     }
 
     main {
-      width: min(760px, 100%);
+      width: min(1220px, 100%);
       border: 1px solid var(--line);
       border-radius: 16px;
       background: var(--card);
-      padding: 28px;
+      padding: 24px;
       box-shadow: 0 16px 28px rgba(16, 55, 96, 0.12);
       display: grid;
-      gap: 14px;
+      gap: 16px;
     }
 
     .intro-head {
@@ -49,13 +54,14 @@
     }
 
     h1 {
-      font-size: clamp(1.75rem, 4vw, 2.3rem);
+      font-size: clamp(1.7rem, 3.8vw, 2.25rem);
       line-height: 1.15;
     }
 
-    p {
-      color: #385d84;
+    .intro-copy p {
+      color: var(--muted);
       line-height: 1.5;
+      margin-top: 6px;
     }
 
     .intro-logo {
@@ -66,24 +72,19 @@
       flex-shrink: 0;
     }
 
-    .selector-box {
+    .generator-box {
       border: 1px solid #d8e4f1;
       border-radius: 12px;
       padding: 14px;
       background: #f8fbff;
       display: grid;
-      gap: 10px;
+      gap: 12px;
     }
 
-    .selector-title {
+    .generator-title {
       font-size: 1rem;
       font-weight: 800;
       color: #153b62;
-    }
-
-    .selector-hint {
-      color: #385d84;
-      font-size: 0.92rem;
     }
 
     .encuentros-list {
@@ -107,47 +108,6 @@
     .encuentro-option input {
       margin-top: 3px;
       accent-color: var(--accent);
-    }
-
-    .status-box {
-      border: 1px solid #d8e4f1;
-      border-radius: 12px;
-      padding: 12px;
-      background: #ffffff;
-      color: #234569;
-      font-weight: 600;
-    }
-
-    .status-box.error {
-      border-color: #f0c8c4;
-      background: #fff5f4;
-      color: #7f2a24;
-    }
-
-    .form-message {
-      color: #7f2a24;
-      font-weight: 700;
-      font-size: 0.92rem;
-    }
-
-    .resultado-box {
-      border: 1px solid #b7deca;
-      border-radius: 12px;
-      padding: 14px;
-      background: #f4fcf7;
-      display: grid;
-      gap: 10px;
-    }
-
-    .resultado-title {
-      color: #0f5c35;
-      font-weight: 800;
-    }
-
-    .resultado-events {
-      color: #24486f;
-      font-size: 0.93rem;
-      font-weight: 700;
     }
 
     .field {
@@ -175,10 +135,11 @@
       box-shadow: 0 0 0 3px rgba(13, 99, 199, 0.14);
     }
 
-    .actions {
+    .controls {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
+      align-items: center;
     }
 
     .btn {
@@ -190,6 +151,9 @@
       border: 1px solid transparent;
       padding: 11px 14px;
       font-weight: 700;
+      cursor: pointer;
+      font: inherit;
+      line-height: 1;
     }
 
     .btn-primary {
@@ -203,10 +167,245 @@
       border-color: var(--accent);
     }
 
-    @media (max-width: 560px) {
+    .form-message {
+      color: #8a2620;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .certificado-panel {
+      border: 1px solid #d3dfef;
+      border-radius: 12px;
+      padding: 14px;
+      background: #fbfdff;
+      display: grid;
+      gap: 10px;
+    }
+
+    .result-title {
+      color: #0f5c35;
+      font-weight: 800;
+    }
+
+    .certificado-card {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1.414 / 1;
+      min-height: 560px;
+      border: 10px solid #2f6eb1;
+      background: #f6f8fc;
+      overflow: hidden;
+      padding: clamp(20px, 3vw, 38px);
+      display: grid;
+      grid-template-rows: auto auto auto auto auto auto auto;
+      align-content: start;
+      justify-items: center;
+      text-align: center;
+      gap: clamp(8px, 1.2vw, 16px);
+    }
+
+    .certificado-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 18px;
+      background: linear-gradient(90deg, #2f6eb1, #0d63c7);
+    }
+
+    .certificado-card::after {
+      content: "";
+      position: absolute;
+      right: -60px;
+      top: -60px;
+      width: 260px;
+      height: 260px;
+      background: linear-gradient(135deg, rgba(13, 99, 199, 0.3), rgba(13, 99, 199, 0.08));
+      transform: rotate(25deg);
+      border: 2px solid rgba(180, 214, 247, 0.8);
+    }
+
+    .cert-header {
+      width: 100%;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: clamp(10px, 2vw, 24px);
+      z-index: 1;
+    }
+
+    .cert-logo {
+      width: clamp(82px, 10vw, 130px);
+      height: clamp(82px, 10vw, 130px);
+      border-radius: 999px;
+      object-fit: contain;
+    }
+
+    .cert-title-wrap {
+      display: grid;
+      justify-items: start;
+      gap: 2px;
+    }
+
+    .cert-title {
+      color: #1f66ba;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      font-size: clamp(2rem, 5.8vw, 4.6rem);
+      line-height: 0.92;
+    }
+
+    .cert-subtitle {
+      color: #3a8aca;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      font-size: clamp(1.5rem, 3.2vw, 2.9rem);
+      line-height: 0.95;
+    }
+
+    .cert-otorgado {
+      color: #10253f;
+      font-size: clamp(1.05rem, 1.5vw, 1.5rem);
+      font-weight: 700;
+      z-index: 1;
+    }
+
+    .cert-nombre {
+      font-family: "Great Vibes", cursive;
+      color: #1b72af;
+      font-size: clamp(2.6rem, 7vw, 5.6rem);
+      line-height: 0.95;
+      padding-inline: 8px;
+      z-index: 1;
+      word-break: break-word;
+    }
+
+    .cert-text {
+      max-width: 940px;
+      color: #1f2f43;
+      font-size: clamp(0.95rem, 1.7vw, 1.95rem);
+      font-weight: 500;
+      z-index: 1;
+    }
+
+    .cert-text strong {
+      font-weight: 800;
+    }
+
+    .cert-logos {
+      width: min(880px, 100%);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 12px 16px;
+      z-index: 1;
+      padding-inline: 10px;
+    }
+
+    .cert-logos img {
+      max-height: 34px;
+      width: auto;
+      object-fit: contain;
+      filter: saturate(1.05);
+    }
+
+    .cert-event {
+      color: #1c3555;
+      font-size: clamp(0.98rem, 1.45vw, 1.55rem);
+      font-weight: 700;
+      z-index: 1;
+      margin-top: 2px;
+    }
+
+    .cert-sign {
+      margin-top: auto;
+      z-index: 1;
+      display: grid;
+      gap: 4px;
+      justify-items: center;
+      color: #20344f;
+    }
+
+    .cert-sign-line {
+      width: min(320px, 56vw);
+      border-top: 5px solid #1f57a6;
+      margin-top: 2px;
+    }
+
+    .cert-sign strong {
+      color: #0e58a8;
+      font-size: clamp(0.96rem, 1.4vw, 1.35rem);
+      letter-spacing: 0.03em;
+    }
+
+    .cert-sign span {
+      font-size: clamp(0.9rem, 1.3vw, 1.2rem);
+      font-weight: 500;
+    }
+
+    .print-controls {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 860px) {
+      .certificado-card {
+        aspect-ratio: auto;
+        min-height: 0;
+      }
+    }
+
+    @media (max-width: 620px) {
       .intro-logo {
         width: 74px;
         height: 74px;
+      }
+
+      .cert-header {
+        grid-template-columns: 1fr;
+        justify-items: center;
+      }
+
+      .cert-title-wrap {
+        justify-items: center;
+      }
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+        padding: 0;
+        display: block;
+      }
+
+      main {
+        width: 100%;
+        border: 0;
+        box-shadow: none;
+        border-radius: 0;
+        padding: 0;
+      }
+
+      main > :not(.certificado-panel) {
+        display: none !important;
+      }
+
+      .certificado-panel {
+        border: 0;
+        padding: 0;
+        margin: 0;
+      }
+
+      .result-title,
+      .print-controls {
+        display: none !important;
+      }
+
+      .certificado-card {
+        border-width: 6px;
+        box-shadow: none;
       }
     }
   </style>
@@ -214,9 +413,9 @@
 <body>
   <main>
     <section class="intro-head" aria-label="Encabezado certificados">
-      <div>
+      <div class="intro-copy">
         <h1>Certificados</h1>
-        <p>Ac&aacute; vas a poder gestionar tu certificado de asistencia a los encuentros de Plomeros ARG.</p>
+        <p>Seleccion&aacute; un encuentro, complet&aacute; tu nombre y gener&aacute; tu certificado de asistencia.</p>
       </div>
       <img
         class="intro-logo"
@@ -227,78 +426,177 @@
       >
     </section>
 
-    <section class="selector-box" aria-label="Selector de encuentros">
-      <h2 class="selector-title">Seleccion&aacute; los encuentros</h2>
-      <p class="selector-hint">Eleg&iacute; uno o ambos encuentros para continuar.</p>
-      <div class="encuentros-list" id="encuentrosList">
+    <section class="generator-box" aria-label="Generador de certificado">
+      <h2 class="generator-title">Eleg&iacute; un encuentro y escrib&iacute; tu nombre</h2>
+      <div class="encuentros-list">
         <label class="encuentro-option" for="encuentroBahiaBlanca">
           <input
             id="encuentroBahiaBlanca"
-            type="checkbox"
-            name="encuentro_activo"
-            value="Bah&iacute;a Blanca 11/3"
+            type="radio"
+            name="encuentro_certificado"
+            value="Bahia Blanca 11/3"
           >
-          <span>Bah&iacute;a Blanca 11/3</span>
+          <span>Bahia Blanca 11/3</span>
         </label>
         <label class="encuentro-option" for="encuentroMarDelPlata">
           <input
             id="encuentroMarDelPlata"
-            type="checkbox"
-            name="encuentro_activo"
+            type="radio"
+            name="encuentro_certificado"
             value="Mar del Plata 14/3"
           >
           <span>Mar del Plata 14/3</span>
         </label>
       </div>
-      <button class="btn btn-primary" id="continuarCertificadoBtn" type="button">Continuar</button>
-      <p class="form-message" id="formMessage" hidden></p>
-    </section>
 
-    <section class="resultado-box" id="resultadoBox" hidden aria-live="polite">
-      <p class="resultado-title">Ac&aacute; se genera tu certificado de asistencias</p>
-      <p class="resultado-events" id="resultadoEventos"></p>
       <div class="field">
         <label for="nombreCertificado">Nombre y apellido</label>
         <input
           id="nombreCertificado"
           name="nombreCertificado"
           type="text"
-          placeholder="Escrib&iacute; tu nombre"
+          placeholder="Escribi tu nombre"
           maxlength="120"
         >
       </div>
+
+      <div class="controls">
+        <button class="btn btn-primary" id="generarCertificadoBtn" type="button">Generar certificado</button>
+        <a class="btn btn-secondary" href="/index.html">Volver al inicio</a>
+      </div>
+      <p class="form-message" id="formMessage" hidden></p>
     </section>
 
-    <div class="actions">
-      <a class="btn btn-primary" href="/encuentros.html">Ver encuentros</a>
-      <a class="btn btn-secondary" href="/index.html">Volver al inicio</a>
-    </div>
-  </main>
-  <script>
-    const continuarBtn = document.getElementById("continuarCertificadoBtn");
-    const formMessage = document.getElementById("formMessage");
-    const resultadoBox = document.getElementById("resultadoBox");
-    const resultadoEventos = document.getElementById("resultadoEventos");
-    const nombreCertificado = document.getElementById("nombreCertificado");
+    <section class="certificado-panel" id="certificadoPanel" hidden aria-live="polite">
+      <p class="result-title">Aca se genera tu certificado de asistencias</p>
+      <article class="certificado-card" id="certificadoCard">
+        <header class="cert-header">
+          <img
+            class="cert-logo"
+            src="/Prueba_2/assets/logo-plomeros-circular.png"
+            alt="Logo Plomeros ARG"
+            width="130"
+            height="130"
+          >
+          <div class="cert-title-wrap">
+            <p class="cert-title">CERTIFICADO</p>
+            <p class="cert-subtitle">DE ASISTENCIA</p>
+          </div>
+        </header>
 
-    continuarBtn.addEventListener("click", () => {
+        <p class="cert-otorgado">Otorgado a</p>
+        <p class="cert-nombre" id="certNombre">Nombre Apellido</p>
+        <p class="cert-text">
+          En este Encuentro de <strong>Plomeros Sanitaristas Argentinos N&deg; 27</strong> recibi&oacute;
+          capacitaciones t&eacute;cnicas de las siguientes empresas:
+        </p>
+
+        <div class="cert-logos" aria-label="Empresas participantes">
+          <img src="/Prueba_2/assets/empresas/logo-piazza.png" alt="Piazza">
+          <img src="/Prueba_2/assets/empresas/logo-pluvius.svg" alt="Pluvius">
+          <img src="/Prueba_2/assets/empresas/logo-parsecs.svg" alt="Parsecs">
+          <img src="/Prueba_2/assets/empresas/logo-vasser.svg" alt="Vasser">
+          <img src="/Prueba_2/assets/empresas/logo-egeo.png" alt="Egeo">
+          <img src="/Prueba_2/assets/empresas/logo-redeco.png" alt="RedEco">
+          <img src="/Prueba_2/assets/empresas/logo-duke.png" alt="Duke">
+          <img src="/Prueba_2/assets/empresas/logo-krewen.jpg" alt="Krewen">
+          <img src="/Prueba_2/assets/empresas/logo-waterplast.svg" alt="Waterplast">
+          <img src="/Prueba_2/assets/empresas/logo-rao.jpg" alt="RAO">
+        </div>
+
+        <p class="cert-event" id="certEventoFecha">Bahia Blanca, miercoles 11 de marzo de 2026</p>
+
+        <div class="cert-sign">
+          <div class="cert-sign-line"></div>
+          <strong>AGUSTIN LANZIERI</strong>
+          <span>Fundador de PlomerosArg</span>
+          <span>Presidente AAPSyA</span>
+        </div>
+      </article>
+
+      <div class="print-controls">
+        <button class="btn btn-primary" id="imprimirCertificadoBtn" type="button">Descargar / Imprimir</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const EVENT_DETAILS = {
+      "bahia blanca 11/3": {
+        fecha: "Bahia Blanca, miercoles 11 de marzo de 2026"
+      },
+      "mar del plata 14/3": {
+        fecha: "Mar del Plata, viernes 14 de marzo de 2026"
+      }
+    };
+
+    const generarBtn = document.getElementById("generarCertificadoBtn");
+    const imprimirBtn = document.getElementById("imprimirCertificadoBtn");
+    const nombreInput = document.getElementById("nombreCertificado");
+    const formMessage = document.getElementById("formMessage");
+    const certificadoPanel = document.getElementById("certificadoPanel");
+    const certNombre = document.getElementById("certNombre");
+    const certEventoFecha = document.getElementById("certEventoFecha");
+
+    function normalizeEventKey(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+    }
+
+    function getSelectedEvent() {
+      const selected = document.querySelector("input[name=\"encuentro_certificado\"]:checked");
+      if (!selected) return "";
+      return String(selected.value || "").trim();
+    }
+
+    function clearMessage() {
       formMessage.hidden = true;
       formMessage.textContent = "";
+    }
 
-      const checked = Array.from(
-        document.querySelectorAll("input[name=\"encuentro_activo\"]:checked")
-      ).map((input) => input.value);
+    function showMessage(text) {
+      formMessage.textContent = text;
+      formMessage.hidden = false;
+    }
 
-      if (checked.length === 0) {
-        formMessage.textContent = "Seleccion&aacute; al menos un encuentro para continuar.";
-        formMessage.hidden = false;
-        resultadoBox.hidden = true;
+    function toCertificateName(value) {
+      const cleaned = String(value || "").trim().replace(/\s+/g, " ");
+      return cleaned;
+    }
+
+    generarBtn.addEventListener("click", () => {
+      clearMessage();
+
+      const selectedEvent = getSelectedEvent();
+      const nameValue = toCertificateName(nombreInput.value);
+
+      if (!selectedEvent) {
+        showMessage("Selecciona un encuentro para generar el certificado.");
+        certificadoPanel.hidden = true;
         return;
       }
 
-      resultadoEventos.textContent = `Encuentro(s) seleccionado(s): ${checked.join(", ")}`;
-      resultadoBox.hidden = false;
-      nombreCertificado.focus();
+      if (!nameValue || nameValue.length < 3) {
+        showMessage("Escribi nombre y apellido para generar el certificado.");
+        certificadoPanel.hidden = true;
+        nombreInput.focus();
+        return;
+      }
+
+      const eventKey = normalizeEventKey(selectedEvent);
+      const eventInfo = EVENT_DETAILS[eventKey] || EVENT_DETAILS["bahia blanca 11/3"];
+
+      certNombre.textContent = nameValue;
+      certEventoFecha.textContent = eventInfo.fecha;
+      certificadoPanel.hidden = false;
+      certificadoPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    imprimirBtn.addEventListener("click", () => {
+      window.print();
     });
   </script>
 </body>
