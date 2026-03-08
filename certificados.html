@@ -228,10 +228,27 @@
     </section>
 
     <section class="selector-box" aria-label="Selector de encuentros">
-      <h2 class="selector-title">Seleccion&aacute; los encuentros activos</h2>
-      <p class="selector-hint">Eleg&iacute; uno o m&aacute;s encuentros para continuar.</p>
+      <h2 class="selector-title">Seleccion&aacute; los encuentros</h2>
+      <p class="selector-hint">Eleg&iacute; uno o ambos encuentros para continuar.</p>
       <div class="encuentros-list" id="encuentrosList">
-        <div class="status-box">Cargando encuentros activos...</div>
+        <label class="encuentro-option" for="encuentroBahiaBlanca">
+          <input
+            id="encuentroBahiaBlanca"
+            type="checkbox"
+            name="encuentro_activo"
+            value="Bah&iacute;a Blanca 11/3"
+          >
+          <span>Bah&iacute;a Blanca 11/3</span>
+        </label>
+        <label class="encuentro-option" for="encuentroMarDelPlata">
+          <input
+            id="encuentroMarDelPlata"
+            type="checkbox"
+            name="encuentro_activo"
+            value="Mar del Plata 14/3"
+          >
+          <span>Mar del Plata 14/3</span>
+        </label>
       </div>
       <button class="btn btn-primary" id="continuarCertificadoBtn" type="button">Continuar</button>
       <p class="form-message" id="formMessage" hidden></p>
@@ -258,67 +275,11 @@
     </div>
   </main>
   <script>
-    const encuentrosList = document.getElementById("encuentrosList");
     const continuarBtn = document.getElementById("continuarCertificadoBtn");
     const formMessage = document.getElementById("formMessage");
     const resultadoBox = document.getElementById("resultadoBox");
     const resultadoEventos = document.getElementById("resultadoEventos");
     const nombreCertificado = document.getElementById("nombreCertificado");
-
-    function escapeHtml(value) {
-      return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-    }
-
-    function renderEventosActivos(eventos) {
-      if (!Array.isArray(eventos) || eventos.length === 0) {
-        encuentrosList.innerHTML = "<div class=\"status-box\">No hay encuentros activos en este momento.</div>";
-        continuarBtn.disabled = true;
-        return;
-      }
-
-      const optionsHtml = eventos
-        .map((item, index) => `
-          <label class="encuentro-option" for="encuentroActivo${index}">
-            <input
-              id="encuentroActivo${index}"
-              type="checkbox"
-              name="encuentro_activo"
-              value="${escapeHtml(item.evento)}"
-            >
-            <span>${escapeHtml(item.evento)}</span>
-          </label>
-        `)
-        .join("");
-
-      encuentrosList.innerHTML = optionsHtml;
-      continuarBtn.disabled = false;
-    }
-
-    async function cargarEncuentrosActivos() {
-      try {
-        const response = await fetch("/api/encuentros-estado", {
-          method: "GET",
-          headers: { Accept: "application/json" }
-        });
-
-        if (!response.ok) {
-          throw new Error(`Estado ${response.status}`);
-        }
-
-        const data = await response.json();
-        const eventos = Array.isArray(data?.eventos) ? data.eventos : [];
-        const activos = eventos.filter((item) => item && item.activo !== false);
-        renderEventosActivos(activos);
-      } catch {
-        encuentrosList.innerHTML = "<div class=\"status-box error\">No se pudieron cargar los encuentros activos. Intent&aacute; de nuevo.</div>";
-        continuarBtn.disabled = true;
-      }
-    }
 
     continuarBtn.addEventListener("click", () => {
       formMessage.hidden = true;
@@ -329,7 +290,7 @@
       ).map((input) => input.value);
 
       if (checked.length === 0) {
-        formMessage.textContent = "Seleccion&aacute; al menos un encuentro activo para continuar.";
+        formMessage.textContent = "Seleccion&aacute; al menos un encuentro para continuar.";
         formMessage.hidden = false;
         resultadoBox.hidden = true;
         return;
@@ -339,8 +300,6 @@
       resultadoBox.hidden = false;
       nombreCertificado.focus();
     });
-
-    cargarEncuentrosActivos();
   </script>
 </body>
 </html>
