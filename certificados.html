@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="/Prueba_2/assets/logo-plomeros-circular.png">
+  <link rel="apple-touch-icon" href="/Prueba_2/assets/logo-plomeros-circular.png">
+  <title>Certificados | Plomeros ARG</title>
+  <style>
+    :root {
+      --bg: #eef4fb;
+      --card: #ffffff;
+      --ink: #12304f;
+      --line: #cddced;
+      --accent: #0d63c7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+    }
+
+    body {
+      font-family: "Barlow", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+
+    main {
+      width: min(760px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--card);
+      padding: 28px;
+      box-shadow: 0 16px 28px rgba(16, 55, 96, 0.12);
+      display: grid;
+      gap: 14px;
+    }
+
+    .intro-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    h1 {
+      font-size: clamp(1.75rem, 4vw, 2.3rem);
+      line-height: 1.15;
+    }
+
+    p {
+      color: #385d84;
+      line-height: 1.5;
+    }
+
+    .intro-logo {
+      width: 90px;
+      height: 90px;
+      border-radius: 999px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .status-box {
+      border: 1px solid #d8e4f1;
+      border-radius: 12px;
+      padding: 14px;
+      background: #f8fbff;
+      color: #234569;
+      font-weight: 600;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      padding: 11px 14px;
+      font-weight: 700;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    @media (max-width: 560px) {
+      .intro-logo {
+        width: 74px;
+        height: 74px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="intro-head" aria-label="Encabezado certificados">
+      <div>
+        <h1>Certificados</h1>
+        <p>Ac&aacute; vas a poder gestionar tu certificado de asistencia a los encuentros de Plomeros ARG.</p>
+      </div>
+      <img
+        class="intro-logo"
+        src="/Prueba_2/assets/logo-plomeros-circular.png"
+        alt="Logo Plomeros ARG"
+        width="90"
+        height="90"
+      >
+    </section>
+
+    <div class="status-box">
+      Pr&oacute;ximamente vas a poder descargar tu certificado desde esta p&aacute;gina.
+    </div>
+
+    <div class="actions">
+      <a class="btn btn-primary" href="/encuentros.html">Ver encuentros</a>
+      <a class="btn btn-secondary" href="/index.html">Volver al inicio</a>
+    </div>
+  </main>
+</body>
+</html>
