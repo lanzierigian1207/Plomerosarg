@@ -577,18 +577,18 @@
     </section>
 
     <section class="generator-box" aria-label="Generador de certificado">
-      <h2 class="generator-title">Eleg&iacute; un encuentro, escrib&iacute; tu DNI o numero de registro</h2>
+      <h2 class="generator-title">Eleg&iacute; un encuentro, escrib&iacute; tu DNI y tu nombre</h2>
       <div class="encuentros-list" id="encuentrosList"></div>
 
       <div class="field">
-        <label for="dniCertificado">Numero de DNI o Numero de Registro</label>
+        <label for="dniCertificado">Numero de DNI</label>
         <input
           id="dniCertificado"
           name="dniCertificado"
           type="text"
           inputmode="numeric"
           autocomplete="off"
-          placeholder="Escribi tu DNI o numero de registro"
+          placeholder="Escribi tu DNI"
           maxlength="20"
         >
       </div>
@@ -896,16 +896,16 @@
       return cleaned;
     }
 
-    function normalizeLookupValue(value) {
+    function normalizeDni(value) {
       return String(value || "").replace(/\D+/g, "").trim().slice(0, 20);
     }
 
-    async function fetchLookupState(lookupValue) {
-      const normalizedValue = normalizeLookupValue(lookupValue);
-      if (!normalizedValue) {
+    async function fetchLookupState(dniValue) {
+      const normalizedDni = normalizeDni(dniValue);
+      if (!normalizedDni) {
         return {
           ok: false,
-          error: "Ingresa un numero de DNI o numero de registro valido."
+          error: "Ingresa un numero de DNI valido."
         };
       }
 
@@ -916,7 +916,7 @@
             "Content-Type": "application/json",
             Accept: "application/json"
           },
-          body: JSON.stringify({ dato: normalizedValue })
+          body: JSON.stringify({ dni: normalizedDni })
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok || !data.ok) {
@@ -935,25 +935,6 @@
           error: "No se pudo conectar para validar la asistencia."
         };
       }
-    }
-
-    function fillNameFromLookupData(lookupData) {
-      const dbName = toCertificateName(lookupData?.nombre_apellido || "");
-      if (!dbName) return "";
-      nombreInput.value = dbName;
-      return dbName;
-    }
-
-    async function tryAutofillNameFromLookup() {
-      const lookupValue = normalizeLookupValue(dniInput.value);
-      if (!lookupValue) return;
-
-      const lookup = await fetchLookupState(lookupValue);
-      if (!lookup.ok) return;
-
-      const data = lookup.data || {};
-      if (data.found !== true) return;
-      fillNameFromLookupData(data);
     }
 
     function slugifySegment(value) {
@@ -1075,8 +1056,8 @@
       clearMessage();
 
       const selectedEvent = getSelectedEvent();
-      const lookupValue = normalizeLookupValue(dniInput.value);
-      const manualNameValue = toCertificateName(nombreInput.value);
+      const dniValue = normalizeDni(dniInput.value);
+      const nameValue = toCertificateName(nombreInput.value);
 
       if (!selectedEvent) {
         showMessage("Selecciona un encuentro para generar el certificado.");
@@ -1084,10 +1065,17 @@
         return;
       }
 
-      if (!lookupValue) {
-        showMessage("Ingresa un numero de DNI o numero de registro valido.");
+      if (!dniValue) {
+        showMessage("Ingresa un numero de DNI valido.");
         certificadoPanel.hidden = true;
         dniInput.focus();
+        return;
+      }
+
+      if (!nameValue || nameValue.length < 3) {
+        showMessage("Escribi nombre y apellido para generar el certificado.");
+        certificadoPanel.hidden = true;
+        nombreInput.focus();
         return;
       }
 
@@ -1095,7 +1083,7 @@
       generarBtn.disabled = true;
       generarBtn.textContent = "Verificando...";
 
-      const lookup = await fetchLookupState(lookupValue);
+      const lookup = await fetchLookupState(dniValue);
       if (!lookup.ok) {
         showMessage(lookup.error || "No se pudo validar la asistencia.");
         certificadoPanel.hidden = true;
@@ -1106,7 +1094,7 @@
 
       const lookupData = lookup.data || {};
       if (lookupData.found !== true) {
-        showMessage("No encontramos inscripciones para ese DNI o numero de registro.");
+        showMessage("No encontramos inscripciones para ese DNI.");
         certificadoPanel.hidden = true;
         generarBtn.disabled = false;
         generarBtn.textContent = originalButtonText;
@@ -1120,7 +1108,7 @@
       });
 
       if (!selectedAttendance) {
-        showMessage("Ese DNI o numero de registro no tiene inscripcion en el encuentro seleccionado.");
+        showMessage("Ese DNI no tiene inscripcion en el encuentro seleccionado.");
         certificadoPanel.hidden = true;
         generarBtn.disabled = false;
         generarBtn.textContent = originalButtonText;
@@ -1132,16 +1120,6 @@
         certificadoPanel.hidden = true;
         generarBtn.disabled = false;
         generarBtn.textContent = originalButtonText;
-        return;
-      }
-
-      const nameValue = fillNameFromLookupData(lookupData) || manualNameValue;
-      if (!nameValue || nameValue.length < 3) {
-        showMessage("No encontramos el nombre para este registro. Escribilo manualmente.");
-        certificadoPanel.hidden = true;
-        generarBtn.disabled = false;
-        generarBtn.textContent = originalButtonText;
-        nombreInput.focus();
         return;
       }
 
@@ -1159,10 +1137,6 @@
 
     imprimirBtn.addEventListener("click", () => {
       downloadCertificatePdf();
-    });
-
-    dniInput.addEventListener("blur", () => {
-      tryAutofillNameFromLookup();
     });
 
     loadEncuentrosForCertificates();
