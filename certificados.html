@@ -626,11 +626,13 @@
       </article>
 
       <div class="print-controls">
-        <button class="btn btn-primary" id="imprimirCertificadoBtn" type="button">Descargar / Imprimir</button>
+        <button class="btn btn-primary" id="imprimirCertificadoBtn" type="button">Descargar PDF</button>
       </div>
     </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script>
     const EVENT_DETAILS = {
       "bahia blanca 11/3": {
@@ -648,9 +650,12 @@
     const nombreInput = document.getElementById("nombreCertificado");
     const formMessage = document.getElementById("formMessage");
     const certificadoPanel = document.getElementById("certificadoPanel");
+    const certificadoCard = document.getElementById("certificadoCard");
     const certNombre = document.getElementById("certNombre");
     const certNumeroEncuentro = document.getElementById("certNumeroEncuentro");
     const certEventoFecha = document.getElementById("certEventoFecha");
+    const PDF_PAGE_WIDTH = 1123;
+    const PDF_PAGE_HEIGHT = 794;
 
     function normalizeEventKey(value) {
       return String(value || "")
@@ -679,6 +684,90 @@
     function toCertificateName(value) {
       const cleaned = String(value || "").trim().replace(/\s+/g, " ");
       return cleaned;
+    }
+
+    function slugifySegment(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 60) || "archivo";
+    }
+
+    function getPdfFileName() {
+      const eventName = getSelectedEvent() || "encuentro";
+      const personName = toCertificateName(certNombre.textContent || "") || "asistente";
+      return `certificado-${slugifySegment(eventName)}-${slugifySegment(personName)}.pdf`;
+    }
+
+    async function downloadCertificatePdf() {
+      if (certificadoPanel.hidden) {
+        showMessage("Primero generá el certificado antes de descargar.");
+        return;
+      }
+
+      if (!certificadoCard) {
+        showMessage("No se encontró el certificado para descargar.");
+        return;
+      }
+
+      if (typeof window.html2canvas !== "function" || !window.jspdf || !window.jspdf.jsPDF) {
+        showMessage("No se pudo iniciar la descarga del PDF. Recargá la página e intentá de nuevo.");
+        return;
+      }
+
+      const originalButtonText = imprimirBtn.textContent;
+      imprimirBtn.disabled = true;
+      imprimirBtn.textContent = "Generando PDF...";
+      clearMessage();
+
+      try {
+        if (document.fonts && document.fonts.ready) {
+          await document.fonts.ready;
+        }
+
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+
+        const canvas = await window.html2canvas(certificadoCard, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+          logging: false
+        });
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+          orientation: "landscape",
+          unit: "pt",
+          format: [PDF_PAGE_WIDTH, PDF_PAGE_HEIGHT],
+          compress: true
+        });
+
+        const imageData = canvas.toDataURL("image/jpeg", 0.95);
+
+        let renderWidth = PDF_PAGE_WIDTH;
+        let renderHeight = (canvas.height * renderWidth) / canvas.width;
+        let x = 0;
+        let y = (PDF_PAGE_HEIGHT - renderHeight) / 2;
+
+        if (renderHeight > PDF_PAGE_HEIGHT) {
+          renderHeight = PDF_PAGE_HEIGHT;
+          renderWidth = (canvas.width * renderHeight) / canvas.height;
+          x = (PDF_PAGE_WIDTH - renderWidth) / 2;
+          y = 0;
+        }
+
+        pdf.addImage(imageData, "JPEG", x, y, renderWidth, renderHeight, undefined, "FAST");
+        pdf.save(getPdfFileName());
+      } catch (error) {
+        console.error("Error al generar el PDF del certificado:", error);
+        showMessage("No se pudo descargar el PDF. Intentá nuevamente.");
+      } finally {
+        imprimirBtn.disabled = false;
+        imprimirBtn.textContent = originalButtonText;
+      }
     }
 
     generarBtn.addEventListener("click", () => {
@@ -711,7 +800,7 @@
     });
 
     imprimirBtn.addEventListener("click", () => {
-      window.print();
+      downloadCertificatePdf();
     });
   </script>
 </body>
