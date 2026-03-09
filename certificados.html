@@ -343,7 +343,20 @@
       width: clamp(178px, 28.7%, 323px);
     }
 
-    .cert-content > :not(.cert-corner) {
+    .cert-map {
+      position: absolute;
+      right: clamp(10px, 1.8vw, 20px);
+      bottom: clamp(10px, 1.8vw, 20px);
+      width: clamp(88px, 11.2vw, 130px);
+      height: auto;
+      object-fit: contain;
+      opacity: 0.95;
+      pointer-events: none;
+      user-select: none;
+      z-index: 0;
+    }
+
+    .cert-content > :not(.cert-corner):not(.cert-map) {
       position: relative;
       z-index: 1;
     }
@@ -651,6 +664,13 @@
             aria-hidden="true"
             width="323"
             height="163"
+          >
+          <img
+            class="cert-map"
+            src="/Prueba_2/assets/argentina-map-map-of-argentina-in-administrative-regions-in-blue-color-png.png"
+            alt="Mapa de Argentina"
+            width="116"
+            height="256"
           >
           <header class="cert-header">
             <img
