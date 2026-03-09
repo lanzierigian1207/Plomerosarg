@@ -1,13 +1,16 @@
 const {
   KNOWN_EVENTS,
   fetchEventStatusMap,
+  fetchCertificateStatusMap,
+  resolveCertificateActive,
   resolveEventActive
 } = require("./_encuentros");
 
 function buildDefaultEvents() {
   return KNOWN_EVENTS.map((evento) => ({
     evento,
-    activo: true
+    activo: true,
+    certificado_activo: true
   }));
 }
 
@@ -32,7 +35,10 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const statusResult = await fetchEventStatusMap({ supabaseUrl, serviceRoleKey });
+    const [statusResult, certificateStatusResult] = await Promise.all([
+      fetchEventStatusMap({ supabaseUrl, serviceRoleKey }),
+      fetchCertificateStatusMap({ supabaseUrl, serviceRoleKey })
+    ]);
 
     const known = [...KNOWN_EVENTS];
     const extra = [...statusResult.map.keys()]
@@ -47,10 +53,16 @@ module.exports = async (req, res) => {
         activo: resolveEventActive({
           eventName,
           statusMap: statusResult.map
+        }),
+        certificado_activo: resolveCertificateActive({
+          eventName,
+          certificateMap: certificateStatusResult.map
         })
       })),
       status_available: statusResult.available,
-      warning: statusResult.warning || ""
+      certificate_status_available: certificateStatusResult.available,
+      warning: statusResult.warning || "",
+      certificate_warning: certificateStatusResult.warning || ""
     });
   } catch (error) {
     return res.status(200).json({

@@ -104,6 +104,10 @@
       background-color: #1f3f68;
       background-size: cover;
       background-position: center;
+      background-image: var(
+        --encuentro-bg,
+        linear-gradient(120deg, rgba(13, 49, 89, 0.9), rgba(13, 49, 89, 0.72))
+      );
       color: #ffffff;
       padding: 14px 16px;
       font-weight: 600;
@@ -125,12 +129,14 @@
       z-index: 1;
     }
 
-    .encuentro-option-bahia {
-      background-image: url("/Prueba_2/assets/bahia-blanca.jpg");
-    }
-
-    .encuentro-option-mar {
-      background-image: url("/Prueba_2/assets/mar-del-plata.webp");
+    .encuentros-empty {
+      border: 1px dashed #b7cbe4;
+      border-radius: 10px;
+      background: #ffffff;
+      padding: 12px;
+      color: #35577f;
+      font-size: 0.94rem;
+      font-weight: 600;
     }
 
     .encuentro-option input {
@@ -572,34 +578,7 @@
 
     <section class="generator-box" aria-label="Generador de certificado">
       <h2 class="generator-title">Eleg&iacute; un encuentro y escrib&iacute; tu nombre</h2>
-      <div class="encuentros-list">
-        <label class="encuentro-option encuentro-option-bahia" for="encuentroBahiaBlanca">
-          <input
-            id="encuentroBahiaBlanca"
-            type="radio"
-            name="encuentro_certificado"
-            value="Bahia Blanca 11/3"
-          >
-          <span class="encuentro-option-text">
-            <span class="encuentro-option-title">Bahia Blanca 11/3</span>
-            <span class="encuentro-option-subtitle">Gener&aacute; tu certificado de asistencia.</span>
-          </span>
-          <span class="encuentro-option-badge">Encuentro 27</span>
-        </label>
-        <label class="encuentro-option encuentro-option-mar" for="encuentroMarDelPlata">
-          <input
-            id="encuentroMarDelPlata"
-            type="radio"
-            name="encuentro_certificado"
-            value="Mar del Plata 14/3"
-          >
-          <span class="encuentro-option-text">
-            <span class="encuentro-option-title">Mar del Plata 14/3</span>
-            <span class="encuentro-option-subtitle">Gener&aacute; tu certificado de asistencia.</span>
-          </span>
-          <span class="encuentro-option-badge">Encuentro 28</span>
-        </label>
-      </div>
+      <div class="encuentros-list" id="encuentrosList"></div>
 
       <div class="field">
         <label for="nombreCertificado">Nombre y apellido</label>
@@ -701,19 +680,47 @@
   <script>
     const EVENT_DETAILS = {
       "bahia blanca 11/3": {
+        label: "Bahia Blanca 11/3",
         numero: "27",
-        fecha: "Bahia Blanca, miercoles 11 de marzo de 2026"
+        fecha: "Bahia Blanca, miercoles 11 de marzo de 2026",
+        image: "/Prueba_2/assets/bahia-blanca.jpg"
       },
       "mar del plata 14/3": {
+        label: "Mar del Plata 14/3",
         numero: "28",
-        fecha: "Mar del Plata, viernes 14 de marzo de 2026"
+        fecha: "Mar del Plata, viernes 14 de marzo de 2026",
+        image: "/Prueba_2/assets/mar-del-plata.webp"
+      },
+      "mendoza 9/5": {
+        label: "Mendoza 9/5",
+        numero: "29",
+        fecha: "Mendoza, sabado 9 de mayo de 2026",
+        image: "/Prueba_2/assets/mendoza.jpg"
+      },
+      "salta 6/6": {
+        label: "Salta 6/6",
+        numero: "30",
+        fecha: "Salta, sabado 6 de junio de 2026",
+        image: "/Prueba_2/assets/salta.jpg"
+      },
+      "san luis 8/8": {
+        label: "San Luis 8/8",
+        numero: "31",
+        fecha: "San Luis, sabado 8 de agosto de 2026",
+        image: "/Prueba_2/assets/san-luis.png"
       }
     };
+
+    const DEFAULT_EVENT_LIST = Object.values(EVENT_DETAILS).map((item) => ({
+      evento: item.label,
+      certificado_activo: true
+    }));
 
     const generarBtn = document.getElementById("generarCertificadoBtn");
     const imprimirBtn = document.getElementById("imprimirCertificadoBtn");
     const nombreInput = document.getElementById("nombreCertificado");
     const formMessage = document.getElementById("formMessage");
+    const encuentrosList = document.getElementById("encuentrosList");
     const certificadoPanel = document.getElementById("certificadoPanel");
     const certificadoCard = document.getElementById("certificadoCard");
     const certNombre = document.getElementById("certNombre");
@@ -728,6 +735,130 @@
         .replace(/[\u0300-\u036f]/g, "")
         .toLowerCase()
         .trim();
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function getEventDetailsByName(eventName) {
+      const key = normalizeEventKey(eventName);
+      return EVENT_DETAILS[key] || null;
+    }
+
+    function buildEncuentroOptionId(eventName, index) {
+      const slug = String(eventName || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 40) || "encuentro";
+      return `encuentroCertificado-${slug}-${index}`;
+    }
+
+    function renderEncounterOptions(rawEvents, preferredEvent = "") {
+      if (!encuentrosList) return;
+
+      const source = Array.isArray(rawEvents) ? rawEvents : [];
+      const normalizedItems = source
+        .map((item) => {
+          const eventName = String(item?.evento || "").trim();
+          if (!eventName || normalizeEventKey(eventName) === "sin evento") {
+            return null;
+          }
+          return {
+            evento: eventName,
+            certificado_activo: item?.certificado_activo !== false
+          };
+        })
+        .filter(Boolean);
+
+      const uniqueByKey = new Map();
+      for (const item of normalizedItems) {
+        const key = normalizeEventKey(item.evento);
+        if (!key || uniqueByKey.has(key)) continue;
+        uniqueByKey.set(key, item);
+      }
+
+      const visibleEvents = [...uniqueByKey.values()].filter(
+        (item) => item.certificado_activo !== false
+      );
+
+      if (visibleEvents.length === 0) {
+        encuentrosList.innerHTML =
+          `<p class="encuentros-empty">No hay encuentros habilitados para certificados en este momento.</p>`;
+        return;
+      }
+
+      encuentrosList.innerHTML = visibleEvents
+        .map((item, index) => {
+          const details = getEventDetailsByName(item.evento);
+          const optionId = buildEncuentroOptionId(item.evento, index);
+          const encounterNumber = details?.numero ? `Encuentro ${details.numero}` : "Encuentro";
+          const inlineBg = details?.image
+            ? ` style="--encuentro-bg: url('${escapeHtml(details.image)}');"`
+            : "";
+
+          return `
+            <label class="encuentro-option" for="${escapeHtml(optionId)}"${inlineBg}>
+              <input
+                id="${escapeHtml(optionId)}"
+                type="radio"
+                name="encuentro_certificado"
+                value="${escapeHtml(item.evento)}"
+              >
+              <span class="encuentro-option-text">
+                <span class="encuentro-option-title">${escapeHtml(item.evento)}</span>
+                <span class="encuentro-option-subtitle">Gener&aacute; tu certificado de asistencia.</span>
+              </span>
+              <span class="encuentro-option-badge">${escapeHtml(encounterNumber)}</span>
+            </label>
+          `;
+        })
+        .join("");
+
+      const preferredKey = normalizeEventKey(preferredEvent);
+      const radios = Array.from(
+        encuentrosList.querySelectorAll("input[name=\"encuentro_certificado\"]")
+      );
+
+      if (radios.length === 0) return;
+
+      const match = radios.find((radio) => {
+        return normalizeEventKey(radio.value) === preferredKey;
+      });
+
+      if (match) {
+        match.checked = true;
+      } else {
+        radios[0].checked = true;
+      }
+    }
+
+    async function loadEncuentrosForCertificates() {
+      const selectedBeforeReload = getSelectedEvent();
+      renderEncounterOptions(DEFAULT_EVENT_LIST, selectedBeforeReload);
+
+      try {
+        const response = await fetch("/api/encuentros-estado", {
+          method: "GET",
+          headers: { Accept: "application/json" },
+          cache: "no-store"
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok || !Array.isArray(data.eventos)) {
+          return;
+        }
+        const selectedAfterDefaultRender = getSelectedEvent() || selectedBeforeReload;
+        renderEncounterOptions(data.eventos, selectedAfterDefaultRender);
+      } catch {
+      }
     }
 
     function getSelectedEvent() {
@@ -886,11 +1017,11 @@
       }
 
       const eventKey = normalizeEventKey(selectedEvent);
-      const eventInfo = EVENT_DETAILS[eventKey] || EVENT_DETAILS["bahia blanca 11/3"];
+      const eventInfo = EVENT_DETAILS[eventKey] || null;
 
       certNombre.textContent = nameValue;
-      certNumeroEncuentro.textContent = eventInfo.numero || "27";
-      certEventoFecha.textContent = eventInfo.fecha;
+      certNumeroEncuentro.textContent = eventInfo?.numero || "-";
+      certEventoFecha.textContent = eventInfo?.fecha || selectedEvent;
       certificadoPanel.hidden = false;
       certificadoPanel.scrollIntoView({ behavior: "smooth", block: "start" });
     });
@@ -898,6 +1029,8 @@
     imprimirBtn.addEventListener("click", () => {
       downloadCertificatePdf();
     });
+
+    loadEncuentrosForCertificates();
   </script>
 </body>
 </html>

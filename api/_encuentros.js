@@ -9,6 +9,7 @@ const KNOWN_EVENTS = [
 const EVENT_STATUS_TABLE = "encuentros_estado";
 const ATTENDANCE_KEY_PREFIX = "__attendance__::";
 const RECONFIRM_KEY_PREFIX = "__reconfirm__::";
+const CERTIFICATE_KEY_PREFIX = "__certificate__::";
 
 function cleanText(value, maxLength = 120) {
   const text = String(value ?? "").trim().replace(/<[^>]*>/g, "");
@@ -172,7 +173,8 @@ async function fetchEventStatusMap({ supabaseUrl, serviceRoleKey }) {
     const rawKey = String(row.encuentro || "");
     if (
       rawKey.startsWith(ATTENDANCE_KEY_PREFIX) ||
-      rawKey.startsWith(RECONFIRM_KEY_PREFIX)
+      rawKey.startsWith(RECONFIRM_KEY_PREFIX) ||
+      rawKey.startsWith(CERTIFICATE_KEY_PREFIX)
     ) {
       continue;
     }
@@ -195,6 +197,158 @@ function resolveEventActive({ eventName, statusMap }) {
   }
 
   return statusMap.get(canonical) !== false;
+}
+
+function buildCertificateStorageKey(eventName) {
+  const canonicalEvent = getCanonicalEventName(eventName);
+  if (!canonicalEvent || canonicalEvent === "Sin evento") {
+    return "";
+  }
+
+  return `${CERTIFICATE_KEY_PREFIX}${encodeURIComponent(canonicalEvent)}`;
+}
+
+function parseCertificateStorageKey(storageKey) {
+  const raw = String(storageKey ?? "");
+  if (!raw.startsWith(CERTIFICATE_KEY_PREFIX)) {
+    return null;
+  }
+
+  const encodedEvent = raw.slice(CERTIFICATE_KEY_PREFIX.length);
+  if (!encodedEvent) {
+    return null;
+  }
+
+  let decodedEvent = "";
+  try {
+    decodedEvent = decodeURIComponent(encodedEvent);
+  } catch {
+    return null;
+  }
+
+  const canonicalEvent = getCanonicalEventName(decodedEvent);
+  if (!canonicalEvent || canonicalEvent === "Sin evento") {
+    return null;
+  }
+
+  return canonicalEvent;
+}
+
+async function fetchCertificateStatusMap({ supabaseUrl, serviceRoleKey }) {
+  const result = {
+    map: new Map(),
+    available: false,
+    warning: ""
+  };
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    result.warning = "Sin credenciales de Supabase para consultar certificados.";
+    return result;
+  }
+
+  const endpoint = new URL(buildSupabaseEndpoint(supabaseUrl, EVENT_STATUS_TABLE));
+  endpoint.searchParams.set("select", "encuentro,activo");
+  endpoint.searchParams.set("order", "encuentro.asc");
+  endpoint.searchParams.set("limit", "20000");
+
+  const response = await fetch(endpoint.toString(), {
+    method: "GET",
+    headers: buildSupabaseHeaders(serviceRoleKey)
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+
+    if (isMissingStatusTable(response.status, detail)) {
+      result.warning =
+        "Tabla de estado de encuentros no disponible. Los certificados quedan visibles por defecto.";
+      return result;
+    }
+
+    result.warning =
+      `No se pudo leer el estado de certificados (${response.status}). ` +
+      `${getErrorSummary(detail) || "Quedan visibles por defecto."}`;
+    return result;
+  }
+
+  const rows = await response.json().catch(() => []);
+  for (const row of Array.isArray(rows) ? rows : []) {
+    const eventName = parseCertificateStorageKey(row.encuentro);
+    if (!eventName) continue;
+    result.map.set(eventName, row.activo !== false);
+  }
+
+  result.available = true;
+  return result;
+}
+
+function resolveCertificateActive({ eventName, certificateMap }) {
+  if (!(certificateMap instanceof Map)) {
+    return true;
+  }
+
+  const canonical = getCanonicalEventName(eventName);
+  if (!certificateMap.has(canonical)) {
+    return true;
+  }
+
+  return certificateMap.get(canonical) !== false;
+}
+
+async function upsertCertificateStatus({ supabaseUrl, serviceRoleKey, encuentro, activo }) {
+  const storageKey = buildCertificateStorageKey(encuentro);
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    return {
+      ok: false,
+      error: "Faltan variables de entorno de Supabase.",
+      tableMissing: false
+    };
+  }
+
+  if (!storageKey) {
+    return {
+      ok: false,
+      error: "Encuentro invalido.",
+      tableMissing: false
+    };
+  }
+
+  const endpoint = new URL(buildSupabaseEndpoint(supabaseUrl, EVENT_STATUS_TABLE));
+  endpoint.searchParams.set("on_conflict", "encuentro");
+
+  const response = await fetch(endpoint.toString(), {
+    method: "POST",
+    headers: buildSupabaseHeaders(serviceRoleKey, {
+      "Content-Type": "application/json",
+      Prefer: "resolution=merge-duplicates,return=representation"
+    }),
+    body: JSON.stringify([
+      {
+        encuentro: storageKey,
+        activo: activo !== false
+      }
+    ])
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    return {
+      ok: false,
+      error: `No se pudo guardar el estado del certificado (${response.status}). ${getErrorSummary(detail)}`,
+      tableMissing: isMissingStatusTable(response.status, detail),
+      detail: parseJsonSafely(detail, detail)
+    };
+  }
+
+  const rows = await response.json().catch(() => []);
+  const saved = Array.isArray(rows) && rows[0] ? rows[0] : null;
+
+  return {
+    ok: true,
+    eventName: parseCertificateStorageKey(saved?.encuentro) || getCanonicalEventName(encuentro),
+    active: saved?.activo !== false
+  };
 }
 
 async function getEventStatus({ supabaseUrl, serviceRoleKey, encuentro }) {
@@ -318,11 +472,15 @@ async function upsertEventStatus({ supabaseUrl, serviceRoleKey, encuentro, activ
 
 module.exports = {
   KNOWN_EVENTS,
+  CERTIFICATE_KEY_PREFIX,
   cleanText,
   getCanonicalEventName,
   normalizeEventKey,
   fetchEventStatusMap,
+  fetchCertificateStatusMap,
   resolveEventActive,
+  resolveCertificateActive,
   getEventStatus,
-  upsertEventStatus
+  upsertEventStatus,
+  upsertCertificateStatus
 };

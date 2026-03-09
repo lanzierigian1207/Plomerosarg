@@ -471,6 +471,7 @@
     let currentAdminRole = "admin";
     let currentEventos = [];
     const toggleInFlight = new Set();
+    const certificateToggleInFlight = new Set();
     const visibleRowsByEvent = new Map();
     const attendanceLookupByEvent = new Map();
 
@@ -563,6 +564,10 @@
 
     function isEventActive(item) {
       return item?.activo !== false;
+    }
+
+    function isCertificateVisible(item) {
+      return item?.certificado_activo !== false;
     }
 
     function getEventKey(item, index) {
@@ -953,6 +958,9 @@
                   <span class="event-state ${isEventActive(item) ? "is-on" : "is-off"}">
                     ${isEventActive(item) ? "Activo" : "Inactivo"}
                   </span>
+                  <span class="event-state ${isCertificateVisible(item) ? "is-on" : "is-off"}">
+                    ${isCertificateVisible(item) ? "Certificado visible" : "Certificado oculto"}
+                  </span>
                   ${
                     canManageEvents
                       ? `
@@ -963,6 +971,20 @@
                           ${toggleInFlight.has(index) ? "disabled" : ""}
                         >
                           ${isEventActive(item) ? "Desactivar" : "Activar"}
+                        </button>
+                      `
+                      : ""
+                  }
+                  ${
+                    canManageEvents
+                      ? `
+                        <button
+                          class="btn-event btn-toggle ${isCertificateVisible(item) ? "is-on" : "is-off"}"
+                          type="button"
+                          data-toggle-certificate="${index}"
+                          ${certificateToggleInFlight.has(index) ? "disabled" : ""}
+                        >
+                          ${isCertificateVisible(item) ? "Ocultar certificado" : "Mostrar certificado"}
                         </button>
                       `
                       : ""
@@ -1026,8 +1048,13 @@
           : "Actualizado";
 
         renderEvents(data.eventos || []);
-        if (data.status_warning) {
-          setStatusMessage(data.status_warning, "warning");
+        const warnings = [
+          String(data.status_warning || "").trim(),
+          String(data.certificate_status_warning || "").trim()
+        ].filter(Boolean);
+
+        if (warnings.length > 0) {
+          setStatusMessage(warnings.join(" | "), "warning");
         } else {
           setStatusMessage("Datos cargados correctamente.");
         }
@@ -1086,11 +1113,69 @@
       }
     }
 
+    async function toggleCertificate(index) {
+      if (!Number.isInteger(index) || certificateToggleInFlight.has(index)) return;
+
+      const selected = currentEventos[index];
+      if (!selected || !selected.evento) return;
+
+      const nextVisible = !isCertificateVisible(selected);
+      certificateToggleInFlight.add(index);
+      renderEvents(currentEventos);
+
+      try {
+        const response = await fetch("/api/admin-inscripciones", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({
+            action: "set_certificado_visible",
+            evento: selected.evento,
+            certificado_activo: nextVisible
+          })
+        });
+
+        if (response.status === 401) {
+          window.location.href = ADMIN_LOGIN_URL;
+          return;
+        }
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok) {
+          const sqlHint = typeof data.sql === "string" && data.sql ? ` SQL: ${data.sql}` : "";
+          throw new Error((data.error || "No se pudo actualizar certificados.") + sqlHint);
+        }
+
+        selected.certificado_activo = data.certificado_activo !== false;
+        renderEvents(currentEventos);
+        setStatusMessage(
+          `Certificados de ${selected.evento}: ${selected.certificado_activo ? "visibles" : "ocultos"}.`
+        );
+      } catch (error) {
+        setStatusMessage(`Error: ${error.message}`, "error");
+      } finally {
+        certificateToggleInFlight.delete(index);
+        renderEvents(currentEventos);
+      }
+    }
+
     eventsContainer.addEventListener("click", async (event) => {
       const toggleButton = event.target.closest("[data-toggle-event]");
       if (toggleButton) {
         const toggleIndex = Number.parseInt(toggleButton.getAttribute("data-toggle-event"), 10);
         await toggleEvent(toggleIndex);
+        return;
+      }
+
+      const toggleCertificateButton = event.target.closest("[data-toggle-certificate]");
+      if (toggleCertificateButton) {
+        const toggleCertificateIndex = Number.parseInt(
+          toggleCertificateButton.getAttribute("data-toggle-certificate"),
+          10
+        );
+        await toggleCertificate(toggleCertificateIndex);
         return;
       }
 

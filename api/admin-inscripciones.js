@@ -5,8 +5,11 @@ const {
   cleanText,
   getCanonicalEventName,
   fetchEventStatusMap,
+  fetchCertificateStatusMap,
   resolveEventActive,
-  upsertEventStatus
+  resolveCertificateActive,
+  upsertEventStatus,
+  upsertCertificateStatus
 } = require("./_encuentros");
 
 const COOKIE_NAME = "admin_session";
@@ -451,8 +454,9 @@ async function handleGet(req, res, adminRole) {
   endpoint.searchParams.set("limit", String(limit));
 
   try {
-    const [statusResult, flagsState] = await Promise.all([
+    const [statusResult, certificateStatusResult, flagsState] = await Promise.all([
       fetchEventStatusMap({ supabaseUrl, serviceRoleKey }),
+      fetchCertificateStatusMap({ supabaseUrl, serviceRoleKey }),
       fetchAttendanceAndReconfirmStateMaps({ supabaseUrl, serviceRoleKey })
     ]);
     const inscripcionesResult = await fetchInscripcionesRows({
@@ -539,6 +543,10 @@ async function handleGet(req, res, adminRole) {
           eventName,
           statusMap: statusResult.map
         }),
+        certificado_activo: resolveCertificateActive({
+          eventName,
+          certificateMap: certificateStatusResult.map
+        }),
         inscripciones
       };
     });
@@ -571,6 +579,8 @@ async function handleGet(req, res, adminRole) {
       },
       status_available: statusResult.available,
       status_warning: statusResult.warning || "",
+      certificate_status_available: certificateStatusResult.available,
+      certificate_status_warning: certificateStatusResult.warning || "",
       generated_at: new Date().toISOString()
     });
   } catch (error) {
@@ -653,6 +663,57 @@ async function handlePost(req, res, adminRole) {
     return res.status(403).json({
       ok: false,
       error: "No autorizado para modificar el estado de encuentros."
+    });
+  }
+
+  if (action === "set_certificado_visible") {
+    const eventInput = cleanText(payload.evento, 80);
+    const certificadoVisible = parseBooleanInput(payload.certificado_activo);
+
+    if (!eventInput) {
+      return res.status(422).json({
+        ok: false,
+        error: "Tenes que indicar un encuentro."
+      });
+    }
+
+    if (certificadoVisible === null) {
+      return res.status(422).json({
+        ok: false,
+        error: "Tenes que indicar certificado_activo true/false."
+      });
+    }
+
+    const savedCertificate = await upsertCertificateStatus({
+      supabaseUrl,
+      serviceRoleKey,
+      encuentro: eventInput,
+      activo: certificadoVisible
+    });
+
+    if (!savedCertificate.ok) {
+      if (savedCertificate.tableMissing) {
+        return res.status(500).json({
+          ok: false,
+          error:
+            "No existe la tabla de estados de encuentros. Creala una sola vez en Supabase y volve a intentar.",
+          sql: STATUS_TABLE_SQL
+        });
+      }
+
+      return res.status(500).json({
+        ok: false,
+        error:
+          savedCertificate.error || "No se pudo guardar la visibilidad del certificado."
+      });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      action: "set_certificado_visible",
+      evento: savedCertificate.eventName,
+      certificado_activo: savedCertificate.active,
+      updated_at: new Date().toISOString()
     });
   }
 
