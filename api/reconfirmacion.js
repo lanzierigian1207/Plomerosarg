@@ -11,6 +11,13 @@ function normalizeDni(value) {
     .slice(0, 20);
 }
 
+function normalizeRegistro(value) {
+  return String(value ?? "")
+    .replace(/\D+/g, "")
+    .trim()
+    .slice(0, 20);
+}
+
 function normalizeBody(body) {
   if (!body) return {};
 
@@ -261,6 +268,31 @@ async function fetchInscripcionesByDni({
   return Array.isArray(rows) ? rows : [];
 }
 
+async function fetchInscripcionByRegistro({
+  supabaseUrl,
+  serviceRoleKey,
+  registro,
+  select
+}) {
+  const endpoint = new URL(`${supabaseUrl.replace(/\/$/, "")}/rest/v1/inscripciones`);
+  endpoint.searchParams.set("select", select);
+  endpoint.searchParams.set("id", `eq.${registro}`);
+  endpoint.searchParams.set("limit", "1");
+
+  const response = await fetch(endpoint.toString(), {
+    method: "GET",
+    headers: buildHeaders(serviceRoleKey)
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(`No se pudo consultar la base de datos. ${detail}`.trim());
+  }
+
+  const rows = await response.json().catch(() => []);
+  return Array.isArray(rows) ? rows : [];
+}
+
 async function fetchReconfirmedEventsByDni({
   supabaseUrl,
   serviceRoleKey,
@@ -472,12 +504,25 @@ module.exports = async (req, res) => {
 
   const payload = getPayload(req);
   const action = cleanText(payload.action, 30).toLowerCase();
-  const dni = normalizeDni(payload.dni);
+  const hasExplicitDni = Object.prototype.hasOwnProperty.call(payload, "dni");
+  const hasExplicitRegistro = Object.prototype.hasOwnProperty.call(payload, "registro");
+  const lookupDato = cleanText(payload.dato, 40);
+  const dni = normalizeDni(hasExplicitDni ? payload.dni || lookupDato : lookupDato);
+  const registro = normalizeRegistro(
+    hasExplicitRegistro ? payload.registro || lookupDato : lookupDato
+  );
 
-  if (!dni) {
+  if (action === "reconfirmar" && !dni) {
     return res.status(422).json({
       ok: false,
       error: "Tenes que indicar un DNI valido."
+    });
+  }
+
+  if (action !== "reconfirmar" && !dni && !registro) {
+    return res.status(422).json({
+      ok: false,
+      error: "Tenes que indicar un DNI o numero de registro valido."
     });
   }
 
@@ -621,29 +666,111 @@ module.exports = async (req, res) => {
       });
     }
 
-    const rows = await fetchInscripcionesByDni({
-      supabaseUrl,
-      serviceRoleKey,
-      dni,
-      select: "encuentro,nombre_apellido,dni,created_at"
-    });
+    const select = "id,encuentro,nombre_apellido,dni,created_at";
+    const datoDigits = normalizeRegistro(lookupDato);
+    const lookupPrefersRegistro =
+      !hasExplicitDni &&
+      !hasExplicitRegistro &&
+      datoDigits &&
+      datoDigits.length <= 6;
+    const preferRegistro = hasExplicitRegistro || lookupPrefersRegistro;
+
+    let rows = [];
+    let resolvedDni = dni;
+    let matchedBy = "";
+    let usedRegistro = "";
+
+    if (preferRegistro && registro) {
+      const byRegistroRows = await fetchInscripcionByRegistro({
+        supabaseUrl,
+        serviceRoleKey,
+        registro,
+        select
+      });
+
+      if (byRegistroRows.length > 0) {
+        matchedBy = "registro";
+        usedRegistro = registro;
+        const dniFromRegistro = normalizeDni(byRegistroRows[0]?.dni);
+        if (dniFromRegistro) {
+          resolvedDni = dniFromRegistro;
+          rows = await fetchInscripcionesByDni({
+            supabaseUrl,
+            serviceRoleKey,
+            dni: dniFromRegistro,
+            select
+          });
+          if (rows.length === 0) {
+            rows = byRegistroRows;
+          }
+        } else {
+          rows = byRegistroRows;
+        }
+      }
+    }
+
+    if (rows.length === 0 && dni) {
+      rows = await fetchInscripcionesByDni({
+        supabaseUrl,
+        serviceRoleKey,
+        dni,
+        select
+      });
+      if (rows.length > 0) {
+        matchedBy = "dni";
+        resolvedDni = dni;
+      }
+    }
+
+    if (rows.length === 0 && !preferRegistro && registro) {
+      const byRegistroRows = await fetchInscripcionByRegistro({
+        supabaseUrl,
+        serviceRoleKey,
+        registro,
+        select
+      });
+
+      if (byRegistroRows.length > 0) {
+        matchedBy = "registro";
+        usedRegistro = registro;
+        const dniFromRegistro = normalizeDni(byRegistroRows[0]?.dni);
+        if (dniFromRegistro) {
+          resolvedDni = dniFromRegistro;
+          rows = await fetchInscripcionesByDni({
+            supabaseUrl,
+            serviceRoleKey,
+            dni: dniFromRegistro,
+            select
+          });
+          if (rows.length === 0) {
+            rows = byRegistroRows;
+          }
+        } else {
+          rows = byRegistroRows;
+        }
+      }
+    }
 
     if (rows.length === 0) {
       return res.status(200).json({
         ok: true,
         found: false,
-        dni,
+        dni: resolvedDni || "",
+        registro_consultado: usedRegistro || registro || "",
+        encontrado_por: matchedBy || "",
         nombre_apellido: "",
         encuentros: []
       });
     }
 
     const encuentros = buildEncuentrosSummary(rows);
-    const attendedSet = await fetchAttendedEventsByDni({
-      supabaseUrl,
-      serviceRoleKey,
-      dni
-    });
+    const attendedSet = resolvedDni
+      ? await fetchAttendedEventsByDni({
+        supabaseUrl,
+        serviceRoleKey,
+        dni: resolvedDni
+      })
+      : new Set();
     const encuentrosWithAttendance = encuentros.map((item) => ({
       ...item,
       asistio: attendedSet.has(cleanText(item.encuentro, 120))
@@ -652,7 +779,9 @@ module.exports = async (req, res) => {
     return res.status(200).json({
       ok: true,
       found: encuentrosWithAttendance.length > 0,
-      dni,
+      dni: resolvedDni || normalizeDni(rows[0]?.dni),
+      registro_consultado: usedRegistro || registro || "",
+      encontrado_por: matchedBy || "",
       nombre_apellido: cleanText(rows[0].nombre_apellido, 120),
       encuentros: encuentrosWithAttendance
     });
