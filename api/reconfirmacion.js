@@ -1,6 +1,7 @@
 const { cleanText, getCanonicalEventName } = require("./_encuentros");
 
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
+const ATTENDANCE_KEY_PREFIX = "__attendance__::";
 const RECONFIRM_KEY_PREFIX = "__reconfirm__::";
 
 function normalizeDni(value) {
@@ -68,6 +69,42 @@ function parseReconfirmStorageKey(storageKey) {
   }
 
   const tail = raw.slice(RECONFIRM_KEY_PREFIX.length);
+  const separatorIndex = tail.lastIndexOf("::");
+  if (separatorIndex <= 0) {
+    return null;
+  }
+
+  const encodedEvent = tail.slice(0, separatorIndex);
+  const normalizedDni = normalizeDni(tail.slice(separatorIndex + 2));
+  if (!normalizedDni) {
+    return null;
+  }
+
+  let decodedEvent = "";
+  try {
+    decodedEvent = decodeURIComponent(encodedEvent);
+  } catch {
+    return null;
+  }
+
+  const canonicalEvent = getCanonicalEventName(decodedEvent);
+  if (!canonicalEvent || canonicalEvent === "Sin evento") {
+    return null;
+  }
+
+  return {
+    eventName: canonicalEvent,
+    dni: normalizedDni
+  };
+}
+
+function parseAttendanceStorageKey(storageKey) {
+  const raw = String(storageKey ?? "");
+  if (!raw.startsWith(ATTENDANCE_KEY_PREFIX)) {
+    return null;
+  }
+
+  const tail = raw.slice(ATTENDANCE_KEY_PREFIX.length);
   const separatorIndex = tail.lastIndexOf("::");
   if (separatorIndex <= 0) {
     return null;
@@ -255,6 +292,48 @@ async function fetchReconfirmedEventsByDni({
   for (const row of Array.isArray(rows) ? rows : []) {
     if (row?.activo === false) continue;
     const parsed = parseReconfirmStorageKey(row?.encuentro);
+    if (!parsed) continue;
+    if (parsed.dni !== normalizedDni) continue;
+    set.add(parsed.eventName);
+  }
+
+  return set;
+}
+
+async function fetchAttendedEventsByDni({
+  supabaseUrl,
+  serviceRoleKey,
+  dni
+}) {
+  const normalizedDni = normalizeDni(dni);
+  const set = new Set();
+
+  if (!normalizedDni) {
+    return set;
+  }
+
+  const endpoint = new URL(`${supabaseUrl.replace(/\/$/, "")}/rest/v1/encuentros_estado`);
+  endpoint.searchParams.set("select", "encuentro,activo");
+  endpoint.searchParams.set(
+    "encuentro",
+    `match.^${ATTENDANCE_KEY_PREFIX}.*::${normalizedDni}$`
+  );
+  endpoint.searchParams.set("limit", "500");
+
+  const response = await fetch(endpoint.toString(), {
+    method: "GET",
+    headers: buildHeaders(serviceRoleKey)
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(`No se pudo consultar asistencias previas. ${detail}`.trim());
+  }
+
+  const rows = await response.json().catch(() => []);
+  for (const row of Array.isArray(rows) ? rows : []) {
+    if (row?.activo === false) continue;
+    const parsed = parseAttendanceStorageKey(row?.encuentro);
     if (!parsed) continue;
     if (parsed.dni !== normalizedDni) continue;
     set.add(parsed.eventName);
@@ -560,13 +639,22 @@ module.exports = async (req, res) => {
     }
 
     const encuentros = buildEncuentrosSummary(rows);
+    const attendedSet = await fetchAttendedEventsByDni({
+      supabaseUrl,
+      serviceRoleKey,
+      dni
+    });
+    const encuentrosWithAttendance = encuentros.map((item) => ({
+      ...item,
+      asistio: attendedSet.has(cleanText(item.encuentro, 120))
+    }));
 
     return res.status(200).json({
       ok: true,
-      found: encuentros.length > 0,
+      found: encuentrosWithAttendance.length > 0,
       dni,
       nombre_apellido: cleanText(rows[0].nombre_apellido, 120),
-      encuentros
+      encuentros: encuentrosWithAttendance
     });
   } catch (error) {
     return res.status(500).json({

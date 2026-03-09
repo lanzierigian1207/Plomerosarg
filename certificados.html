@@ -577,8 +577,21 @@
     </section>
 
     <section class="generator-box" aria-label="Generador de certificado">
-      <h2 class="generator-title">Eleg&iacute; un encuentro y escrib&iacute; tu nombre</h2>
+      <h2 class="generator-title">Eleg&iacute; un encuentro, escrib&iacute; tu DNI y tu nombre</h2>
       <div class="encuentros-list" id="encuentrosList"></div>
+
+      <div class="field">
+        <label for="dniCertificado">Numero de DNI</label>
+        <input
+          id="dniCertificado"
+          name="dniCertificado"
+          type="text"
+          inputmode="numeric"
+          autocomplete="off"
+          placeholder="Escribi tu DNI"
+          maxlength="20"
+        >
+      </div>
 
       <div class="field">
         <label for="nombreCertificado">Nombre y apellido</label>
@@ -718,6 +731,7 @@
 
     const generarBtn = document.getElementById("generarCertificadoBtn");
     const imprimirBtn = document.getElementById("imprimirCertificadoBtn");
+    const dniInput = document.getElementById("dniCertificado");
     const nombreInput = document.getElementById("nombreCertificado");
     const formMessage = document.getElementById("formMessage");
     const encuentrosList = document.getElementById("encuentrosList");
@@ -882,6 +896,47 @@
       return cleaned;
     }
 
+    function normalizeDni(value) {
+      return String(value || "").replace(/\D+/g, "").trim().slice(0, 20);
+    }
+
+    async function fetchDniEncuentrosState(dni) {
+      const normalizedDni = normalizeDni(dni);
+      if (!normalizedDni) {
+        return {
+          ok: false,
+          error: "Ingresa un numero de DNI valido."
+        };
+      }
+
+      try {
+        const response = await fetch("/api/reconfirmacion", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json"
+          },
+          body: JSON.stringify({ dni: normalizedDni })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok) {
+          return {
+            ok: false,
+            error: data.error || "No se pudo validar la asistencia."
+          };
+        }
+        return {
+          ok: true,
+          data
+        };
+      } catch {
+        return {
+          ok: false,
+          error: "No se pudo conectar para validar la asistencia."
+        };
+      }
+    }
+
     function slugifySegment(value) {
       return String(value || "")
         .normalize("NFD")
@@ -997,10 +1052,11 @@
       }
     }
 
-    generarBtn.addEventListener("click", () => {
+    generarBtn.addEventListener("click", async () => {
       clearMessage();
 
       const selectedEvent = getSelectedEvent();
+      const dniValue = normalizeDni(dniInput.value);
       const nameValue = toCertificateName(nombreInput.value);
 
       if (!selectedEvent) {
@@ -1009,10 +1065,53 @@
         return;
       }
 
+      if (!dniValue) {
+        showMessage("Ingresa un numero de DNI valido.");
+        certificadoPanel.hidden = true;
+        dniInput.focus();
+        return;
+      }
+
       if (!nameValue || nameValue.length < 3) {
         showMessage("Escribi nombre y apellido para generar el certificado.");
         certificadoPanel.hidden = true;
         nombreInput.focus();
+        return;
+      }
+
+      const originalButtonText = generarBtn.textContent;
+      generarBtn.disabled = true;
+      generarBtn.textContent = "Verificando...";
+
+      const lookup = await fetchDniEncuentrosState(dniValue);
+      if (!lookup.ok) {
+        showMessage(lookup.error || "No se pudo validar la asistencia.");
+        certificadoPanel.hidden = true;
+        generarBtn.disabled = false;
+        generarBtn.textContent = originalButtonText;
+        return;
+      }
+
+      const lookupData = lookup.data || {};
+      const encuentros = Array.isArray(lookupData.encuentros) ? lookupData.encuentros : [];
+      const selectedKey = normalizeEventKey(selectedEvent);
+      const selectedAttendance = encuentros.find((item) => {
+        return normalizeEventKey(item?.encuentro) === selectedKey;
+      });
+
+      if (!selectedAttendance) {
+        showMessage("Ese DNI no tiene inscripcion en el encuentro seleccionado.");
+        certificadoPanel.hidden = true;
+        generarBtn.disabled = false;
+        generarBtn.textContent = originalButtonText;
+        return;
+      }
+
+      if (selectedAttendance.asistio !== true) {
+        showMessage(`Todavia no figura tu asistencia en ${selectedEvent}.`);
+        certificadoPanel.hidden = true;
+        generarBtn.disabled = false;
+        generarBtn.textContent = originalButtonText;
         return;
       }
 
@@ -1024,6 +1123,8 @@
       certEventoFecha.textContent = eventInfo?.fecha || selectedEvent;
       certificadoPanel.hidden = false;
       certificadoPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+      generarBtn.disabled = false;
+      generarBtn.textContent = originalButtonText;
     });
 
     imprimirBtn.addEventListener("click", () => {
