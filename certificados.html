@@ -199,6 +199,19 @@
       box-shadow: 0 14px 28px rgba(13, 57, 108, 0.28);
     }
 
+    .certificado-card.pdf-export-fixed {
+      width: 1123px !important;
+      height: 794px !important;
+      min-height: 794px !important;
+      max-width: none !important;
+      aspect-ratio: 1123 / 794 !important;
+      margin: 0 !important;
+    }
+
+    .certificado-card.pdf-export-fixed .cert-content {
+      padding: clamp(24px, 3.2vw, 42px) clamp(24px, 4vw, 56px) clamp(20px, 3vw, 32px) !important;
+    }
+
     .cert-content {
       position: relative;
       z-index: 1;
@@ -666,6 +679,42 @@
       return `certificado-${slugifySegment(eventName)}-${slugifySegment(personName)}.pdf`;
     }
 
+    async function renderDesktopCanvasForPdf() {
+      const host = document.createElement("div");
+      host.setAttribute("aria-hidden", "true");
+      host.style.position = "fixed";
+      host.style.left = "-10000px";
+      host.style.top = "0";
+      host.style.width = `${PDF_PAGE_WIDTH}px`;
+      host.style.height = `${PDF_PAGE_HEIGHT}px`;
+      host.style.overflow = "hidden";
+      host.style.opacity = "0";
+      host.style.pointerEvents = "none";
+      host.style.zIndex = "-1";
+
+      const cardClone = certificadoCard.cloneNode(true);
+      cardClone.id = "";
+      cardClone.classList.add("pdf-export-fixed");
+
+      host.appendChild(cardClone);
+      document.body.appendChild(host);
+
+      try {
+        const canvas = await window.html2canvas(cardClone, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+          logging: false,
+          windowWidth: 1440,
+          windowHeight: 1024
+        });
+
+        return canvas;
+      } finally {
+        host.remove();
+      }
+    }
+
     async function downloadCertificatePdf() {
       if (certificadoPanel.hidden) {
         showMessage("Primero generá el certificado antes de descargar.");
@@ -694,12 +743,7 @@
 
         await new Promise((resolve) => requestAnimationFrame(resolve));
 
-        const canvas = await window.html2canvas(certificadoCard, {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: "#ffffff",
-          logging: false
-        });
+        const canvas = await renderDesktopCanvasForPdf();
 
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF({
