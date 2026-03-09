@@ -282,8 +282,8 @@
     }
 
     .cert-logo {
-      width: clamp(64px, 7.8vw, 102px);
-      height: clamp(64px, 7.8vw, 102px);
+      width: clamp(68px, 8.2vw, 108px);
+      height: clamp(68px, 8.2vw, 108px);
       border-radius: 999px;
       object-fit: contain;
     }
@@ -298,7 +298,7 @@
       color: #1f66ba;
       font-weight: 800;
       letter-spacing: 0.06em;
-      font-size: clamp(1.5rem, 4.2vw, 3.3rem);
+      font-size: clamp(1.62rem, 4.5vw, 3.55rem);
       line-height: 0.92;
     }
 
@@ -306,20 +306,20 @@
       color: #3a8aca;
       font-weight: 800;
       letter-spacing: 0.05em;
-      font-size: clamp(1.05rem, 2.2vw, 1.95rem);
+      font-size: clamp(1.14rem, 2.4vw, 2.1rem);
       line-height: 0.95;
     }
 
     .cert-otorgado {
       color: #10253f;
-      font-size: clamp(0.82rem, 0.95vw, 1.05rem);
+      font-size: clamp(0.88rem, 1.02vw, 1.14rem);
       font-weight: 700;
     }
 
     .cert-nombre {
       font-family: "Great Vibes", cursive;
       color: #1b72af;
-      font-size: clamp(1.75rem, 4.5vw, 3.7rem);
+      font-size: clamp(2rem, 4.95vw, 4.08rem);
       line-height: 0.95;
       padding-inline: 8px;
       word-break: break-word;
@@ -328,7 +328,7 @@
     .cert-text {
       max-width: 940px;
       color: #1f2f43;
-      font-size: clamp(0.72rem, 0.95vw, 1rem);
+      font-size: clamp(0.79rem, 1.03vw, 1.08rem);
       font-weight: 500;
     }
 
@@ -342,22 +342,80 @@
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 8px 10px;
+      gap: 9px 12px;
       padding-inline: 10px;
     }
 
     .cert-logos img {
-      max-height: 24px;
+      max-height: 27px;
       width: auto;
       object-fit: contain;
       filter: saturate(1.05);
     }
 
+    .cert-location-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 8px;
+    }
+
     .cert-event {
       color: #1c3555;
-      font-size: clamp(0.72rem, 0.92vw, 0.98rem);
+      font-size: clamp(0.78rem, 0.98vw, 1.03rem);
       font-weight: 700;
       margin-top: 1px;
+      text-align: center;
+    }
+
+    .cert-map-wrap {
+      width: clamp(86px, 8.8vw, 128px);
+      height: auto;
+      justify-self: end;
+      margin-right: clamp(2px, 0.8vw, 8px);
+    }
+
+    .cert-map {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .ba-outline {
+      fill: #e8f1ff;
+      stroke: #2f6eb1;
+      stroke-width: 4;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .ba-detail {
+      fill: none;
+      stroke: rgba(47, 110, 177, 0.45);
+      stroke-width: 2;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .map-marker {
+      transform-origin: center;
+    }
+
+    .map-marker .ring {
+      fill: rgba(255, 193, 7, 0.22);
+      stroke: #1f66ba;
+      stroke-width: 2;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .map-marker .star {
+      fill: #f7c41f;
+      stroke: #b78300;
+      stroke-width: 1.6;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .map-marker.hidden {
+      display: none;
     }
 
     .cert-sign {
@@ -422,6 +480,16 @@
 
       .cert-content {
         padding: 20px 16px 18px;
+      }
+
+      .cert-location-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+
+      .cert-map-wrap {
+        justify-self: center;
+        margin-right: 0;
       }
     }
 
@@ -582,7 +650,31 @@
             <img src="/Prueba_2/assets/empresas/04_waterplast.png" alt="Waterplast">
           </div>
 
-          <p class="cert-event" id="certEventoFecha">Bahia Blanca, miercoles 11 de marzo de 2026</p>
+          <div class="cert-location-row">
+            <p class="cert-event" id="certEventoFecha">Bahia Blanca, miercoles 11 de marzo de 2026</p>
+            <div class="cert-map-wrap" aria-label="Mapa de Buenos Aires">
+              <svg class="cert-map" viewBox="0 0 180 270" role="img" aria-label="Mapa de la provincia de Buenos Aires">
+                <path
+                  class="ba-outline"
+                  d="M52 18 L83 8 L118 18 L150 38 L162 66 L168 94 L158 128 L154 159 L140 196 L124 232 L102 255 L76 262 L53 246 L42 220 L36 191 L29 166 L15 132 L12 104 L21 84 L30 62 L39 44 Z"
+                />
+                <path class="ba-detail" d="M42 70 L138 46" />
+                <path class="ba-detail" d="M20 122 L160 98" />
+                <path class="ba-detail" d="M30 165 L150 145" />
+                <path class="ba-detail" d="M42 209 L132 192" />
+
+                <g id="markerBahia" class="map-marker">
+                  <circle class="ring" cx="62" cy="220" r="11" />
+                  <polygon class="star" points="62,210 65,217 73,218 67,223 69,231 62,227 55,231 57,223 51,218 59,217" />
+                </g>
+
+                <g id="markerMarDelPlata" class="map-marker hidden">
+                  <circle class="ring" cx="125" cy="214" r="11" />
+                  <polygon class="star" points="125,204 128,211 136,212 130,217 132,225 125,221 118,225 120,217 114,212 122,211" />
+                </g>
+              </svg>
+            </div>
+          </div>
           <img
             class="cert-sign-image"
             src="/Prueba_2/assets/image_2026-03-08_204129036.png"
@@ -635,6 +727,8 @@
     const certNombre = document.getElementById("certNombre");
     const certNumeroEncuentro = document.getElementById("certNumeroEncuentro");
     const certEventoFecha = document.getElementById("certEventoFecha");
+    const markerBahia = document.getElementById("markerBahia");
+    const markerMarDelPlata = document.getElementById("markerMarDelPlata");
 
     function normalizeEventKey(value) {
       return String(value || "")
@@ -665,6 +759,14 @@
       return cleaned;
     }
 
+    function setMapMarker(eventKey) {
+      if (!markerBahia || !markerMarDelPlata) return;
+
+      const isMarDelPlata = eventKey === "mar del plata 14/3";
+      markerBahia.classList.toggle("hidden", isMarDelPlata);
+      markerMarDelPlata.classList.toggle("hidden", !isMarDelPlata);
+    }
+
     generarBtn.addEventListener("click", () => {
       clearMessage();
 
@@ -690,6 +792,7 @@
       certNombre.textContent = nameValue;
       certNumeroEncuentro.textContent = eventInfo.numero || "27";
       certEventoFecha.textContent = eventInfo.fecha;
+      setMapMarker(eventKey);
       certificadoPanel.hidden = false;
       certificadoPanel.scrollIntoView({ behavior: "smooth", block: "start" });
     });
