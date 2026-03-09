@@ -265,11 +265,10 @@
     }
 
     .cert-header {
-      display: inline-grid;
-      grid-auto-flow: column;
+      width: 100%;
+      display: flex;
       align-items: center;
       justify-content: center;
-      gap: clamp(8px, 1.8vw, 16px);
     }
 
     .cert-logo {
@@ -277,28 +276,6 @@
       height: clamp(62px, 7vw, 88px);
       border-radius: 999px;
       object-fit: contain;
-    }
-
-    .cert-brand {
-      display: grid;
-      justify-items: start;
-      gap: 1px;
-    }
-
-    .cert-brand-name {
-      color: #1b5aa0;
-      font-weight: 800;
-      letter-spacing: 0.01em;
-      font-size: clamp(1.24rem, 2.65vw, 2.1rem);
-      line-height: 1;
-    }
-
-    .cert-brand-sub {
-      color: #3c7fbf;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      font-size: clamp(0.62rem, 0.95vw, 0.82rem);
     }
 
     .cert-title {
@@ -439,15 +416,6 @@
         height: 74px;
       }
 
-      .cert-header {
-        grid-auto-flow: row;
-        justify-items: center;
-      }
-
-      .cert-brand {
-        justify-items: center;
-      }
-
       .cert-event-name {
         font-size: clamp(1.1rem, 6vw, 1.64rem);
       }
@@ -562,10 +530,6 @@
               width="130"
               height="130"
             >
-            <div class="cert-brand">
-              <p class="cert-brand-name">Plomeros ARG</p>
-              <p class="cert-brand-sub">Sanitaristas Argentinos</p>
-            </div>
           </header>
 
           <p class="cert-title">CERTIFICADO DE ASISTENCIA</p>
