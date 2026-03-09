@@ -366,7 +366,7 @@
       right: clamp(10px, 1.6vw, 22px);
       top: 56%;
       transform: translateY(-50%);
-      width: clamp(82px, 9vw, 126px);
+      width: clamp(104px, 10.6vw, 152px);
       height: auto;
       z-index: 1;
       pointer-events: none;
@@ -378,36 +378,31 @@
       display: block;
     }
 
-    .ba-outline {
-      fill: #e8f1ff;
-      stroke: #2f6eb1;
-      stroke-width: 4;
-      vector-effect: non-scaling-stroke;
-    }
-
-    .ba-detail {
-      fill: none;
-      stroke: rgba(47, 110, 177, 0.45);
-      stroke-width: 2;
-      vector-effect: non-scaling-stroke;
-    }
-
     .map-marker {
-      transform-origin: center;
+      position: absolute;
+      transform: translate(-50%, -50%);
+      color: #f6c126;
+      font-size: clamp(16px, 1.35vw, 21px);
+      line-height: 1;
+      text-shadow:
+        0 0 0 #ffffff,
+        0 0 0 #ffffff,
+        0 0 0 #ffffff,
+        0 1px 1px rgba(0, 0, 0, 0.25);
     }
 
-    .map-marker .ring {
-      fill: rgba(255, 193, 7, 0.22);
-      stroke: #1f66ba;
-      stroke-width: 2;
-      vector-effect: non-scaling-stroke;
+    .map-marker::before {
+      content: "★";
     }
 
-    .map-marker .star {
-      fill: #f7c41f;
-      stroke: #b78300;
-      stroke-width: 1.6;
-      vector-effect: non-scaling-stroke;
+    .map-marker-bahia {
+      left: 49.5%;
+      top: 67%;
+    }
+
+    .map-marker-mar-del-plata {
+      left: 60.5%;
+      top: 64%;
     }
 
     .map-marker.hidden {
@@ -647,28 +642,15 @@
 
           <p class="cert-event" id="certEventoFecha">Bahia Blanca, miercoles 11 de marzo de 2026</p>
           <div class="cert-map-wrap" aria-label="Mapa de Argentina">
-            <svg class="cert-map" viewBox="0 0 170 300" role="img" aria-label="Mapa de Argentina">
-              <path
-                class="ba-outline"
-                d="M86 12 L105 23 L118 42 L116 62 L124 82 L118 102 L120 126 L113 150 L114 176 L106 197 L96 219 L84 243 L71 263 L59 268 L48 255 L45 238 L39 216 L33 191 L31 169 L26 147 L23 126 L26 104 L34 86 L45 68 L57 53 L68 36 Z"
-              />
-              <path class="ba-detail" d="M44 84 L114 70" />
-              <path class="ba-detail" d="M30 126 L116 112" />
-              <path class="ba-detail" d="M34 166 L112 154" />
-              <path class="ba-detail" d="M42 206 L104 196" />
-              <path class="ba-detail" d="M48 242 L88 236" />
-              <path class="ba-detail" d="M46 272 L58 278" />
-
-              <g id="markerBahia" class="map-marker">
-                <circle class="ring" cx="69" cy="212" r="8.5" />
-                <polygon class="star" points="69,204 71.6,209 77,209.6 73,213.2 74.1,218.5 69,216 63.9,218.5 65,213.2 61,209.6 66.4,209" />
-              </g>
-
-              <g id="markerMarDelPlata" class="map-marker hidden">
-                <circle class="ring" cx="84" cy="221" r="8.5" />
-                <polygon class="star" points="84,213 86.6,218 92,218.6 88,222.2 89.1,227.5 84,225 78.9,227.5 80,222.2 76,218.6 81.4,218" />
-              </g>
-            </svg>
+            <img
+              class="cert-map"
+              src="/Prueba_2/assets/argentina-map-map-of-argentina-in-administrative-regions-in-blue-color-png.png"
+              alt="Mapa de Argentina"
+              width="350"
+              height="350"
+            >
+            <span id="markerBahia" class="map-marker map-marker-bahia" aria-hidden="true"></span>
+            <span id="markerMarDelPlata" class="map-marker map-marker-mar-del-plata hidden" aria-hidden="true"></span>
           </div>
           <img
             class="cert-sign-image"
