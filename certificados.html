@@ -322,7 +322,28 @@
       z-index: 0;
     }
 
-    .cert-content > * {
+    .cert-corner {
+      position: absolute;
+      z-index: 0;
+      pointer-events: none;
+      user-select: none;
+      height: auto;
+      object-fit: contain;
+    }
+
+    .cert-corner-top-right {
+      top: 0;
+      right: 0;
+      width: clamp(168px, 27.2%, 306px);
+    }
+
+    .cert-corner-bottom-left {
+      left: 0;
+      bottom: 0;
+      width: clamp(178px, 28.7%, 323px);
+    }
+
+    .cert-content > :not(.cert-corner) {
       position: relative;
       z-index: 1;
     }
@@ -615,6 +636,22 @@
       <p class="result-title">Aca se genera tu certificado de asistencias</p>
       <article class="certificado-card" id="certificadoCard">
         <div class="cert-content">
+          <img
+            class="cert-corner cert-corner-top-right"
+            src="/Prueba_2/assets/image_2026-03-09_185729674-removebg-preview.png"
+            alt=""
+            aria-hidden="true"
+            width="306"
+            height="147"
+          >
+          <img
+            class="cert-corner cert-corner-bottom-left"
+            src="/Prueba_2/assets/image_2026-03-09_185907526-removebg-preview.png"
+            alt=""
+            aria-hidden="true"
+            width="323"
+            height="163"
+          >
           <header class="cert-header">
             <img
               class="cert-logo"
