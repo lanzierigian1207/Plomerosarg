@@ -191,24 +191,22 @@
       position: relative;
       width: 100%;
       aspect-ratio: 1.5 / 1;
-      min-height: 520px;
+      min-height: 0;
       border: 0;
       background: #f6f8fc;
       overflow: hidden;
     }
 
     .cert-content {
-      position: relative;
+      position: absolute;
+      inset: 34px 48px 30px 48px;
       z-index: 1;
-      width: 100%;
-      height: 100%;
-      padding: clamp(24px, 3.2vw, 40px) clamp(26px, 4vw, 56px) clamp(20px, 3vw, 34px);
       display: grid;
-      grid-template-rows: auto auto auto auto auto auto 1fr;
+      grid-template-rows: auto auto auto auto auto auto auto;
       align-content: start;
       justify-items: center;
       text-align: center;
-      gap: clamp(7px, 1.1vw, 14px);
+      gap: clamp(5px, 0.85vw, 10px);
     }
 
     .cert-frame {
@@ -230,8 +228,8 @@
     }
 
     .cert-logo {
-      width: clamp(74px, 9vw, 118px);
-      height: clamp(74px, 9vw, 118px);
+      width: clamp(64px, 7.8vw, 102px);
+      height: clamp(64px, 7.8vw, 102px);
       border-radius: 999px;
       object-fit: contain;
     }
@@ -246,7 +244,7 @@
       color: #1f66ba;
       font-weight: 800;
       letter-spacing: 0.06em;
-      font-size: clamp(1.85rem, 5.1vw, 4rem);
+      font-size: clamp(1.5rem, 4.2vw, 3.3rem);
       line-height: 0.92;
     }
 
@@ -254,20 +252,20 @@
       color: #3a8aca;
       font-weight: 800;
       letter-spacing: 0.05em;
-      font-size: clamp(1.25rem, 2.8vw, 2.45rem);
+      font-size: clamp(1.05rem, 2.2vw, 1.95rem);
       line-height: 0.95;
     }
 
     .cert-otorgado {
       color: #10253f;
-      font-size: clamp(0.95rem, 1.2vw, 1.3rem);
+      font-size: clamp(0.82rem, 0.95vw, 1.05rem);
       font-weight: 700;
     }
 
     .cert-nombre {
       font-family: "Great Vibes", cursive;
       color: #1b72af;
-      font-size: clamp(2.2rem, 5.9vw, 4.8rem);
+      font-size: clamp(1.75rem, 4.5vw, 3.7rem);
       line-height: 0.95;
       padding-inline: 8px;
       word-break: break-word;
@@ -276,7 +274,7 @@
     .cert-text {
       max-width: 940px;
       color: #1f2f43;
-      font-size: clamp(0.82rem, 1.2vw, 1.35rem);
+      font-size: clamp(0.72rem, 0.95vw, 1rem);
       font-weight: 500;
     }
 
@@ -290,12 +288,12 @@
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 10px 14px;
+      gap: 8px 10px;
       padding-inline: 10px;
     }
 
     .cert-logos img {
-      max-height: 30px;
+      max-height: 24px;
       width: auto;
       object-fit: contain;
       filter: saturate(1.05);
@@ -303,35 +301,35 @@
 
     .cert-event {
       color: #1c3555;
-      font-size: clamp(0.85rem, 1.15vw, 1.2rem);
+      font-size: clamp(0.72rem, 0.92vw, 0.98rem);
       font-weight: 700;
       margin-top: 1px;
     }
 
     .cert-sign {
-      margin-top: auto;
+      margin-top: 0;
       display: grid;
-      gap: 4px;
+      gap: 2px;
       justify-items: center;
       color: #20344f;
     }
 
     .cert-sign-image {
-      width: clamp(52px, 8vw, 88px);
+      width: clamp(40px, 5.8vw, 62px);
       height: auto;
       object-fit: contain;
-      margin-top: 2px;
+      margin-top: 0;
     }
 
     .cert-sign-line {
-      width: min(290px, 44vw);
-      border-top: 4px solid #1f57a6;
-      margin-top: 2px;
+      width: min(224px, 35vw);
+      border-top: 3px solid #1f57a6;
+      margin-top: 0;
     }
 
     .cert-sign strong {
       color: #0e58a8;
-      font-size: clamp(0.9rem, 1.15vw, 1.15rem);
+      font-size: clamp(0.72rem, 0.9vw, 0.96rem);
       letter-spacing: 0.03em;
     }
 
@@ -351,7 +349,7 @@
     }
 
     .cert-sign span {
-      font-size: clamp(0.82rem, 1vw, 1.02rem);
+      font-size: clamp(0.66rem, 0.8vw, 0.88rem);
       font-weight: 500;
     }
 
@@ -369,6 +367,9 @@
       }
 
       .cert-content {
+        position: relative;
+        inset: auto;
+        width: 100%;
         padding: 20px 16px 18px;
       }
     }
@@ -424,6 +425,9 @@
       }
 
       .cert-content {
+        position: relative;
+        inset: auto;
+        width: 100%;
         padding: 16px 20px 14px;
       }
     }
