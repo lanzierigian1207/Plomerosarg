@@ -89,40 +89,88 @@
 
     .encuentros-list {
       display: grid;
-      gap: 8px;
+      gap: 12px;
     }
 
     .encuentro-option {
-      display: flex;
-      align-items: center;
+      position: relative;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: start;
       gap: 12px;
-      border: 1px solid #c9dcef;
-      border-radius: 10px;
-      background: #ffffff;
-      color: #24486f;
-      padding: 8px 10px;
+      min-height: 124px;
+      border: 1px solid #2f5079;
+      border-radius: 12px;
+      background-color: #1f3f68;
+      background-size: cover;
+      background-position: center;
+      color: #ffffff;
+      padding: 14px 16px;
       font-weight: 600;
       cursor: pointer;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .encuentro-option::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(10, 36, 65, 0.84), rgba(10, 36, 65, 0.56));
+      z-index: 0;
+    }
+
+    .encuentro-option > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .encuentro-option-bahia {
+      background-image: url("/Prueba_2/assets/bahia-blanca.jpg");
+    }
+
+    .encuentro-option-mar {
+      background-image: url("/Prueba_2/assets/mar-del-plata.webp");
     }
 
     .encuentro-option input {
-      margin-top: 0;
+      margin-top: 4px;
       accent-color: var(--accent);
+    }
+
+    .encuentro-option-text {
+      display: grid;
+      gap: 6px;
+      align-content: start;
     }
 
     .encuentro-option-title {
       flex: 1;
-      line-height: 1.2;
+      line-height: 1.1;
+      font-size: clamp(1.25rem, 2.2vw, 2rem);
+      font-weight: 800;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.28);
     }
 
-    .encuentro-option-thumb {
-      width: 92px;
-      height: 58px;
-      border-radius: 8px;
-      object-fit: cover;
-      border: 1px solid #b8cee6;
-      box-shadow: 0 2px 8px rgba(24, 73, 121, 0.14);
-      flex-shrink: 0;
+    .encuentro-option-subtitle {
+      font-size: clamp(0.92rem, 1.15vw, 1.08rem);
+      font-weight: 600;
+      color: rgba(236, 244, 255, 0.96);
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+    }
+
+    .encuentro-option-badge {
+      align-self: start;
+      justify-self: end;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #ffffff;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+    }
+
+    .encuentro-option:has(input:checked) {
+      border-color: #9fcbff;
+      box-shadow: 0 0 0 3px rgba(13, 99, 199, 0.22);
     }
 
     .field {
@@ -444,9 +492,21 @@
         height: 74px;
       }
 
-      .encuentro-option-thumb {
-        width: 76px;
-        height: 48px;
+      .encuentro-option {
+        min-height: 108px;
+        padding: 12px;
+      }
+
+      .encuentro-option-title {
+        font-size: clamp(1.12rem, 5.2vw, 1.42rem);
+      }
+
+      .encuentro-option-subtitle {
+        font-size: clamp(0.82rem, 3.2vw, 0.92rem);
+      }
+
+      .encuentro-option-badge {
+        font-size: 0.94rem;
       }
 
       .cert-event-name {
@@ -513,37 +573,31 @@
     <section class="generator-box" aria-label="Generador de certificado">
       <h2 class="generator-title">Eleg&iacute; un encuentro y escrib&iacute; tu nombre</h2>
       <div class="encuentros-list">
-        <label class="encuentro-option" for="encuentroBahiaBlanca">
+        <label class="encuentro-option encuentro-option-bahia" for="encuentroBahiaBlanca">
           <input
             id="encuentroBahiaBlanca"
             type="radio"
             name="encuentro_certificado"
             value="Bahia Blanca 11/3"
           >
-          <span class="encuentro-option-title">Bahia Blanca 11/3</span>
-          <img
-            class="encuentro-option-thumb"
-            src="/Prueba_2/assets/bahia-blanca.jpg"
-            alt="Encuentro Bahia Blanca 11/3"
-            width="92"
-            height="58"
-          >
+          <span class="encuentro-option-text">
+            <span class="encuentro-option-title">Bahia Blanca 11/3</span>
+            <span class="encuentro-option-subtitle">Gener&aacute; tu certificado de asistencia.</span>
+          </span>
+          <span class="encuentro-option-badge">Encuentro 27</span>
         </label>
-        <label class="encuentro-option" for="encuentroMarDelPlata">
+        <label class="encuentro-option encuentro-option-mar" for="encuentroMarDelPlata">
           <input
             id="encuentroMarDelPlata"
             type="radio"
             name="encuentro_certificado"
             value="Mar del Plata 14/3"
           >
-          <span class="encuentro-option-title">Mar del Plata 14/3</span>
-          <img
-            class="encuentro-option-thumb"
-            src="/Prueba_2/assets/mar-del-plata.webp"
-            alt="Encuentro Mar del Plata 14/3"
-            width="92"
-            height="58"
-          >
+          <span class="encuentro-option-text">
+            <span class="encuentro-option-title">Mar del Plata 14/3</span>
+            <span class="encuentro-option-subtitle">Gener&aacute; tu certificado de asistencia.</span>
+          </span>
+          <span class="encuentro-option-badge">Encuentro 28</span>
         </label>
       </div>
 
