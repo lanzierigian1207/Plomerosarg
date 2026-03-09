@@ -1013,15 +1013,11 @@
             <article class="event-card">
               <header class="event-head">
                 <h2 class="event-title">Evento ${escapeHtml(item.evento || "Sin evento")}</h2>
-                <div class="event-meta">
-                  ${
-                    showCertificados
-                      ? `
-                        <span class="counter">${rows.length} inscriptos</span>
-                        <span class="counter counter-attendance">${attendanceCount} asistencias</span>
-                        <span class="counter counter-attendance">${reconfirmCount} reconfirmados</span>
-                      `
-                      : `
+                ${
+                  showCertificados
+                    ? ""
+                    : `
+                      <div class="event-meta">
                         <span class="counter">${rows.length} inscriptos</span>
                         <span class="counter counter-attendance">${attendanceCount} asistencias</span>
                         <span class="counter counter-attendance">${reconfirmCount} reconfirmados</span>
@@ -1056,9 +1052,9 @@
                             `
                             : ""
                         }
-                      `
-                  }
-                </div>
+                      </div>
+                    `
+                }
               </header>
               ${showAsistencia ? attendanceSectionHtml : ""}
               ${showInscripciones ? inscripcionesSectionHtml : ""}
