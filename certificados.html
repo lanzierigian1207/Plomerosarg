@@ -353,14 +353,6 @@
       filter: saturate(1.05);
     }
 
-    .cert-location-row {
-      width: 100%;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      align-items: center;
-      gap: 8px;
-    }
-
     .cert-event {
       color: #1c3555;
       font-size: clamp(0.78rem, 0.98vw, 1.03rem);
@@ -370,10 +362,14 @@
     }
 
     .cert-map-wrap {
-      width: clamp(86px, 8.8vw, 128px);
+      position: absolute;
+      right: clamp(10px, 1.6vw, 22px);
+      top: 57%;
+      transform: translateY(-50%);
+      width: clamp(108px, 10.8vw, 152px);
       height: auto;
-      justify-self: end;
-      margin-right: clamp(2px, 0.8vw, 8px);
+      z-index: 1;
+      pointer-events: none;
     }
 
     .cert-map {
@@ -482,14 +478,13 @@
         padding: 20px 16px 18px;
       }
 
-      .cert-location-row {
-        grid-template-columns: 1fr;
-        gap: 4px;
-      }
-
       .cert-map-wrap {
-        justify-self: center;
-        margin-right: 0;
+        position: relative;
+        right: auto;
+        top: auto;
+        transform: none;
+        margin-inline: auto;
+        margin-top: 4px;
       }
     }
 
@@ -650,30 +645,28 @@
             <img src="/Prueba_2/assets/empresas/04_waterplast.png" alt="Waterplast">
           </div>
 
-          <div class="cert-location-row">
-            <p class="cert-event" id="certEventoFecha">Bahia Blanca, miercoles 11 de marzo de 2026</p>
-            <div class="cert-map-wrap" aria-label="Mapa de Buenos Aires">
-              <svg class="cert-map" viewBox="0 0 180 270" role="img" aria-label="Mapa de la provincia de Buenos Aires">
-                <path
-                  class="ba-outline"
-                  d="M52 18 L83 8 L118 18 L150 38 L162 66 L168 94 L158 128 L154 159 L140 196 L124 232 L102 255 L76 262 L53 246 L42 220 L36 191 L29 166 L15 132 L12 104 L21 84 L30 62 L39 44 Z"
-                />
-                <path class="ba-detail" d="M42 70 L138 46" />
-                <path class="ba-detail" d="M20 122 L160 98" />
-                <path class="ba-detail" d="M30 165 L150 145" />
-                <path class="ba-detail" d="M42 209 L132 192" />
+          <p class="cert-event" id="certEventoFecha">Bahia Blanca, miercoles 11 de marzo de 2026</p>
+          <div class="cert-map-wrap" aria-label="Mapa de Buenos Aires">
+            <svg class="cert-map" viewBox="0 0 220 150" role="img" aria-label="Mapa de la provincia de Buenos Aires">
+              <path
+                class="ba-outline"
+                d="M18 86 L26 66 L44 52 L66 40 L96 31 L126 30 L152 37 L176 50 L198 73 L205 95 L197 112 L181 123 L173 136 L151 143 L123 142 L97 136 L76 126 L56 118 L39 110 L27 98 Z"
+              />
+              <path class="ba-detail" d="M40 96 L188 76" />
+              <path class="ba-detail" d="M54 114 L182 96" />
+              <path class="ba-detail" d="M66 130 L156 122" />
+              <path class="ba-detail" d="M66 62 L168 48" />
 
-                <g id="markerBahia" class="map-marker">
-                  <circle class="ring" cx="62" cy="220" r="11" />
-                  <polygon class="star" points="62,210 65,217 73,218 67,223 69,231 62,227 55,231 57,223 51,218 59,217" />
-                </g>
+              <g id="markerBahia" class="map-marker">
+                <circle class="ring" cx="56" cy="110" r="10" />
+                <polygon class="star" points="56,101 59,107 66,108 61,113 62,120 56,116 50,120 51,113 46,108 53,107" />
+              </g>
 
-                <g id="markerMarDelPlata" class="map-marker hidden">
-                  <circle class="ring" cx="125" cy="214" r="11" />
-                  <polygon class="star" points="125,204 128,211 136,212 130,217 132,225 125,221 118,225 120,217 114,212 122,211" />
-                </g>
-              </svg>
-            </div>
+              <g id="markerMarDelPlata" class="map-marker hidden">
+                <circle class="ring" cx="164" cy="112" r="10" />
+                <polygon class="star" points="164,103 167,109 174,110 169,115 170,122 164,118 158,122 159,115 154,110 161,109" />
+              </g>
+            </svg>
           </div>
           <img
             class="cert-sign-image"
