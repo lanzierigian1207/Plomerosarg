@@ -192,16 +192,11 @@
       width: 100%;
       aspect-ratio: 1.414 / 1;
       min-height: 560px;
-      border: 10px solid #2f6eb1;
-      background:
-        radial-gradient(120% 80% at 50% -18%, rgba(13, 99, 199, 0.12), transparent 55%),
-        radial-gradient(95% 70% at -6% 108%, rgba(13, 99, 199, 0.14), transparent 45%),
-        radial-gradient(95% 70% at 106% 104%, rgba(13, 99, 199, 0.12), transparent 42%),
-        #f6f8fc;
+      padding: 14px;
+      border-radius: 8px;
+      background: linear-gradient(120deg, #1d64b1, #3c89d3 45%, #0f59ab);
       overflow: hidden;
-      box-shadow:
-        inset 0 0 0 2px rgba(47, 110, 177, 0.28),
-        inset 0 0 0 9px rgba(246, 248, 252, 0.92);
+      box-shadow: 0 14px 28px rgba(13, 57, 108, 0.28);
     }
 
     .cert-content {
@@ -209,15 +204,16 @@
       z-index: 1;
       width: 100%;
       height: 100%;
-      padding: clamp(24px, 3.2vw, 40px) clamp(26px, 4vw, 56px) clamp(20px, 3vw, 34px);
-      border: 1px solid rgba(47, 110, 177, 0.22);
-      border-radius: 6px;
+      padding: clamp(24px, 3.2vw, 42px) clamp(24px, 4vw, 56px) clamp(20px, 3vw, 32px);
+      border: 1px solid #d5e4f5;
+      border-radius: 4px;
+      background: linear-gradient(180deg, #ffffff, #f3f7fc);
       display: grid;
-      grid-template-rows: auto auto auto auto auto auto auto;
+      grid-template-rows: auto auto auto auto auto auto auto auto;
       align-content: start;
       justify-items: center;
       text-align: center;
-      gap: clamp(6px, 0.95vw, 12px);
+      gap: clamp(6px, 0.9vw, 11px);
     }
 
     .cert-content::before {
@@ -225,15 +221,11 @@
       position: absolute;
       inset: 0;
       background:
-        linear-gradient(135deg, rgba(47, 110, 177, 0.16) 0, rgba(47, 110, 177, 0) 24%) top left / 320px 200px no-repeat,
-        linear-gradient(-45deg, rgba(47, 110, 177, 0.13) 0, rgba(47, 110, 177, 0) 26%) top right / 360px 220px no-repeat,
-        linear-gradient(45deg, rgba(47, 110, 177, 0.13) 0, rgba(47, 110, 177, 0) 26%) bottom left / 360px 220px no-repeat,
-        repeating-linear-gradient(
-          135deg,
-          rgba(47, 110, 177, 0.04) 0 2px,
-          transparent 2px 11px
-        );
-      opacity: 0.48;
+        radial-gradient(130% 80% at 0% 0%, rgba(23, 105, 192, 0.09), transparent 44%),
+        radial-gradient(130% 80% at 100% 100%, rgba(23, 105, 192, 0.08), transparent 45%),
+        linear-gradient(135deg, rgba(18, 88, 167, 0.09) 0, rgba(18, 88, 167, 0) 24%) top left / 220px 130px no-repeat,
+        linear-gradient(-45deg, rgba(18, 88, 167, 0.09) 0, rgba(18, 88, 167, 0) 24%) top right / 220px 130px no-repeat;
+      opacity: 0.92;
       pointer-events: none;
       z-index: 0;
     }
@@ -256,79 +248,94 @@
     .certificado-card::before {
       content: "";
       position: absolute;
-      inset: 0 0 auto 0;
-      height: 18px;
-      background: linear-gradient(90deg, #2f6eb1, #0d63c7);
+      inset: 0;
+      border: 2px solid rgba(255, 255, 255, 0.26);
+      border-radius: 8px;
+      pointer-events: none;
     }
 
     .certificado-card::after {
       content: "";
       position: absolute;
-      right: -60px;
-      top: -60px;
-      width: 260px;
-      height: 260px;
-      background: linear-gradient(135deg, rgba(13, 99, 199, 0.3), rgba(13, 99, 199, 0.08));
-      transform: rotate(25deg);
-      border: 2px solid rgba(180, 214, 247, 0.8);
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.26) 0, rgba(255, 255, 255, 0) 20%) top left / 340px 200px no-repeat,
+        linear-gradient(-45deg, rgba(255, 255, 255, 0.22) 0, rgba(255, 255, 255, 0) 20%) bottom right / 340px 200px no-repeat;
+      pointer-events: none;
     }
 
     .cert-header {
-      width: 100%;
-      display: grid;
-      grid-template-columns: auto 1fr;
+      display: inline-grid;
+      grid-auto-flow: column;
       align-items: center;
-      gap: clamp(8px, 1.8vw, 20px);
+      justify-content: center;
+      gap: clamp(8px, 1.8vw, 16px);
     }
 
     .cert-logo {
-      width: clamp(68px, 8.2vw, 108px);
-      height: clamp(68px, 8.2vw, 108px);
+      width: clamp(62px, 7vw, 88px);
+      height: clamp(62px, 7vw, 88px);
       border-radius: 999px;
       object-fit: contain;
     }
 
-    .cert-title-wrap {
+    .cert-brand {
       display: grid;
       justify-items: start;
-      gap: 2px;
+      gap: 1px;
+    }
+
+    .cert-brand-name {
+      color: #1b5aa0;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      font-size: clamp(1.24rem, 2.65vw, 2.1rem);
+      line-height: 1;
+    }
+
+    .cert-brand-sub {
+      color: #3c7fbf;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-size: clamp(0.62rem, 0.95vw, 0.82rem);
     }
 
     .cert-title {
-      color: #1f66ba;
+      color: #1b3554;
       font-weight: 800;
-      letter-spacing: 0.06em;
-      font-size: clamp(1.62rem, 4.5vw, 3.55rem);
-      line-height: 0.92;
+      letter-spacing: 0.04em;
+      font-size: clamp(1.16rem, 2.3vw, 1.72rem);
+      margin-top: 2px;
     }
 
-    .cert-subtitle {
-      color: #3a8aca;
+    .cert-event-name {
+      color: #0d63c7;
       font-weight: 800;
-      letter-spacing: 0.05em;
-      font-size: clamp(1.14rem, 2.4vw, 2.1rem);
-      line-height: 0.95;
+      letter-spacing: 0.01em;
+      font-size: clamp(1.26rem, 2.85vw, 2.28rem);
+      max-width: 920px;
     }
 
     .cert-otorgado {
       color: #10253f;
-      font-size: clamp(0.88rem, 1.02vw, 1.14rem);
-      font-weight: 700;
+      font-size: clamp(0.84rem, 1.02vw, 1.1rem);
+      font-weight: 600;
     }
 
     .cert-nombre {
       font-family: "Great Vibes", cursive;
       color: #1b72af;
-      font-size: clamp(2rem, 4.95vw, 4.08rem);
+      font-size: clamp(2.1rem, 4.9vw, 4.2rem);
       line-height: 0.95;
       padding-inline: 8px;
       word-break: break-word;
     }
 
     .cert-text {
-      max-width: 940px;
+      max-width: 860px;
       color: #1f2f43;
-      font-size: clamp(0.79rem, 1.03vw, 1.08rem);
+      font-size: clamp(0.82rem, 1.03vw, 1.08rem);
       font-weight: 500;
     }
 
@@ -337,86 +344,47 @@
     }
 
     .cert-logos {
-      width: min(880px, 100%);
+      width: min(800px, 100%);
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 9px 12px;
-      padding-inline: 10px;
+      gap: 10px 12px;
+      padding-inline: 4px;
     }
 
     .cert-logos img {
-      max-height: 27px;
+      max-height: 29px;
       width: auto;
       object-fit: contain;
       filter: saturate(1.05);
     }
 
     .cert-event {
-      color: #1c3555;
-      font-size: clamp(0.78rem, 0.98vw, 1.03rem);
-      font-weight: 700;
-      margin-top: 1px;
+      color: #103f75;
+      font-size: clamp(0.82rem, 1.03vw, 1.08rem);
+      font-weight: 800;
+      margin-top: 4px;
       text-align: center;
     }
 
-    .cert-map-wrap {
-      position: absolute;
-      right: clamp(84px, 8vw, 132px);
-      top: 71%;
-      transform: translateY(-50%);
-      width: clamp(132px, 13.8vw, 198px);
-      height: auto;
-      z-index: 1;
-      pointer-events: none;
-    }
-
-    .cert-map {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    .map-marker {
-      display: none !important;
-    }
-
-    .map-marker::before {
-      content: "★";
-    }
-
-    .map-marker-bahia {
-      left: 49.5%;
-      top: 67%;
-    }
-
-    .map-marker-mar-del-plata {
-      left: 60.5%;
-      top: 64%;
-    }
-
-    .map-marker.hidden {
-      display: none;
-    }
-
     .cert-sign {
-      margin-top: 0;
+      margin-top: auto;
       display: grid;
-      gap: 2px;
+      gap: 3px;
       justify-items: center;
       color: #20344f;
     }
 
     .cert-sign-image {
-      width: clamp(40px, 5.8vw, 62px);
+      width: clamp(52px, 6.4vw, 76px);
       height: auto;
       object-fit: contain;
       margin-top: 0;
     }
 
     .cert-sign-line {
-      width: min(224px, 35vw);
+      width: min(260px, 42vw);
       border-top: 3px solid #1f57a6;
       margin-top: 0;
     }
@@ -443,7 +411,7 @@
     }
 
     .cert-sign span {
-      font-size: clamp(0.66rem, 0.8vw, 0.88rem);
+      font-size: clamp(0.68rem, 0.84vw, 0.9rem);
       font-weight: 500;
     }
 
@@ -461,16 +429,7 @@
       }
 
       .cert-content {
-        padding: 20px 16px 18px;
-      }
-
-      .cert-map-wrap {
-        position: relative;
-        right: auto;
-        top: auto;
-        transform: none;
-        margin-inline: auto;
-        margin-top: 4px;
+        padding: 20px 16px 16px;
       }
     }
 
@@ -481,12 +440,16 @@
       }
 
       .cert-header {
-        grid-template-columns: 1fr;
+        grid-auto-flow: row;
         justify-items: center;
       }
 
-      .cert-title-wrap {
+      .cert-brand {
         justify-items: center;
+      }
+
+      .cert-event-name {
+        font-size: clamp(1.1rem, 6vw, 1.64rem);
       }
     }
 
@@ -599,17 +562,21 @@
               width="130"
               height="130"
             >
-            <div class="cert-title-wrap">
-              <p class="cert-title">CERTIFICADO</p>
-              <p class="cert-subtitle">DE ASISTENCIA</p>
+            <div class="cert-brand">
+              <p class="cert-brand-name">Plomeros ARG</p>
+              <p class="cert-brand-sub">Sanitaristas Argentinos</p>
             </div>
           </header>
 
-          <p class="cert-otorgado">Otorgado a</p>
+          <p class="cert-title">CERTIFICADO DE ASISTENCIA</p>
+          <p class="cert-event-name">
+            Encuentro Plomeros Sanitaristas Argentinos N&deg; <span id="certNumeroEncuentro">27</span>
+          </p>
+          <p class="cert-otorgado">Se otorga a</p>
           <p class="cert-nombre" id="certNombre">Nombre Apellido</p>
           <p class="cert-text">
-            En este Encuentro de <strong>Plomeros Sanitaristas Argentinos N&deg; <span id="certNumeroEncuentro">27</span></strong> recibi&oacute;
-            capacitaciones t&eacute;cnicas de las siguientes empresas:
+            Por haber participado de la jornada t&eacute;cnica junto a <strong>Plomeros ARG</strong> y recibir
+            capacitaciones de las siguientes empresas:
           </p>
 
           <div class="cert-logos" aria-label="Empresas participantes">
@@ -632,17 +599,6 @@
           </div>
 
           <p class="cert-event" id="certEventoFecha">Bahia Blanca, miercoles 11 de marzo de 2026</p>
-          <div class="cert-map-wrap" aria-label="Mapa de Argentina">
-            <img
-              class="cert-map"
-              src="/Prueba_2/assets/argentina-map-map-of-argentina-in-administrative-regions-in-blue-color-png.png"
-              alt="Mapa de Argentina"
-              width="350"
-              height="350"
-            >
-            <span id="markerBahia" class="map-marker map-marker-bahia" aria-hidden="true"></span>
-            <span id="markerMarDelPlata" class="map-marker map-marker-mar-del-plata hidden" aria-hidden="true"></span>
-          </div>
           <img
             class="cert-sign-image"
             src="/Prueba_2/assets/image_2026-03-08_204129036.png"
@@ -695,8 +651,6 @@
     const certNombre = document.getElementById("certNombre");
     const certNumeroEncuentro = document.getElementById("certNumeroEncuentro");
     const certEventoFecha = document.getElementById("certEventoFecha");
-    const markerBahia = document.getElementById("markerBahia");
-    const markerMarDelPlata = document.getElementById("markerMarDelPlata");
 
     function normalizeEventKey(value) {
       return String(value || "")
@@ -727,14 +681,6 @@
       return cleaned;
     }
 
-    function setMapMarker(eventKey) {
-      if (!markerBahia || !markerMarDelPlata) return;
-
-      const isMarDelPlata = eventKey === "mar del plata 14/3";
-      markerBahia.classList.toggle("hidden", isMarDelPlata);
-      markerMarDelPlata.classList.toggle("hidden", !isMarDelPlata);
-    }
-
     generarBtn.addEventListener("click", () => {
       clearMessage();
 
@@ -760,7 +706,6 @@
       certNombre.textContent = nameValue;
       certNumeroEncuentro.textContent = eventInfo.numero || "27";
       certEventoFecha.textContent = eventInfo.fecha;
-      setMapMarker(eventKey);
       certificadoPanel.hidden = false;
       certificadoPanel.scrollIntoView({ behavior: "smooth", block: "start" });
     });
