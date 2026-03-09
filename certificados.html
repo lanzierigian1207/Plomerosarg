@@ -94,20 +94,35 @@
 
     .encuentro-option {
       display: flex;
-      align-items: flex-start;
-      gap: 10px;
+      align-items: center;
+      gap: 12px;
       border: 1px solid #c9dcef;
       border-radius: 10px;
       background: #ffffff;
       color: #24486f;
-      padding: 10px 12px;
+      padding: 8px 10px;
       font-weight: 600;
       cursor: pointer;
     }
 
     .encuentro-option input {
-      margin-top: 3px;
+      margin-top: 0;
       accent-color: var(--accent);
+    }
+
+    .encuentro-option-title {
+      flex: 1;
+      line-height: 1.2;
+    }
+
+    .encuentro-option-thumb {
+      width: 92px;
+      height: 58px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid #b8cee6;
+      box-shadow: 0 2px 8px rgba(24, 73, 121, 0.14);
+      flex-shrink: 0;
     }
 
     .field {
@@ -429,6 +444,11 @@
         height: 74px;
       }
 
+      .encuentro-option-thumb {
+        width: 76px;
+        height: 48px;
+      }
+
       .cert-event-name {
         font-size: clamp(1.1rem, 6vw, 1.64rem);
       }
@@ -500,7 +520,14 @@
             name="encuentro_certificado"
             value="Bahia Blanca 11/3"
           >
-          <span>Bahia Blanca 11/3</span>
+          <span class="encuentro-option-title">Bahia Blanca 11/3</span>
+          <img
+            class="encuentro-option-thumb"
+            src="/Prueba_2/assets/bahia-blanca.jpg"
+            alt="Encuentro Bahia Blanca 11/3"
+            width="92"
+            height="58"
+          >
         </label>
         <label class="encuentro-option" for="encuentroMarDelPlata">
           <input
@@ -509,7 +536,14 @@
             name="encuentro_certificado"
             value="Mar del Plata 14/3"
           >
-          <span>Mar del Plata 14/3</span>
+          <span class="encuentro-option-title">Mar del Plata 14/3</span>
+          <img
+            class="encuentro-option-thumb"
+            src="/Prueba_2/assets/mar-del-plata.webp"
+            alt="Encuentro Mar del Plata 14/3"
+            width="92"
+            height="58"
+          >
         </label>
       </div>
 
