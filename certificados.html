@@ -190,33 +190,45 @@
     .certificado-card {
       position: relative;
       width: 100%;
-      aspect-ratio: 1.5 / 1;
-      min-height: 0;
-      border: 0;
+      aspect-ratio: 1.414 / 1;
+      min-height: 560px;
+      border: 10px solid #2f6eb1;
       background: #f6f8fc;
       overflow: hidden;
     }
 
     .cert-content {
-      position: absolute;
-      inset: 34px 48px 30px 48px;
+      position: relative;
       z-index: 1;
+      width: 100%;
+      height: 100%;
+      padding: clamp(24px, 3.2vw, 40px) clamp(26px, 4vw, 56px) clamp(20px, 3vw, 34px);
       display: grid;
       grid-template-rows: auto auto auto auto auto auto auto;
       align-content: start;
       justify-items: center;
       text-align: center;
-      gap: clamp(5px, 0.85vw, 10px);
+      gap: clamp(6px, 0.95vw, 12px);
     }
 
-    .cert-frame {
+    .certificado-card::before {
+      content: "";
       position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: 0;
-      pointer-events: none;
+      inset: 0 0 auto 0;
+      height: 18px;
+      background: linear-gradient(90deg, #2f6eb1, #0d63c7);
+    }
+
+    .certificado-card::after {
+      content: "";
+      position: absolute;
+      right: -60px;
+      top: -60px;
+      width: 260px;
+      height: 260px;
+      background: linear-gradient(135deg, rgba(13, 99, 199, 0.3), rgba(13, 99, 199, 0.08));
+      transform: rotate(25deg);
+      border: 2px solid rgba(180, 214, 247, 0.8);
     }
 
     .cert-header {
@@ -367,9 +379,6 @@
       }
 
       .cert-content {
-        position: relative;
-        inset: auto;
-        width: 100%;
         padding: 20px 16px 18px;
       }
     }
@@ -425,9 +434,6 @@
       }
 
       .cert-content {
-        position: relative;
-        inset: auto;
-        width: 100%;
         padding: 16px 20px 14px;
       }
     }
@@ -493,14 +499,6 @@
     <section class="certificado-panel" id="certificadoPanel" hidden aria-live="polite">
       <p class="result-title">Aca se genera tu certificado de asistencias</p>
       <article class="certificado-card" id="certificadoCard">
-        <img
-          class="cert-frame"
-          src="/Prueba_2/assets/ChatGPT_Image_Mar_8__2026__09_04_42_PM-removebg-preview.png"
-          alt=""
-          aria-hidden="true"
-          width="612"
-          height="408"
-        >
         <div class="cert-content">
           <header class="cert-header">
             <img
