@@ -349,6 +349,35 @@
       background: #0f6f38;
     }
 
+    .certificate-box {
+      margin: 14px 16px 0;
+      padding: 12px;
+      border: 1px solid #dbe6f5;
+      border-radius: 10px;
+      background: #f7fbff;
+      display: grid;
+      gap: 10px;
+    }
+
+    .certificate-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .certificate-hint {
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .certificate-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -440,6 +469,7 @@
         <div class="view-switch" role="tablist" aria-label="Vista del panel">
           <button class="btn-view is-active" id="viewInscripcionesBtn" type="button">Inscripciones</button>
           <button class="btn-view" id="viewAsistenciaBtn" type="button">Asistencia Encuentros</button>
+          <button class="btn-view" id="viewCertificadosBtn" type="button">Certificado asistencias</button>
         </div>
         <button class="btn" id="refreshBtn" type="button">Actualizar</button>
         <form method="post" action="/api/admin">
@@ -463,10 +493,12 @@
     const refreshBtn = document.getElementById("refreshBtn");
     const viewInscripcionesBtn = document.getElementById("viewInscripcionesBtn");
     const viewAsistenciaBtn = document.getElementById("viewAsistenciaBtn");
+    const viewCertificadosBtn = document.getElementById("viewCertificadosBtn");
     const DEFAULT_VISIBLE_ROWS = 25;
     const ADMIN_LOGIN_URL = "/api/admin";
     const PANEL_VIEW_INSCRIPCIONES = "inscripciones";
     const PANEL_VIEW_ASISTENCIA = "asistencia";
+    const PANEL_VIEW_CERTIFICADOS = "certificados";
     let currentPanelView = PANEL_VIEW_INSCRIPCIONES;
     let currentAdminRole = "admin";
     let currentEventos = [];
@@ -531,11 +563,13 @@
     function renderViewButtons() {
       const asistenciaOnly = currentAdminRole === "asistencia";
       viewInscripcionesBtn.style.display = asistenciaOnly ? "none" : "inline-flex";
+      viewCertificadosBtn.style.display = asistenciaOnly ? "none" : "inline-flex";
       if (asistenciaOnly && currentPanelView !== PANEL_VIEW_ASISTENCIA) {
         currentPanelView = PANEL_VIEW_ASISTENCIA;
       }
       viewInscripcionesBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_INSCRIPCIONES);
       viewAsistenciaBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_ASISTENCIA);
+      viewCertificadosBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_CERTIFICADOS);
       viewInscripcionesBtn.setAttribute(
         "aria-pressed",
         currentPanelView === PANEL_VIEW_INSCRIPCIONES ? "true" : "false"
@@ -543,6 +577,10 @@
       viewAsistenciaBtn.setAttribute(
         "aria-pressed",
         currentPanelView === PANEL_VIEW_ASISTENCIA ? "true" : "false"
+      );
+      viewCertificadosBtn.setAttribute(
+        "aria-pressed",
+        currentPanelView === PANEL_VIEW_CERTIFICADOS ? "true" : "false"
       );
     }
 
@@ -552,7 +590,8 @@
       }
       if (
         nextView !== PANEL_VIEW_INSCRIPCIONES &&
-        nextView !== PANEL_VIEW_ASISTENCIA
+        nextView !== PANEL_VIEW_ASISTENCIA &&
+        nextView !== PANEL_VIEW_CERTIFICADOS
       ) {
         return;
       }
@@ -873,6 +912,7 @@
           const canManageEvents = currentAdminRole === "admin";
           const showInscripciones = canViewInscripciones && currentPanelView === PANEL_VIEW_INSCRIPCIONES;
           const showAsistencia = currentPanelView === PANEL_VIEW_ASISTENCIA;
+          const showCertificados = canManageEvents && currentPanelView === PANEL_VIEW_CERTIFICADOS;
 
           const attendanceSectionHtml = `
             <section class="attendance-box">
@@ -947,66 +987,82 @@
                 </div>
               `;
 
+          const certificateSectionHtml = `
+            <section class="certificate-box">
+              <h3 class="certificate-title">Certificado asistencias</h3>
+              <p class="certificate-hint">
+                Define si este encuentro aparece en la pagina de certificados para los usuarios.
+              </p>
+              <div class="certificate-actions">
+                <span class="event-state ${isCertificateVisible(item) ? "is-on" : "is-off"}">
+                  ${isCertificateVisible(item) ? "Visible" : "Oculto"}
+                </span>
+                <button
+                  class="btn-event btn-toggle ${isCertificateVisible(item) ? "is-on" : "is-off"}"
+                  type="button"
+                  data-toggle-certificate="${index}"
+                  ${certificateToggleInFlight.has(index) ? "disabled" : ""}
+                >
+                  ${isCertificateVisible(item) ? "Ocultar certificado" : "Mostrar certificado"}
+                </button>
+              </div>
+            </section>
+          `;
+
           return `
             <article class="event-card">
               <header class="event-head">
                 <h2 class="event-title">Evento ${escapeHtml(item.evento || "Sin evento")}</h2>
                 <div class="event-meta">
-                  <span class="counter">${rows.length} inscriptos</span>
-                  <span class="counter counter-attendance">${attendanceCount} asistencias</span>
-                  <span class="counter counter-attendance">${reconfirmCount} reconfirmados</span>
-                  <span class="event-state ${isEventActive(item) ? "is-on" : "is-off"}">
-                    ${isEventActive(item) ? "Activo" : "Inactivo"}
-                  </span>
-                  <span class="event-state ${isCertificateVisible(item) ? "is-on" : "is-off"}">
-                    ${isCertificateVisible(item) ? "Certificado visible" : "Certificado oculto"}
-                  </span>
                   ${
-                    canManageEvents
+                    showCertificados
                       ? `
-                        <button
-                          class="btn-event btn-toggle ${isEventActive(item) ? "is-on" : "is-off"}"
-                          type="button"
-                          data-toggle-event="${index}"
-                          ${toggleInFlight.has(index) ? "disabled" : ""}
-                        >
-                          ${isEventActive(item) ? "Desactivar" : "Activar"}
-                        </button>
+                        <span class="counter">${rows.length} inscriptos</span>
+                        <span class="counter counter-attendance">${attendanceCount} asistencias</span>
+                        <span class="counter counter-attendance">${reconfirmCount} reconfirmados</span>
                       `
-                      : ""
-                  }
-                  ${
-                    canManageEvents
-                      ? `
-                        <button
-                          class="btn-event btn-toggle ${isCertificateVisible(item) ? "is-on" : "is-off"}"
-                          type="button"
-                          data-toggle-certificate="${index}"
-                          ${certificateToggleInFlight.has(index) ? "disabled" : ""}
-                        >
-                          ${isCertificateVisible(item) ? "Ocultar certificado" : "Mostrar certificado"}
-                        </button>
+                      : `
+                        <span class="counter">${rows.length} inscriptos</span>
+                        <span class="counter counter-attendance">${attendanceCount} asistencias</span>
+                        <span class="counter counter-attendance">${reconfirmCount} reconfirmados</span>
+                        <span class="event-state ${isEventActive(item) ? "is-on" : "is-off"}">
+                          ${isEventActive(item) ? "Activo" : "Inactivo"}
+                        </span>
+                        ${
+                          canManageEvents
+                            ? `
+                              <button
+                                class="btn-event btn-toggle ${isEventActive(item) ? "is-on" : "is-off"}"
+                                type="button"
+                                data-toggle-event="${index}"
+                                ${toggleInFlight.has(index) ? "disabled" : ""}
+                              >
+                                ${isEventActive(item) ? "Desactivar" : "Activar"}
+                              </button>
+                            `
+                            : ""
+                        }
+                        ${
+                          showInscripciones && canManageEvents
+                            ? `
+                              <button
+                                class="btn-event"
+                                type="button"
+                                data-download-event="${index}"
+                                ${rows.length === 0 ? "disabled" : ""}
+                              >
+                                Descargar Excel
+                              </button>
+                            `
+                            : ""
+                        }
                       `
-                      : ""
-                  }
-                  ${
-                    showInscripciones && canManageEvents
-                      ? `
-                        <button
-                          class="btn-event"
-                          type="button"
-                          data-download-event="${index}"
-                          ${rows.length === 0 ? "disabled" : ""}
-                        >
-                          Descargar Excel
-                        </button>
-                      `
-                      : ""
                   }
                 </div>
               </header>
               ${showAsistencia ? attendanceSectionHtml : ""}
               ${showInscripciones ? inscripcionesSectionHtml : ""}
+              ${showCertificados ? certificateSectionHtml : ""}
             </article>
           `;
         })
@@ -1295,6 +1351,10 @@
 
     viewAsistenciaBtn.addEventListener("click", () => {
       setPanelView(PANEL_VIEW_ASISTENCIA);
+    });
+
+    viewCertificadosBtn.addEventListener("click", () => {
+      setPanelView(PANEL_VIEW_CERTIFICADOS);
     });
 
     renderViewButtons();
