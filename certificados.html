@@ -192,7 +192,7 @@
       width: 100%;
       aspect-ratio: 1.414 / 1;
       min-height: 560px;
-      border: 10px solid #2f6eb1;
+      border: 0;
       background: #f6f8fc;
       overflow: hidden;
       padding: clamp(20px, 3vw, 38px);
@@ -204,24 +204,14 @@
       gap: clamp(8px, 1.2vw, 16px);
     }
 
-    .certificado-card::before {
-      content: "";
+    .cert-frame {
       position: absolute;
-      inset: 0 0 auto 0;
-      height: 18px;
-      background: linear-gradient(90deg, #2f6eb1, #0d63c7);
-    }
-
-    .certificado-card::after {
-      content: "";
-      position: absolute;
-      right: -60px;
-      top: -60px;
-      width: 260px;
-      height: 260px;
-      background: linear-gradient(135deg, rgba(13, 99, 199, 0.3), rgba(13, 99, 199, 0.08));
-      transform: rotate(25deg);
-      border: 2px solid rgba(180, 214, 247, 0.8);
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      pointer-events: none;
     }
 
     .cert-header {
@@ -344,6 +334,21 @@
       color: #0e58a8;
       font-size: clamp(0.96rem, 1.4vw, 1.35rem);
       letter-spacing: 0.03em;
+    }
+
+    .cert-sign-name {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .cert-sign-gold {
+      width: clamp(20px, 2vw, 28px);
+      height: auto;
+      object-fit: contain;
+      transform: translateY(-1px);
     }
 
     .cert-sign span {
@@ -478,6 +483,14 @@
     <section class="certificado-panel" id="certificadoPanel" hidden aria-live="polite">
       <p class="result-title">Aca se genera tu certificado de asistencias</p>
       <article class="certificado-card" id="certificadoCard">
+        <img
+          class="cert-frame"
+          src="/Prueba_2/assets/ChatGPT_Image_Mar_8__2026__09_04_42_PM-removebg-preview.png"
+          alt=""
+          aria-hidden="true"
+          width="612"
+          height="408"
+        >
         <header class="cert-header">
           <img
             class="cert-logo"
@@ -529,7 +542,16 @@
 
         <div class="cert-sign">
           <div class="cert-sign-line"></div>
-          <strong>AGUSTIN LANZIERI</strong>
+          <div class="cert-sign-name">
+            <strong>AGUSTIN LANZIERI</strong>
+            <img
+              class="cert-sign-gold"
+              src="/Prueba_2/assets/03_plomeros_sanitaristas_argentinos_dorado-removebg-preview.png"
+              alt="Logo dorado Plomeros Sanitaristas Argentinos"
+              width="28"
+              height="28"
+            >
+          </div>
           <span>Fundador de PlomerosArg</span>
           <span>Presidente AAPSyA</span>
         </div>
