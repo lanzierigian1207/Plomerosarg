@@ -284,11 +284,6 @@
       </div>
 
       <div class="field">
-        <label class="required" for="mail">Mail</label>
-        <input id="mail" name="mail" type="email" required>
-      </div>
-
-      <div class="field">
         <label class="required" for="provincia">&iquest;De qu&eacute; provincia sos?</label>
         <select id="provincia" name="provincia" required>
           <option value="">Seleccionar</option>
@@ -411,7 +406,7 @@
         <button class="btn btn-primary" type="submit">Enviar</button>
         <a class="btn btn-secondary" href="encuentros.html">Volver a Encuentros</a>
       </div>
-      <p class="success-message" id="successMessage" role="status">Inscripci&oacute;n Confirmada<br>Le llegar&aacute; un correo con la informaci&oacute;n<br><strong>IMPORTANTE:</strong> En el caso que no llegue a la bandeja principal, buscar en correo no deseado o SPAM, notificaciones, social.</p>
+      <p class="success-message" id="successMessage" role="status">Inscripci&oacute;n Confirmada.</p>
     </form>
   </main>
   <script>
@@ -491,7 +486,7 @@
           throw new Error(data.error || "No fue posible guardar la inscripci&oacute;n.");
         }
 
-        successMessage.innerHTML = "Inscripci&oacute;n Confirmada<br>Le llegar&aacute; un correo con la informaci&oacute;n<br><strong>IMPORTANTE:</strong> En el caso que no llegue a la bandeja principal, buscar en correo no deseado o SPAM, notificaciones, social.";
+        successMessage.innerHTML = "Inscripci&oacute;n Confirmada.";
         successMessage.style.display = "block";
         form.reset();
         toggleExpositorField();

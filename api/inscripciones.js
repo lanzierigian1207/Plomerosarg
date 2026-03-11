@@ -103,6 +103,10 @@ function normalizeLookupText(value) {
     .trim();
 }
 
+function isMailOptionalForEvent(encuentro) {
+  return normalizeLookupText(encuentro) === "bahia blanca 11/3";
+}
+
 function normalizeBody(body) {
   if (!body) return {};
 
@@ -479,13 +483,14 @@ module.exports = async (req, res) => {
   const expositor_info = cleanText(payload.expositor_info, 200);
   const origen = cleanText(payload.origen, 40);
   const acepto_terminos = cleanText(payload.acepto_terminos, 5).toLowerCase() === "si";
+  const mailRequired = !isMailOptionalForEvent(encuentro);
 
   if (
     !dni ||
     !encuentro ||
     encuentro === "Sin evento" ||
     !nombre_apellido ||
-    !mail ||
+    (mailRequired && !mail) ||
     !provincia ||
     !asociado ||
     profesiones.length === 0 ||
@@ -498,7 +503,7 @@ module.exports = async (req, res) => {
     });
   }
 
-  if (!isValidEmail(mail)) {
+  if (mail && !isValidEmail(mail)) {
     return res.status(422).json({ ok: false, error: "Mail inválido." });
   }
 
