@@ -461,6 +461,13 @@
       text-align: center;
     }
 
+    .cert-time {
+      color: #123f73;
+      font-size: clamp(0.8rem, 0.98vw, 1.02rem);
+      font-weight: 800;
+      text-align: center;
+    }
+
     .cert-sign {
       margin-top: auto;
       display: grid;
@@ -712,6 +719,9 @@
             <img src="/Prueba_2/assets/empresas/04_waterplast.png" alt="Waterplast">
           </div>
 
+          <p class="cert-time" id="certTiempoCapacitado" hidden>
+            Tiempo Capacitado Profesionalmente: 520 Minutos
+          </p>
           <p class="cert-event" id="certEventoFecha">Bah&iacute;a Blanca, mi&eacute;rcoles 11 de marzo de 2026</p>
           <img
             class="cert-sign-image"
@@ -753,6 +763,7 @@
         label: "Bahía Blanca 11/3",
         numero: "27",
         fecha: "Bahía Blanca, miércoles 11 de marzo de 2026",
+        tiempoCapacitado: "Tiempo Capacitado Profesionalmente: 520 Minutos",
         image: "/Prueba_2/assets/bahia-blanca.jpg"
       },
       "mar del plata 14/3": {
@@ -796,6 +807,7 @@
     const certificadoCard = document.getElementById("certificadoCard");
     const certNombre = document.getElementById("certNombre");
     const certNumeroEncuentro = document.getElementById("certNumeroEncuentro");
+    const certTiempoCapacitado = document.getElementById("certTiempoCapacitado");
     const certEventoFecha = document.getElementById("certEventoFecha");
     const PDF_PAGE_WIDTH = 1123;
     const PDF_PAGE_HEIGHT = 794;
@@ -1182,9 +1194,12 @@
 
       const eventKey = normalizeEventKey(selectedEvent);
       const eventInfo = EVENT_DETAILS[eventKey] || null;
+      const tiempoCapacitado = String(eventInfo?.tiempoCapacitado || "").trim();
 
       certNombre.textContent = nameValue;
       certNumeroEncuentro.textContent = eventInfo?.numero || "-";
+      certTiempoCapacitado.textContent = tiempoCapacitado;
+      certTiempoCapacitado.hidden = !tiempoCapacitado;
       certEventoFecha.textContent = eventInfo?.fecha || selectedEvent;
       certificadoPanel.hidden = false;
       certificadoPanel.scrollIntoView({ behavior: "smooth", block: "start" });
