@@ -615,14 +615,14 @@
       <div class="encuentros-list" id="encuentrosList"></div>
 
       <div class="field">
-        <label for="dniCertificado">Numero de DNI</label>
+        <label for="dniCertificado">N&uacute;mero de DNI</label>
         <input
           id="dniCertificado"
           name="dniCertificado"
           type="text"
           inputmode="numeric"
           autocomplete="off"
-          placeholder="Escribi tu DNI"
+          placeholder="Escrib&iacute; tu DNI"
           maxlength="20"
         >
       </div>
@@ -633,7 +633,7 @@
           id="nombreCertificado"
           name="nombreCertificado"
           type="text"
-          placeholder="Escribi tu nombre"
+          placeholder="Escrib&iacute; tu nombre"
           maxlength="120"
         >
       </div>
@@ -646,7 +646,7 @@
     </section>
 
     <section class="certificado-panel" id="certificadoPanel" hidden aria-live="polite">
-      <p class="result-title">Aca se genera tu certificado de asistencias</p>
+      <p class="result-title">Ac&aacute; se genera tu certificado de asistencia</p>
       <article class="certificado-card" id="certificadoCard">
         <div class="cert-content">
           <img
@@ -712,7 +712,7 @@
             <img src="/Prueba_2/assets/empresas/04_waterplast.png" alt="Waterplast">
           </div>
 
-          <p class="cert-event" id="certEventoFecha">Bahia Blanca, miercoles 11 de marzo de 2026</p>
+          <p class="cert-event" id="certEventoFecha">Bah&iacute;a Blanca, mi&eacute;rcoles 11 de marzo de 2026</p>
           <img
             class="cert-sign-image"
             src="/Prueba_2/assets/image_2026-03-08_204129036.png"
@@ -750,9 +750,9 @@
   <script>
     const EVENT_DETAILS = {
       "bahia blanca 11/3": {
-        label: "Bahia Blanca 11/3",
+        label: "Bahía Blanca 11/3",
         numero: "27",
-        fecha: "Bahia Blanca, miercoles 11 de marzo de 2026",
+        fecha: "Bahía Blanca, miércoles 11 de marzo de 2026",
         image: "/Prueba_2/assets/bahia-blanca.jpg"
       },
       "mar del plata 14/3": {
@@ -764,19 +764,19 @@
       "mendoza 9/5": {
         label: "Mendoza 9/5",
         numero: "29",
-        fecha: "Mendoza, sabado 9 de mayo de 2026",
+        fecha: "Mendoza, sábado 9 de mayo de 2026",
         image: "/Prueba_2/assets/mendoza.jpg"
       },
       "salta 6/6": {
         label: "Salta 6/6",
         numero: "30",
-        fecha: "Salta, sabado 6 de junio de 2026",
+        fecha: "Salta, sábado 6 de junio de 2026",
         image: "/Prueba_2/assets/salta.jpg"
       },
       "san luis 8/8": {
         label: "San Luis 8/8",
         numero: "31",
-        fecha: "San Luis, sabado 8 de agosto de 2026",
+        fecha: "San Luis, sábado 8 de agosto de 2026",
         image: "/Prueba_2/assets/san-luis.png"
       }
     };
@@ -962,7 +962,7 @@
       if (!normalizedDni) {
         return {
           ok: false,
-          error: "Ingresa un numero de DNI valido."
+          error: "Ingresá un número de DNI válido."
         };
       }
 
@@ -1117,20 +1117,20 @@
       const nameValue = toCertificateName(nombreInput.value);
 
       if (!selectedEvent) {
-        showMessage("Selecciona un encuentro para generar el certificado.");
+        showMessage("Seleccioná un encuentro para generar el certificado.");
         certificadoPanel.hidden = true;
         return;
       }
 
       if (!dniValue) {
-        showMessage("Ingresa un numero de DNI valido.");
+        showMessage("Ingresá un número de DNI válido.");
         certificadoPanel.hidden = true;
         dniInput.focus();
         return;
       }
 
       if (!nameValue || nameValue.length < 3) {
-        showMessage("Escribi nombre y apellido para generar el certificado.");
+        showMessage("Escribí nombre y apellido para generar el certificado.");
         certificadoPanel.hidden = true;
         nombreInput.focus();
         return;
@@ -1165,7 +1165,7 @@
       });
 
       if (!selectedAttendance) {
-        showMessage("Ese DNI no tiene inscripcion en el encuentro seleccionado.");
+        showMessage("Ese DNI no tiene inscripción en el encuentro seleccionado.");
         certificadoPanel.hidden = true;
         generarBtn.disabled = false;
         generarBtn.textContent = originalButtonText;
@@ -1173,7 +1173,7 @@
       }
 
       if (selectedAttendance.asistio !== true) {
-        showMessage(`Todavia no figura tu asistencia en ${selectedEvent}.`);
+        showMessage(`Todavía no figura tu asistencia en ${selectedEvent}.`);
         certificadoPanel.hidden = true;
         generarBtn.disabled = false;
         generarBtn.textContent = originalButtonText;
