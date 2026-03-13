@@ -104,7 +104,8 @@ function normalizeLookupText(value) {
 }
 
 function isMailOptionalForEvent(encuentro) {
-  return normalizeLookupText(encuentro) === "bahia blanca 11/3";
+  const normalizedEvent = normalizeLookupText(encuentro);
+  return normalizedEvent === "bahia blanca 11/3" || normalizedEvent === "mar del plata 14/3";
 }
 
 function normalizeBody(body) {
