@@ -439,20 +439,21 @@
       border: 1px solid #cfe0f4;
       border-radius: 10px;
       background: #ffffff;
-      padding: 12px;
+      padding: 10px;
       display: grid;
-      gap: 5px;
+      gap: 4px;
     }
 
     .raffle-winner h4,
     .raffle-list h4 {
-      font-size: 0.92rem;
+      font-size: 0.88rem;
       color: var(--accent);
       margin-bottom: 2px;
     }
 
     .raffle-row {
-      font-size: 0.9rem;
+      font-size: 0.82rem;
+      line-height: 1.2;
       color: #213750;
     }
 
@@ -460,20 +461,24 @@
       border: 1px solid #dbe6f5;
       border-radius: 10px;
       background: #ffffff;
-      padding: 12px;
-      display: grid;
-      gap: 8px;
-    }
-
-    .raffle-list ul {
-      padding-left: 18px;
+      padding: 10px;
       display: grid;
       gap: 6px;
     }
 
+    .raffle-list ul {
+      max-height: 220px;
+      overflow-y: auto;
+      padding-left: 16px;
+      margin: 0;
+      display: grid;
+      gap: 4px;
+    }
+
     .raffle-list li {
       color: #213750;
-      font-size: 0.9rem;
+      font-size: 0.82rem;
+      line-height: 1.15;
     }
 
     table {
