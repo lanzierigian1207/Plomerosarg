@@ -888,14 +888,42 @@
       `;
     }
 
+    function buildSummaryNarrative(entries, total) {
+      if (!Array.isArray(entries) || entries.length === 0 || total <= 0) {
+        return "Sin datos para analizar en esta categoria.";
+      }
+
+      const [first, second] = entries;
+      const [firstLabel, firstCount] = first;
+      const firstPercent = formatSummaryPercent(firstCount, total);
+
+      if (firstCount === total) {
+        return `Todos los registros corresponden a ${firstLabel} (${firstCount} - ${firstPercent}).`;
+      }
+
+      let text = `Predomina ${firstLabel} con ${firstCount} registros (${firstPercent}).`;
+
+      if (second) {
+        const [secondLabel, secondCount] = second;
+        const secondPercent = formatSummaryPercent(secondCount, total);
+        text += ` Le sigue ${secondLabel} con ${secondCount} registros (${secondPercent}).`;
+      }
+
+      return text;
+    }
+
     function buildSummarySection(title, entries, total, color) {
       const safeTitle = escapeHtml(title);
+      const narrative = escapeHtml(buildSummaryNarrative(entries, total));
 
       return `
         <table border="1" style="margin:0 0 18px;border-collapse:collapse;">
           <thead>
             <tr>
               <th colspan="4" style="background:${color};color:#ffffff;">${safeTitle}</th>
+            </tr>
+            <tr>
+              <th colspan="4" style="background:#f8fbff;color:#243b5a;text-align:left;font-weight:600;">${narrative}</th>
             </tr>
             <tr>
               <th>Categoria</th>
