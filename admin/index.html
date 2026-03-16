@@ -802,6 +802,182 @@
         .replace(/^-+|-+$/g, "") || "evento";
     }
 
+    const ORIGEN_LABELS = {
+      facebook: "Grupo de Facebook",
+      grupo_whatsapp: "Grupo de WhatsApp",
+      instagram: "Instagram de Plomeros",
+      casa_sanitarios: "Casa de Sanitarios",
+      centro_formacion: "Centro de Formacion"
+    };
+
+    function normalizeSummaryLabel(value, fallback = "Sin dato") {
+      const text = String(value ?? "").trim();
+      return text || fallback;
+    }
+
+    function titleizeKey(value) {
+      const raw = String(value ?? "").trim().toLowerCase();
+      if (!raw) return "Sin dato";
+      if (raw === "caba") return "CABA";
+      return raw
+        .split("_")
+        .map((part) => part ? part.charAt(0).toUpperCase() + part.slice(1) : "")
+        .join(" ");
+    }
+
+    function normalizeAsociadoLabel(value) {
+      const normalized = String(value ?? "").trim().toLowerCase();
+      if (normalized === "si") return "Si";
+      if (normalized === "no") return "No";
+      return "Sin dato";
+    }
+
+    function normalizeOrigenLabel(value) {
+      const normalized = String(value ?? "").trim().toLowerCase();
+      return ORIGEN_LABELS[normalized] || normalizeSummaryLabel(value);
+    }
+
+    function getProfesionSummaryValues(row) {
+      const source = String(row?.profesion_label || row?.profesion || "");
+      const values = source
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+      return values.length > 0 ? values : ["Sin dato"];
+    }
+
+    function buildSummaryEntries(rows, getValues) {
+      const map = new Map();
+
+      for (const row of Array.isArray(rows) ? rows : []) {
+        const nextValues = getValues(row);
+        const values = Array.isArray(nextValues) ? nextValues : [nextValues];
+
+        for (const value of values) {
+          const label = normalizeSummaryLabel(value);
+          map.set(label, (map.get(label) || 0) + 1);
+        }
+      }
+
+      return [...map.entries()].sort((a, b) =>
+        b[1] - a[1] || a[0].localeCompare(b[0], "es")
+      );
+    }
+
+    function formatSummaryPercent(count, total) {
+      if (!Number.isFinite(count) || !Number.isFinite(total) || total <= 0) {
+        return "0%";
+      }
+
+      const percent = (count / total) * 100;
+      const rounded = Number.isInteger(percent) ? percent.toFixed(0) : percent.toFixed(1);
+      return `${rounded.replace(".", ",")}%`;
+    }
+
+    function buildSummaryBar(count, total, color) {
+      const percent = total > 0 ? Math.max(0, Math.min(100, Math.round((count / total) * 100))) : 0;
+
+      return `
+        <table cellpadding="0" cellspacing="0" style="width:180px;border-collapse:collapse;">
+          <tr>
+            <td style="width:${percent}%;height:12px;background:${color};"></td>
+            <td style="width:${100 - percent}%;height:12px;background:#edf3fb;"></td>
+          </tr>
+        </table>
+      `;
+    }
+
+    function buildSummarySection(title, entries, total, color) {
+      const safeTitle = escapeHtml(title);
+
+      return `
+        <table border="1" style="margin:0 0 18px;border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th colspan="4" style="background:${color};color:#ffffff;">${safeTitle}</th>
+            </tr>
+            <tr>
+              <th>Categoria</th>
+              <th>Cantidad</th>
+              <th>Porcentaje</th>
+              <th>Grafico</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${
+              entries.length > 0
+                ? entries
+                  .map(([label, count]) => `
+                    <tr>
+                      <td>${escapeHtml(label)}</td>
+                      <td>${count}</td>
+                      <td>${formatSummaryPercent(count, total)}</td>
+                      <td>${buildSummaryBar(count, total, color)}</td>
+                    </tr>
+                  `)
+                  .join("")
+                : `
+                  <tr>
+                    <td colspan="4">Sin datos.</td>
+                  </tr>
+                `
+            }
+          </tbody>
+        </table>
+      `;
+    }
+
+    function buildSummaryExcelHtml(eventName, rows) {
+      const list = Array.isArray(rows) ? rows : [];
+      const total = list.length;
+      const totalAsistencias = list.reduce((sum, row) => sum + (row?.asistio === true ? 1 : 0), 0);
+      const totalReconfirmados = list.reduce((sum, row) => sum + (row?.reconfirmado === true ? 1 : 0), 0);
+      const totalAsociados = list.reduce(
+        (sum, row) => sum + (normalizeAsociadoLabel(row?.asociado) === "Si" ? 1 : 0),
+        0
+      );
+
+      const profesiones = buildSummaryEntries(list, (row) => getProfesionSummaryValues(row));
+      const asociados = buildSummaryEntries(list, (row) => normalizeAsociadoLabel(row?.asociado));
+      const provincias = buildSummaryEntries(list, (row) => titleizeKey(row?.provincia));
+      const origenes = buildSummaryEntries(list, (row) => normalizeOrigenLabel(row?.origen));
+      const asistencias = buildSummaryEntries(list, (row) => row?.asistio === true ? "Si" : "No");
+      const reconfirmaciones = buildSummaryEntries(list, (row) => row?.reconfirmado === true ? "Si" : "No");
+      const safeEventName = escapeHtml(eventName || "Evento");
+      const generatedAt = escapeHtml(formatDate(new Date().toISOString()));
+
+      return `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+          <head>
+            <meta charset="UTF-8">
+          </head>
+          <body>
+            <table border="1" style="margin:0 0 18px;border-collapse:collapse;">
+              <thead>
+                <tr>
+                  <th colspan="2">Resumen con graficos - Evento ${safeEventName}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Total inscriptos</td><td>${total}</td></tr>
+                <tr><td>Total asistencias</td><td>${totalAsistencias}</td></tr>
+                <tr><td>Total reconfirmados</td><td>${totalReconfirmados}</td></tr>
+                <tr><td>Total asociados</td><td>${totalAsociados}</td></tr>
+                <tr><td>Generado</td><td>${generatedAt}</td></tr>
+              </tbody>
+            </table>
+            ${buildSummarySection("Profesiones", profesiones, total, "#0f4ea8")}
+            ${buildSummarySection("Asociados", asociados, total, "#1f7a45")}
+            ${buildSummarySection("Provincias", provincias, total, "#7d4f00")}
+            ${buildSummarySection("Origen", origenes, total, "#6b49a6")}
+            ${buildSummarySection("Asistencia", asistencias, total, "#0f7a45")}
+            ${buildSummarySection("Reconfirmacion", reconfirmaciones, total, "#b05c00")}
+          </body>
+        </html>
+      `;
+    }
+
     function buildExcelRows(rows) {
       return rows
         .map((item) => `
@@ -872,6 +1048,25 @@
       const link = document.createElement("a");
       link.href = url;
       link.download = `inscripciones-${sanitizeFileName(eventName)}.xls`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadEventSummaryExcel(eventName, rows) {
+      if (!Array.isArray(rows) || rows.length === 0) {
+        return;
+      }
+
+      const html = buildSummaryExcelHtml(eventName, rows);
+      const blob = new Blob(["\ufeff", html], {
+        type: "application/vnd.ms-excel;charset=utf-8;"
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `resumen-inscripciones-${sanitizeFileName(eventName)}.xls`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -1048,6 +1243,14 @@
                                 ${rows.length === 0 ? "disabled" : ""}
                               >
                                 Descargar Excel
+                              </button>
+                              <button
+                                class="btn-event"
+                                type="button"
+                                data-download-summary-event="${index}"
+                                ${rows.length === 0 ? "disabled" : ""}
+                              >
+                                Descargar resumen
                               </button>
                             `
                             : ""
@@ -1299,15 +1502,30 @@
       }
 
       const downloadButton = event.target.closest("[data-download-event]");
-      if (!downloadButton) return;
+      if (downloadButton) {
+        const index = Number.parseInt(downloadButton.getAttribute("data-download-event"), 10);
+        if (!Number.isInteger(index)) return;
 
-      const index = Number.parseInt(downloadButton.getAttribute("data-download-event"), 10);
-      if (!Number.isInteger(index)) return;
+        const selected = currentEventos[index];
+        if (!selected) return;
 
-      const selected = currentEventos[index];
+        downloadEventExcel(selected.evento || "evento", selected.inscripciones || []);
+        return;
+      }
+
+      const downloadSummaryButton = event.target.closest("[data-download-summary-event]");
+      if (!downloadSummaryButton) return;
+
+      const summaryIndex = Number.parseInt(
+        downloadSummaryButton.getAttribute("data-download-summary-event"),
+        10
+      );
+      if (!Number.isInteger(summaryIndex)) return;
+
+      const selected = currentEventos[summaryIndex];
       if (!selected) return;
 
-      downloadEventExcel(selected.evento || "evento", selected.inscripciones || []);
+      downloadEventSummaryExcel(selected.evento || "evento", selected.inscripciones || []);
     });
 
     eventsContainer.addEventListener("change", async (event) => {
