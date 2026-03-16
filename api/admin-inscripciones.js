@@ -886,11 +886,19 @@ async function handlePost(req, res, adminRole) {
   if (action === "draw_raffle") {
     const eventInput = cleanText(payload.evento, 80);
     const canonicalEvent = getCanonicalEventName(eventInput);
+    const requestedCount = Number.parseInt(String(payload.cantidad ?? "1"), 10);
 
     if (!canonicalEvent || canonicalEvent === "Sin evento") {
       return res.status(422).json({
         ok: false,
         error: "Tenes que indicar un encuentro valido."
+      });
+    }
+
+    if (!Number.isFinite(requestedCount) || requestedCount < 1) {
+      return res.status(422).json({
+        ok: false,
+        error: "Tenes que indicar una cantidad valida para el sorteo."
       });
     }
 
@@ -954,22 +962,38 @@ async function handlePost(req, res, adminRole) {
       });
     }
 
-    const winnerIndex = crypto.randomInt(elegibles.length);
-    const winner = elegibles[winnerIndex];
+    const cantidadSorteada = Math.min(requestedCount, elegibles.length);
+    const disponibles = [...elegibles];
+    const winners = [];
 
-    const savedRaffle = await upsertRaffleState({
-      supabaseUrl,
-      serviceRoleKey,
-      eventName: canonicalEvent,
-      dni: winner.dni,
-      sorteado: true
-    });
+    for (let index = 0; index < cantidadSorteada; index += 1) {
+      const winnerIndex = crypto.randomInt(disponibles.length);
+      const winner = disponibles.splice(winnerIndex, 1)[0];
+      if (!winner) continue;
 
-    if (!savedRaffle.ok) {
+      const savedRaffle = await upsertRaffleState({
+        supabaseUrl,
+        serviceRoleKey,
+        eventName: canonicalEvent,
+        dni: winner.dni,
+        sorteado: true
+      });
+
+      if (!savedRaffle.ok) {
+        return res.status(500).json({
+          ok: false,
+          error: savedRaffle.error || "No se pudo guardar el sorteo.",
+          detail: savedRaffle.detail || ""
+        });
+      }
+
+      winners.push(winner);
+    }
+
+    if (winners.length === 0) {
       return res.status(500).json({
         ok: false,
-        error: savedRaffle.error || "No se pudo guardar el sorteo.",
-        detail: savedRaffle.detail || ""
+        error: "No se pudieron generar ganadores para este sorteo."
       });
     }
 
@@ -978,6 +1002,16 @@ async function handlePost(req, res, adminRole) {
       action: "draw_raffle",
       evento: canonicalEvent,
       ganador: {
+        id: winners[0].id,
+        dni: winners[0].dni,
+        nombre_apellido: winners[0].nombre_apellido,
+        mail: winners[0].mail,
+        provincia: winners[0].provincia,
+        localidad: winners[0].localidad,
+        profesion: winners[0].profesion,
+        created_at: winners[0].created_at
+      },
+      ganadores: winners.map((winner) => ({
         id: winner.id,
         dni: winner.dni,
         nombre_apellido: winner.nombre_apellido,
@@ -986,9 +1020,11 @@ async function handlePost(req, res, adminRole) {
         localidad: winner.localidad,
         profesion: winner.profesion,
         created_at: winner.created_at
-      },
-      elegibles_restantes: Math.max(elegibles.length - 1, 0),
-      sorteados_total: sorteados.length + 1,
+      })),
+      cantidad_solicitada: requestedCount,
+      cantidad_sorteada: winners.length,
+      elegibles_restantes: Math.max(elegibles.length - winners.length, 0),
+      sorteados_total: sorteados.length + winners.length,
       updated_at: new Date().toISOString()
     });
   }

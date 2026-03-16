@@ -407,6 +407,34 @@
       flex-wrap: wrap;
     }
 
+    .raffle-count-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #d7e4f5;
+      border-radius: 999px;
+      background: #ffffff;
+      padding: 7px 12px;
+    }
+
+    .raffle-count-label {
+      color: #335173;
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    .raffle-count-input {
+      width: 74px;
+      border: 1px solid #c7d8ee;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font: inherit;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--ink);
+      background: #fff;
+    }
+
     .raffle-winner {
       border: 1px solid #cfe0f4;
       border-radius: 10px;
@@ -580,6 +608,7 @@
     const raffleInFlight = new Set();
     const visibleRowsByEvent = new Map();
     const attendanceLookupByEvent = new Map();
+    const raffleCountByEvent = new Map();
     const raffleWinnerByEvent = new Map();
 
     function escapeHtml(value) {
@@ -722,6 +751,29 @@
         });
       }
       return attendanceLookupByEvent.get(key);
+    }
+
+    function getRaffleDrawCount(item, index, eligibleCount) {
+      const key = getEventKey(item, index);
+      const fallback = 1;
+      const maxValue = Math.max(eligibleCount || 0, 1);
+      const savedValue = Number.parseInt(String(raffleCountByEvent.get(key) ?? ""), 10);
+      const nextValue = Number.isFinite(savedValue)
+        ? Math.max(1, Math.min(savedValue, maxValue))
+        : Math.min(fallback, maxValue);
+      raffleCountByEvent.set(key, nextValue);
+      return nextValue;
+    }
+
+    function setRaffleDrawCount(item, index, nextValue, eligibleCount) {
+      const key = getEventKey(item, index);
+      const maxValue = Math.max(eligibleCount || 0, 1);
+      const parsedValue = Number.parseInt(String(nextValue ?? ""), 10);
+      const normalizedValue = Number.isFinite(parsedValue)
+        ? Math.max(1, Math.min(parsedValue, maxValue))
+        : 1;
+      raffleCountByEvent.set(key, normalizedValue);
+      return normalizedValue;
     }
 
     function normalizeDniValue(value) {
@@ -882,16 +934,17 @@
 
     function getRaffleState(item, index) {
       const key = getEventKey(item, index);
-      return raffleWinnerByEvent.get(key) || null;
+      const saved = raffleWinnerByEvent.get(key);
+      return Array.isArray(saved) ? saved : [];
     }
 
-    function setRaffleState(item, index, row) {
+    function setRaffleState(item, index, rows) {
       const key = getEventKey(item, index);
-      if (!row) {
+      if (!Array.isArray(rows) || rows.length === 0) {
         raffleWinnerByEvent.delete(key);
         return;
       }
-      raffleWinnerByEvent.set(key, row);
+      raffleWinnerByEvent.set(key, rows);
     }
 
     function updateRaffleStateLocally(eventItem, dni, sorteado) {
@@ -910,7 +963,7 @@
       return matchedRow;
     }
 
-    async function drawRaffleWinner(eventItem) {
+    async function drawRaffleWinner(eventItem, cantidad) {
       const response = await fetch("/api/admin-inscripciones", {
         method: "POST",
         headers: {
@@ -919,7 +972,8 @@
         },
         body: JSON.stringify({
           action: "draw_raffle",
-          evento: eventItem?.evento || ""
+          evento: eventItem?.evento || "",
+          cantidad
         })
       });
 
@@ -940,8 +994,9 @@
       const rows = Array.isArray(item?.inscripciones) ? item.inscripciones : [];
       const eligibleRows = getEligibleRaffleRows(item);
       const winnerRows = getRaffleWinners(item);
-      const lastWinner = getRaffleState(item, index);
+      const lastWinners = getRaffleState(item, index);
       const isDrawing = raffleInFlight.has(index);
+      const drawCount = getRaffleDrawCount(item, index, eligibleRows.length);
 
       if (rows.length === 0) {
         return `
@@ -961,24 +1016,39 @@
           <div class="raffle-actions">
             <span class="counter counter-attendance">${eligibleRows.length} disponibles</span>
             <span class="counter counter-attendance">${winnerRows.length} sorteados</span>
+            <label class="raffle-count-wrap">
+              <span class="raffle-count-label">Cantidad a sortear</span>
+              <input
+                class="raffle-count-input"
+                type="number"
+                min="1"
+                max="${Math.max(eligibleRows.length, 1)}"
+                step="1"
+                value="${drawCount}"
+                data-raffle-count-input="${index}"
+                ${eligibleRows.length === 0 || isDrawing ? "disabled" : ""}
+              />
+            </label>
             <button
               class="btn-event"
               type="button"
               data-draw-raffle="${index}"
               ${eligibleRows.length === 0 || isDrawing ? "disabled" : ""}
             >
-              ${isDrawing ? "Sorteando..." : "Sortear ganador"}
+              ${isDrawing ? "Sorteando..." : "Sortear"}
             </button>
           </div>
           ${
-            lastWinner
+            lastWinners.length > 0
               ? `
                 <div class="raffle-winner">
-                  <h4>Ultimo ganador sorteado</h4>
-                  <p class="raffle-row"><strong>Nombre y apellido:</strong> ${escapeHtml(lastWinner.nombre_apellido || "-")}</p>
-                  <p class="raffle-row"><strong>DNI:</strong> ${escapeHtml(lastWinner.dni || "-")}</p>
-                  <p class="raffle-row"><strong>Mail:</strong> ${escapeHtml(lastWinner.mail || "-")}</p>
-                  <p class="raffle-row"><strong>Localidad:</strong> ${escapeHtml(lastWinner.localidad || "-")}</p>
+                  <h4>${lastWinners.length === 1 ? "Ultimo ganador sorteado" : "Ultimos ganadores sorteados"}</h4>
+                  ${lastWinners.map((winner) => `
+                    <p class="raffle-row"><strong>Nombre y apellido:</strong> ${escapeHtml(winner.nombre_apellido || "-")}</p>
+                    <p class="raffle-row"><strong>DNI:</strong> ${escapeHtml(winner.dni || "-")}</p>
+                    <p class="raffle-row"><strong>Mail:</strong> ${escapeHtml(winner.mail || "-")}</p>
+                    <p class="raffle-row"><strong>Localidad:</strong> ${escapeHtml(winner.localidad || "-")}</p>
+                  `).join("")}
                 </div>
               `
               : ""
@@ -1792,24 +1862,37 @@
 
         const selected = currentEventos[drawIndex];
         if (!selected) return;
+        const eligibleRows = getEligibleRaffleRows(selected);
+        const drawCount = getRaffleDrawCount(selected, drawIndex, eligibleRows.length);
 
         raffleInFlight.add(drawIndex);
         renderEvents(currentEventos);
 
         try {
-          const result = await drawRaffleWinner(selected);
+          const result = await drawRaffleWinner(selected, drawCount);
           if (result.redirected) return;
 
-          const updatedRow = updateRaffleStateLocally(
-            selected,
-            result?.ganador?.dni,
-            true
-          );
-          setRaffleState(selected, drawIndex, updatedRow || result?.ganador || null);
+          const responseWinners = Array.isArray(result?.ganadores)
+            ? result.ganadores
+            : (result?.ganador ? [result.ganador] : []);
 
-          const winnerName = updatedRow?.nombre_apellido || result?.ganador?.nombre_apellido || "Ganador sin nombre";
+          const localWinners = responseWinners
+            .map((winner) => updateRaffleStateLocally(selected, winner?.dni, true) || winner)
+            .filter(Boolean);
+
+          setRaffleState(selected, drawIndex, localWinners);
+
+          const winnerNames = localWinners
+            .map((winner) => winner?.nombre_apellido || "Ganador sin nombre")
+            .filter(Boolean);
+          const namesPreview = winnerNames.slice(0, 3).join(", ");
+          const extraCount = Math.max(winnerNames.length - 3, 0);
+          const namesText = extraCount > 0
+            ? `${namesPreview} y ${extraCount} mas`
+            : namesPreview;
+
           setStatusMessage(
-            `Ganador sorteado en ${selected.evento}: ${winnerName}.`
+            `Sorteo realizado en ${selected.evento}: ${winnerNames.length} ganador${winnerNames.length === 1 ? "" : "es"}${namesText ? ` (${namesText})` : ""}.`
           );
         } catch (error) {
           setStatusMessage(`Error: ${error.message}`, "error");
@@ -1836,6 +1919,28 @@
     });
 
     eventsContainer.addEventListener("change", async (event) => {
+      const raffleCountInput = event.target.closest("[data-raffle-count-input]");
+      if (raffleCountInput) {
+        const raffleIndex = Number.parseInt(
+          raffleCountInput.getAttribute("data-raffle-count-input"),
+          10
+        );
+        if (!Number.isInteger(raffleIndex)) return;
+
+        const selected = currentEventos[raffleIndex];
+        if (!selected) return;
+
+        const eligibleRows = getEligibleRaffleRows(selected);
+        const nextValue = setRaffleDrawCount(
+          selected,
+          raffleIndex,
+          raffleCountInput.value,
+          eligibleRows.length
+        );
+        raffleCountInput.value = String(nextValue);
+        return;
+      }
+
       const attendanceRowCheckbox = event.target.closest("[data-attendance-row-toggle]");
       if (!attendanceRowCheckbox) return;
 
