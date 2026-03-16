@@ -146,7 +146,7 @@ async function fetchEventStatusMap({ supabaseUrl, serviceRoleKey }) {
   const endpoint = new URL(buildSupabaseEndpoint(supabaseUrl, EVENT_STATUS_TABLE));
   endpoint.searchParams.set("select", "encuentro,activo,updated_at");
   endpoint.searchParams.set("order", "encuentro.asc");
-  endpoint.searchParams.set("limit", "500");
+  endpoint.searchParams.set("limit", "20000");
 
   const response = await fetch(endpoint.toString(), {
     method: "GET",
