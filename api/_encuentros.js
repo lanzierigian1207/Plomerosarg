@@ -144,7 +144,7 @@ async function fetchEventStatusMap({ supabaseUrl, serviceRoleKey }) {
   }
 
   const endpoint = new URL(buildSupabaseEndpoint(supabaseUrl, EVENT_STATUS_TABLE));
-  endpoint.searchParams.set("select", "encuentro,activo");
+  endpoint.searchParams.set("select", "encuentro,activo,updated_at");
   endpoint.searchParams.set("order", "encuentro.asc");
   endpoint.searchParams.set("limit", "500");
 
@@ -169,6 +169,7 @@ async function fetchEventStatusMap({ supabaseUrl, serviceRoleKey }) {
   }
 
   const rows = await response.json().catch(() => []);
+  const resolvedByEvent = new Map();
 
   for (const row of Array.isArray(rows) ? rows : []) {
     const rawKey = String(row.encuentro || "");
@@ -180,8 +181,31 @@ async function fetchEventStatusMap({ supabaseUrl, serviceRoleKey }) {
     ) {
       continue;
     }
+
     const eventName = getCanonicalEventName(row.encuentro);
-    result.map.set(eventName, row.activo !== false);
+    const exactCanonicalMatch = cleanText(rawKey, 80) === eventName;
+    const timestamp = Date.parse(String(row.updated_at || ""));
+    const nextEntry = {
+      active: row.activo !== false,
+      priority: exactCanonicalMatch ? 2 : 1,
+      timestamp: Number.isFinite(timestamp) ? timestamp : 0
+    };
+    const previousEntry = resolvedByEvent.get(eventName);
+
+    if (
+      !previousEntry ||
+      nextEntry.priority > previousEntry.priority ||
+      (
+        nextEntry.priority === previousEntry.priority &&
+        nextEntry.timestamp >= previousEntry.timestamp
+      )
+    ) {
+      resolvedByEvent.set(eventName, nextEntry);
+    }
+  }
+
+  for (const [eventName, state] of resolvedByEvent.entries()) {
+    result.map.set(eventName, state.active);
   }
 
   result.available = true;
