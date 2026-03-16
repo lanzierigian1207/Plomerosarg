@@ -378,6 +378,76 @@
       flex-wrap: wrap;
     }
 
+    .raffle-box {
+      margin: 14px 16px 16px;
+      padding: 14px;
+      border: 1px solid #dbe6f5;
+      border-radius: 10px;
+      background: #f7fbff;
+      display: grid;
+      gap: 12px;
+    }
+
+    .raffle-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .raffle-hint {
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .raffle-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .raffle-winner {
+      border: 1px solid #cfe0f4;
+      border-radius: 10px;
+      background: #ffffff;
+      padding: 12px;
+      display: grid;
+      gap: 5px;
+    }
+
+    .raffle-winner h4,
+    .raffle-list h4 {
+      font-size: 0.92rem;
+      color: var(--accent);
+      margin-bottom: 2px;
+    }
+
+    .raffle-row {
+      font-size: 0.9rem;
+      color: #213750;
+    }
+
+    .raffle-list {
+      border: 1px solid #dbe6f5;
+      border-radius: 10px;
+      background: #ffffff;
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .raffle-list ul {
+      padding-left: 18px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .raffle-list li {
+      color: #213750;
+      font-size: 0.9rem;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -469,6 +539,7 @@
         <div class="view-switch" role="tablist" aria-label="Vista del panel">
           <button class="btn-view is-active" id="viewInscripcionesBtn" type="button">Inscripciones</button>
           <button class="btn-view" id="viewAsistenciaBtn" type="button">Asistencia Encuentros</button>
+          <button class="btn-view" id="viewSorteosBtn" type="button">Sorteos</button>
           <button class="btn-view" id="viewCertificadosBtn" type="button">Certificado asistencias</button>
         </div>
         <button class="btn" id="refreshBtn" type="button">Actualizar</button>
@@ -493,19 +564,23 @@
     const refreshBtn = document.getElementById("refreshBtn");
     const viewInscripcionesBtn = document.getElementById("viewInscripcionesBtn");
     const viewAsistenciaBtn = document.getElementById("viewAsistenciaBtn");
+    const viewSorteosBtn = document.getElementById("viewSorteosBtn");
     const viewCertificadosBtn = document.getElementById("viewCertificadosBtn");
     const DEFAULT_VISIBLE_ROWS = 25;
     const ADMIN_LOGIN_URL = "/api/admin";
     const PANEL_VIEW_INSCRIPCIONES = "inscripciones";
     const PANEL_VIEW_ASISTENCIA = "asistencia";
+    const PANEL_VIEW_SORTEOS = "sorteos";
     const PANEL_VIEW_CERTIFICADOS = "certificados";
     let currentPanelView = PANEL_VIEW_INSCRIPCIONES;
     let currentAdminRole = "admin";
     let currentEventos = [];
     const toggleInFlight = new Set();
     const certificateToggleInFlight = new Set();
+    const raffleInFlight = new Set();
     const visibleRowsByEvent = new Map();
     const attendanceLookupByEvent = new Map();
+    const raffleWinnerByEvent = new Map();
 
     function escapeHtml(value) {
       return String(value ?? "")
@@ -563,12 +638,14 @@
     function renderViewButtons() {
       const asistenciaOnly = currentAdminRole === "asistencia";
       viewInscripcionesBtn.style.display = asistenciaOnly ? "none" : "inline-flex";
+      viewSorteosBtn.style.display = asistenciaOnly ? "none" : "inline-flex";
       viewCertificadosBtn.style.display = asistenciaOnly ? "none" : "inline-flex";
       if (asistenciaOnly && currentPanelView !== PANEL_VIEW_ASISTENCIA) {
         currentPanelView = PANEL_VIEW_ASISTENCIA;
       }
       viewInscripcionesBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_INSCRIPCIONES);
       viewAsistenciaBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_ASISTENCIA);
+      viewSorteosBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_SORTEOS);
       viewCertificadosBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_CERTIFICADOS);
       viewInscripcionesBtn.setAttribute(
         "aria-pressed",
@@ -577,6 +654,10 @@
       viewAsistenciaBtn.setAttribute(
         "aria-pressed",
         currentPanelView === PANEL_VIEW_ASISTENCIA ? "true" : "false"
+      );
+      viewSorteosBtn.setAttribute(
+        "aria-pressed",
+        currentPanelView === PANEL_VIEW_SORTEOS ? "true" : "false"
       );
       viewCertificadosBtn.setAttribute(
         "aria-pressed",
@@ -591,6 +672,7 @@
       if (
         nextView !== PANEL_VIEW_INSCRIPCIONES &&
         nextView !== PANEL_VIEW_ASISTENCIA &&
+        nextView !== PANEL_VIEW_SORTEOS &&
         nextView !== PANEL_VIEW_CERTIFICADOS
       ) {
         return;
@@ -683,9 +765,28 @@
     }
 
     function updateAttendanceStateLocally(eventItem, dni, asistio) {
-      const row = findInscriptoByDni(eventItem, dni);
-      if (!row) return;
-      row.asistio = asistio === true;
+      const normalizedDni = normalizeDniValue(dni);
+      const rows = Array.isArray(eventItem?.inscripciones) ? eventItem.inscripciones : [];
+      for (const row of rows) {
+        if (normalizeDniValue(row?.dni) === normalizedDni) {
+          row.asistio = asistio === true;
+        }
+      }
+    }
+
+    function getUniqueRowsByDni(rows) {
+      const list = Array.isArray(rows) ? rows : [];
+      const uniqueRows = [];
+      const seen = new Set();
+
+      for (const row of list) {
+        const normalizedDni = normalizeDniValue(row?.dni);
+        if (!normalizedDni || seen.has(normalizedDni)) continue;
+        seen.add(normalizedDni);
+        uniqueRows.push(row);
+      }
+
+      return uniqueRows;
     }
 
     async function persistAttendanceState(eventItem, dni, asistio) {
@@ -762,6 +863,147 @@
             </button>
           </div>
         </div>
+      `;
+    }
+
+    function getEligibleRaffleRows(eventItem) {
+      const rows = getUniqueRowsByDni(eventItem?.inscripciones);
+      return rows.filter(
+        (row) => row?.asistio === true && row?.sorteado !== true && normalizeDniValue(row?.dni)
+      );
+    }
+
+    function getRaffleWinners(eventItem) {
+      const rows = getUniqueRowsByDni(eventItem?.inscripciones);
+      return rows.filter(
+        (row) => row?.sorteado === true && normalizeDniValue(row?.dni)
+      );
+    }
+
+    function getRaffleState(item, index) {
+      const key = getEventKey(item, index);
+      return raffleWinnerByEvent.get(key) || null;
+    }
+
+    function setRaffleState(item, index, row) {
+      const key = getEventKey(item, index);
+      if (!row) {
+        raffleWinnerByEvent.delete(key);
+        return;
+      }
+      raffleWinnerByEvent.set(key, row);
+    }
+
+    function updateRaffleStateLocally(eventItem, dni, sorteado) {
+      const normalizedDni = normalizeDniValue(dni);
+      const rows = Array.isArray(eventItem?.inscripciones) ? eventItem.inscripciones : [];
+      let matchedRow = null;
+
+      for (const row of rows) {
+        if (normalizeDniValue(row?.dni) !== normalizedDni) continue;
+        row.sorteado = sorteado === true;
+        if (!matchedRow) {
+          matchedRow = row;
+        }
+      }
+
+      return matchedRow;
+    }
+
+    async function drawRaffleWinner(eventItem) {
+      const response = await fetch("/api/admin-inscripciones", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          action: "draw_raffle",
+          evento: eventItem?.evento || ""
+        })
+      });
+
+      if (response.status === 401) {
+        window.location.href = ADMIN_LOGIN_URL;
+        return { ok: false, redirected: true };
+      }
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || "No se pudo realizar el sorteo.");
+      }
+
+      return data;
+    }
+
+    function buildRaffleSectionHtml(item, index) {
+      const rows = Array.isArray(item?.inscripciones) ? item.inscripciones : [];
+      const eligibleRows = getEligibleRaffleRows(item);
+      const winnerRows = getRaffleWinners(item);
+      const lastWinner = getRaffleState(item, index);
+      const isDrawing = raffleInFlight.has(index);
+
+      if (rows.length === 0) {
+        return `
+          <section class="raffle-box">
+            <h3 class="raffle-title">Sorteos</h3>
+            <p class="raffle-hint">No hay inscriptos en este encuentro para participar del sorteo.</p>
+          </section>
+        `;
+      }
+
+      return `
+        <section class="raffle-box">
+          <h3 class="raffle-title">Sorteos</h3>
+          <p class="raffle-hint">
+            Participan solo los inscriptos con asistencia confirmada. Cada DNI puede salir una sola vez por encuentro.
+          </p>
+          <div class="raffle-actions">
+            <span class="counter counter-attendance">${eligibleRows.length} disponibles</span>
+            <span class="counter counter-attendance">${winnerRows.length} sorteados</span>
+            <button
+              class="btn-event"
+              type="button"
+              data-draw-raffle="${index}"
+              ${eligibleRows.length === 0 || isDrawing ? "disabled" : ""}
+            >
+              ${isDrawing ? "Sorteando..." : "Sortear ganador"}
+            </button>
+          </div>
+          ${
+            lastWinner
+              ? `
+                <div class="raffle-winner">
+                  <h4>Ultimo ganador sorteado</h4>
+                  <p class="raffle-row"><strong>Nombre y apellido:</strong> ${escapeHtml(lastWinner.nombre_apellido || "-")}</p>
+                  <p class="raffle-row"><strong>DNI:</strong> ${escapeHtml(lastWinner.dni || "-")}</p>
+                  <p class="raffle-row"><strong>Mail:</strong> ${escapeHtml(lastWinner.mail || "-")}</p>
+                  <p class="raffle-row"><strong>Localidad:</strong> ${escapeHtml(lastWinner.localidad || "-")}</p>
+                </div>
+              `
+              : ""
+          }
+          <div class="raffle-list">
+            <h4>Ganadores ya sorteados</h4>
+            ${
+              winnerRows.length > 0
+                ? `
+                  <ul>
+                    ${winnerRows
+                      .map((row) => `
+                        <li>
+                          <strong>${escapeHtml(row.nombre_apellido || "-")}</strong>
+                          - DNI ${escapeHtml(row.dni || "-")}
+                          ${row.localidad ? ` - ${escapeHtml(row.localidad)}` : ""}
+                        </li>
+                      `)
+                      .join("")}
+                  </ul>
+                `
+                : `<p class="raffle-hint">Todavia no se sorteo ningun ganador en este encuentro.</p>`
+            }
+          </div>
+        </section>
       `;
     }
 
@@ -1135,6 +1377,7 @@
           const canManageEvents = currentAdminRole === "admin";
           const showInscripciones = canViewInscripciones && currentPanelView === PANEL_VIEW_INSCRIPCIONES;
           const showAsistencia = currentPanelView === PANEL_VIEW_ASISTENCIA;
+          const showSorteos = canManageEvents && currentPanelView === PANEL_VIEW_SORTEOS;
           const showCertificados = canManageEvents && currentPanelView === PANEL_VIEW_CERTIFICADOS;
 
           const attendanceSectionHtml = `
@@ -1289,6 +1532,7 @@
               </header>
               ${showAsistencia ? attendanceSectionHtml : ""}
               ${showInscripciones ? inscripcionesSectionHtml : ""}
+              ${showSorteos ? buildRaffleSectionHtml(item, index) : ""}
               ${showCertificados ? certificateSectionHtml : ""}
             </article>
           `;
@@ -1541,6 +1785,41 @@
         return;
       }
 
+      const drawRaffleButton = event.target.closest("[data-draw-raffle]");
+      if (drawRaffleButton) {
+        const drawIndex = Number.parseInt(drawRaffleButton.getAttribute("data-draw-raffle"), 10);
+        if (!Number.isInteger(drawIndex) || raffleInFlight.has(drawIndex)) return;
+
+        const selected = currentEventos[drawIndex];
+        if (!selected) return;
+
+        raffleInFlight.add(drawIndex);
+        renderEvents(currentEventos);
+
+        try {
+          const result = await drawRaffleWinner(selected);
+          if (result.redirected) return;
+
+          const updatedRow = updateRaffleStateLocally(
+            selected,
+            result?.ganador?.dni,
+            true
+          );
+          setRaffleState(selected, drawIndex, updatedRow || result?.ganador || null);
+
+          const winnerName = updatedRow?.nombre_apellido || result?.ganador?.nombre_apellido || "Ganador sin nombre";
+          setStatusMessage(
+            `Ganador sorteado en ${selected.evento}: ${winnerName}.`
+          );
+        } catch (error) {
+          setStatusMessage(`Error: ${error.message}`, "error");
+        } finally {
+          raffleInFlight.delete(drawIndex);
+          renderEvents(currentEventos);
+        }
+        return;
+      }
+
       const downloadSummaryButton = event.target.closest("[data-download-summary-event]");
       if (!downloadSummaryButton) return;
 
@@ -1597,6 +1876,10 @@
 
     viewCertificadosBtn.addEventListener("click", () => {
       setPanelView(PANEL_VIEW_CERTIFICADOS);
+    });
+
+    viewSorteosBtn.addEventListener("click", () => {
+      setPanelView(PANEL_VIEW_SORTEOS);
     });
 
     renderViewButtons();

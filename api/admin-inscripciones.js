@@ -18,6 +18,7 @@ const ROLE_ASISTENCIA = "asistencia";
 const STATUS_TABLE = "encuentros_estado";
 const ATTENDANCE_KEY_PREFIX = "__attendance__::";
 const RECONFIRM_KEY_PREFIX = "__reconfirm__::";
+const RAFFLE_KEY_PREFIX = "__raffle__::";
 const INSCRIPCIONES_SELECT_BASE =
   "id,encuentro,dni,nombre_apellido,mail,provincia,localidad,asociado,profesion,origen,acepto_terminos,created_at";
 const INSCRIPCIONES_SELECT_WITH_EXPOSITOR_INFO =
@@ -144,12 +145,58 @@ function parseReconfirmStorageKey(storageKey) {
   };
 }
 
-async function fetchAttendanceAndReconfirmStateMaps({ supabaseUrl, serviceRoleKey }) {
+function buildRaffleStorageKey(eventName, dni) {
+  const canonicalEvent = getCanonicalEventName(eventName);
+  const normalizedDni = normalizeDniValue(dni);
+  if (!canonicalEvent || canonicalEvent === "Sin evento" || !normalizedDni) {
+    return "";
+  }
+  return `${RAFFLE_KEY_PREFIX}${encodeURIComponent(canonicalEvent)}::${normalizedDni}`;
+}
+
+function parseRaffleStorageKey(storageKey) {
+  const raw = String(storageKey ?? "");
+  if (!raw.startsWith(RAFFLE_KEY_PREFIX)) {
+    return null;
+  }
+
+  const tail = raw.slice(RAFFLE_KEY_PREFIX.length);
+  const separatorIndex = tail.lastIndexOf("::");
+  if (separatorIndex <= 0) {
+    return null;
+  }
+
+  const encodedEvent = tail.slice(0, separatorIndex);
+  const normalizedDni = normalizeDniValue(tail.slice(separatorIndex + 2));
+  if (!normalizedDni) {
+    return null;
+  }
+
+  let decodedEvent = "";
+  try {
+    decodedEvent = decodeURIComponent(encodedEvent);
+  } catch {
+    return null;
+  }
+
+  const canonicalEvent = getCanonicalEventName(decodedEvent);
+  if (!canonicalEvent || canonicalEvent === "Sin evento") {
+    return null;
+  }
+
+  return {
+    eventName: canonicalEvent,
+    dni: normalizedDni
+  };
+}
+
+async function fetchAttendanceAndFlagStateMaps({ supabaseUrl, serviceRoleKey }) {
   const attendanceMap = new Map();
   const reconfirmMap = new Map();
+  const raffleMap = new Map();
 
   if (!supabaseUrl || !serviceRoleKey) {
-    return { attendanceMap, reconfirmMap };
+    return { attendanceMap, reconfirmMap, raffleMap };
   }
 
   const endpoint = new URL(
@@ -168,7 +215,7 @@ async function fetchAttendanceAndReconfirmStateMaps({ supabaseUrl, serviceRoleKe
   });
 
   if (!response.ok) {
-    return { attendanceMap, reconfirmMap };
+    return { attendanceMap, reconfirmMap, raffleMap };
   }
 
   const rows = await response.json().catch(() => []);
@@ -188,9 +235,17 @@ async function fetchAttendanceAndReconfirmStateMaps({ supabaseUrl, serviceRoleKe
         reconfirmMap.set(reconfirmKey, row.activo !== false);
       }
     }
+
+    const parsedRaffle = parseRaffleStorageKey(row.encuentro);
+    if (parsedRaffle) {
+      const raffleKey = buildInscriptoMapKey(parsedRaffle.eventName, parsedRaffle.dni);
+      if (raffleKey) {
+        raffleMap.set(raffleKey, row.activo !== false);
+      }
+    }
   }
 
-  return { attendanceMap, reconfirmMap };
+  return { attendanceMap, reconfirmMap, raffleMap };
 }
 
 async function upsertAttendanceState({
@@ -235,6 +290,58 @@ async function upsertAttendanceState({
     return {
       ok: false,
       error: `No se pudo guardar la asistencia (${response.status}).`,
+      detail,
+      tableMissing: detail.toLowerCase().includes("does not exist")
+    };
+  }
+
+  return {
+    ok: true
+  };
+}
+
+async function upsertRaffleState({
+  supabaseUrl,
+  serviceRoleKey,
+  eventName,
+  dni,
+  sorteado
+}) {
+  const storageKey = buildRaffleStorageKey(eventName, dni);
+  if (!storageKey) {
+    return {
+      ok: false,
+      error: "Encuentro o DNI invalido.",
+      tableMissing: false
+    };
+  }
+
+  const endpoint = new URL(
+    `${supabaseUrl.replace(/\/$/, "")}/rest/v1/${STATUS_TABLE}`
+  );
+  endpoint.searchParams.set("on_conflict", "encuentro");
+
+  const response = await fetch(endpoint.toString(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      Prefer: "resolution=merge-duplicates,return=representation"
+    },
+    body: JSON.stringify([
+      {
+        encuentro: storageKey,
+        activo: sorteado !== false
+      }
+    ])
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    return {
+      ok: false,
+      error: `No se pudo guardar el resultado del sorteo (${response.status}).`,
       detail,
       tableMissing: detail.toLowerCase().includes("does not exist")
     };
@@ -399,6 +506,41 @@ async function fetchInscripcionesRows({ endpoint, serviceRoleKey }) {
   };
 }
 
+async function fetchEventInscripcionesRows({ supabaseUrl, serviceRoleKey, eventName }) {
+  const endpoint = new URL(
+    `${supabaseUrl.replace(/\/$/, "")}/rest/v1/inscripciones`
+  );
+  endpoint.searchParams.set(
+    "select",
+    "id,encuentro,dni,nombre_apellido,mail,provincia,localidad,asociado,profesion,created_at"
+  );
+  endpoint.searchParams.set("encuentro", `eq.${eventName}`);
+  endpoint.searchParams.set("order", "id.asc");
+  endpoint.searchParams.set("limit", "10000");
+
+  const response = await fetch(endpoint.toString(), {
+    method: "GET",
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`
+    }
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    return {
+      ok: false,
+      detail
+    };
+  }
+
+  const rows = await response.json().catch(() => []);
+  return {
+    ok: true,
+    rows: Array.isArray(rows) ? rows : []
+  };
+}
+
 function formatProfesion(value) {
   return String(value ?? "")
     .split(",")
@@ -431,6 +573,24 @@ function compareRegistrationOrder(a, b) {
   return String(a.id ?? "").localeCompare(String(b.id ?? ""), "es");
 }
 
+function dedupeRowsByDni(rows) {
+  const list = Array.isArray(rows) ? rows : [];
+  const uniqueRows = [];
+  const seen = new Set();
+
+  for (const row of list) {
+    const normalizedDni = normalizeDniValue(row?.dni);
+    if (!normalizedDni || seen.has(normalizedDni)) {
+      continue;
+    }
+
+    seen.add(normalizedDni);
+    uniqueRows.push(row);
+  }
+
+  return uniqueRows;
+}
+
 async function handleGet(req, res, adminRole) {
   const supabaseUrl = process.env.SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -457,7 +617,7 @@ async function handleGet(req, res, adminRole) {
     const [statusResult, certificateStatusResult, flagsState] = await Promise.all([
       fetchEventStatusMap({ supabaseUrl, serviceRoleKey }),
       fetchCertificateStatusMap({ supabaseUrl, serviceRoleKey }),
-      fetchAttendanceAndReconfirmStateMaps({ supabaseUrl, serviceRoleKey })
+      fetchAttendanceAndFlagStateMaps({ supabaseUrl, serviceRoleKey })
     ]);
     const inscripcionesResult = await fetchInscripcionesRows({
       endpoint,
@@ -468,6 +628,9 @@ async function handleGet(req, res, adminRole) {
       : new Map();
     const reconfirmMap = flagsState?.reconfirmMap instanceof Map
       ? flagsState.reconfirmMap
+      : new Map();
+    const raffleMap = flagsState?.raffleMap instanceof Map
+      ? flagsState.raffleMap
       : new Map();
 
     if (!inscripcionesResult.ok) {
@@ -500,7 +663,9 @@ async function handleGet(req, res, adminRole) {
         asistio:
           attendanceMap.get(buildAttendanceMapKey(eventName, row.dni)) === true,
         reconfirmado:
-          reconfirmMap.get(buildInscriptoMapKey(eventName, row.dni)) === true
+          reconfirmMap.get(buildInscriptoMapKey(eventName, row.dni)) === true,
+        sorteado:
+          raffleMap.get(buildInscriptoMapKey(eventName, row.dni)) === true
       };
 
       if (!grouped.has(eventName)) {
@@ -563,7 +728,8 @@ async function handleGet(req, res, adminRole) {
             localidad: row.localidad,
             created_at: row.created_at,
             asistio: row.asistio === true,
-            reconfirmado: row.reconfirmado === true
+            reconfirmado: row.reconfirmado === true,
+            sorteado: row.sorteado === true
           }))
         }))
       : eventos;
@@ -713,6 +879,116 @@ async function handlePost(req, res, adminRole) {
       action: "set_certificado_visible",
       evento: savedCertificate.eventName,
       certificado_activo: savedCertificate.active,
+      updated_at: new Date().toISOString()
+    });
+  }
+
+  if (action === "draw_raffle") {
+    const eventInput = cleanText(payload.evento, 80);
+    const canonicalEvent = getCanonicalEventName(eventInput);
+
+    if (!canonicalEvent || canonicalEvent === "Sin evento") {
+      return res.status(422).json({
+        ok: false,
+        error: "Tenes que indicar un encuentro valido."
+      });
+    }
+
+    const [inscripcionesResult, flagsState] = await Promise.all([
+      fetchEventInscripcionesRows({
+        supabaseUrl,
+        serviceRoleKey,
+        eventName: canonicalEvent
+      }),
+      fetchAttendanceAndFlagStateMaps({ supabaseUrl, serviceRoleKey })
+    ]);
+
+    if (!inscripcionesResult.ok) {
+      return res.status(500).json({
+        ok: false,
+        error: "No se pudieron consultar las inscripciones del encuentro.",
+        detail: inscripcionesResult.detail || ""
+      });
+    }
+
+    const attendanceMap = flagsState?.attendanceMap instanceof Map
+      ? flagsState.attendanceMap
+      : new Map();
+    const raffleMap = flagsState?.raffleMap instanceof Map
+      ? flagsState.raffleMap
+      : new Map();
+
+    const normalizedRows = (Array.isArray(inscripcionesResult.rows) ? inscripcionesResult.rows : [])
+      .map((row) => {
+        const dni = cleanText(row.dni, 20);
+        const winnerKey = buildInscriptoMapKey(canonicalEvent, dni);
+
+        return {
+          id: row.id ?? null,
+          dni,
+          nombre_apellido: cleanText(row.nombre_apellido, 120),
+          mail: cleanText(row.mail, 120),
+          provincia: cleanText(row.provincia, 40),
+          localidad: cleanText(row.localidad, 120),
+          profesion: formatProfesion(row.profesion),
+          created_at: row.created_at || null,
+          asistio: attendanceMap.get(buildAttendanceMapKey(canonicalEvent, dni)) === true,
+          sorteado: raffleMap.get(winnerKey) === true
+        };
+      })
+      .sort(compareRegistrationOrder);
+
+    const uniqueRows = dedupeRowsByDni(normalizedRows);
+    const sorteados = uniqueRows.filter((row) => row.sorteado === true);
+    const elegibles = uniqueRows.filter(
+      (row) => row.asistio === true && row.sorteado !== true && normalizeDniValue(row.dni)
+    );
+
+    if (elegibles.length === 0) {
+      return res.status(409).json({
+        ok: false,
+        error: "No hay participantes disponibles para sortear en este encuentro.",
+        evento: canonicalEvent,
+        elegibles: 0,
+        sorteados: sorteados.length
+      });
+    }
+
+    const winnerIndex = crypto.randomInt(elegibles.length);
+    const winner = elegibles[winnerIndex];
+
+    const savedRaffle = await upsertRaffleState({
+      supabaseUrl,
+      serviceRoleKey,
+      eventName: canonicalEvent,
+      dni: winner.dni,
+      sorteado: true
+    });
+
+    if (!savedRaffle.ok) {
+      return res.status(500).json({
+        ok: false,
+        error: savedRaffle.error || "No se pudo guardar el sorteo.",
+        detail: savedRaffle.detail || ""
+      });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      action: "draw_raffle",
+      evento: canonicalEvent,
+      ganador: {
+        id: winner.id,
+        dni: winner.dni,
+        nombre_apellido: winner.nombre_apellido,
+        mail: winner.mail,
+        provincia: winner.provincia,
+        localidad: winner.localidad,
+        profesion: winner.profesion,
+        created_at: winner.created_at
+      },
+      elegibles_restantes: Math.max(elegibles.length - 1, 0),
+      sorteados_total: sorteados.length + 1,
       updated_at: new Date().toISOString()
     });
   }
