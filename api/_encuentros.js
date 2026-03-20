@@ -10,6 +10,7 @@ const EVENT_STATUS_TABLE = "encuentros_estado";
 const ATTENDANCE_KEY_PREFIX = "__attendance__::";
 const RECONFIRM_KEY_PREFIX = "__reconfirm__::";
 const RAFFLE_KEY_PREFIX = "__raffle__::";
+const RAFFLE_BRAND_KEY_PREFIX = "__rafflebrand__::";
 const CERTIFICATE_KEY_PREFIX = "__certificate__::";
 
 function cleanText(value, maxLength = 120) {
@@ -177,6 +178,7 @@ async function fetchEventStatusMap({ supabaseUrl, serviceRoleKey }) {
       rawKey.startsWith(ATTENDANCE_KEY_PREFIX) ||
       rawKey.startsWith(RECONFIRM_KEY_PREFIX) ||
       rawKey.startsWith(RAFFLE_KEY_PREFIX) ||
+      rawKey.startsWith(RAFFLE_BRAND_KEY_PREFIX) ||
       rawKey.startsWith(CERTIFICATE_KEY_PREFIX)
     ) {
       continue;

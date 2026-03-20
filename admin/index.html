@@ -435,6 +435,77 @@
       background: #fff;
     }
 
+    .raffle-brand-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #d7e4f5;
+      border-radius: 999px;
+      background: #ffffff;
+      padding: 7px 12px;
+    }
+
+    .raffle-brand-label {
+      color: #335173;
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    .raffle-brand-select {
+      min-width: 170px;
+      border: 1px solid #c7d8ee;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font: inherit;
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .raffle-brand-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 8px 0;
+      border-top: 1px solid #edf3fb;
+    }
+
+    .raffle-brand-group:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .raffle-brand-logo {
+      width: 88px;
+      height: 52px;
+      border: 1px solid #dbe6f5;
+      border-radius: 10px;
+      background: #fff;
+      object-fit: contain;
+      padding: 6px;
+      flex: 0 0 auto;
+    }
+
+    .raffle-brand-info {
+      min-width: 0;
+      display: grid;
+      gap: 4px;
+    }
+
+    .raffle-brand-name {
+      font-size: 0.84rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .raffle-brand-names {
+      margin: 0;
+      padding-left: 16px;
+      display: grid;
+      gap: 4px;
+    }
+
     .raffle-winner {
       border: 1px solid #cfe0f4;
       border-radius: 10px;
@@ -614,7 +685,31 @@
     const visibleRowsByEvent = new Map();
     const attendanceLookupByEvent = new Map();
     const raffleCountByEvent = new Map();
+    const raffleBrandByEvent = new Map();
     const raffleWinnerByEvent = new Map();
+    const RAFFLE_BRANDS = [
+      { key: "rheem", name: "Rheem", logo: "/Prueba_2/assets/empresas/36_rheem.png" },
+      { key: "piazza", name: "Piazza", logo: "/Prueba_2/assets/empresas/12_piazza.png" },
+      { key: "pluvius", name: "Pluvius", logo: "/Prueba_2/assets/empresas/13_pluvius.png" },
+      { key: "parsecs", name: "Parsecs", logo: "/Prueba_2/assets/empresas/29_parsecs.png" },
+      { key: "vasser", name: "Vasser", logo: "/Prueba_2/assets/empresas/34_vasser.png" },
+      { key: "msb", name: "MSB", logo: "/Prueba_2/assets/empresas/39_msb_industria_argentina.png" },
+      { key: "reed", name: "Reed", logo: "/Prueba_2/assets/empresas/43_reed.png" },
+      { key: "deckert", name: "Deckert", logo: "/Prueba_2/assets/empresas/44_deckert.png" },
+      { key: "bahco", name: "Bahco", logo: "/Prueba_2/assets/empresas/42_bahco.png" },
+      { key: "redeco_termofusion", name: "Redeco", logo: "/Prueba_2/assets/empresas/38_redeco_termofusion.png" },
+      { key: "duke", name: "Duke", logo: "/Prueba_2/assets/empresas/21_duke.png" },
+      { key: "egeo", name: "Egeo", logo: "/Prueba_2/assets/empresas/32_egeo.png" },
+      { key: "chicote", name: "Chicote", logo: "/Prueba_2/assets/empresas/08_chicote.png" },
+      { key: "krewen", name: "Krewen", logo: "/Prueba_2/assets/empresas/10_krewen.png" },
+      { key: "waterplast", name: "Waterplast", logo: "/Prueba_2/assets/empresas/04_waterplast.png" },
+      { key: "rao", name: "RAO", logo: "/Prueba_2/assets/empresas/26_rao.png" },
+      { key: "dinatecnica", name: "Dinatecnica", logo: "/Prueba_2/assets/empresas/27_dinatecnica.png" },
+      { key: "btm_bombas", name: "BTM", logo: "/Prueba_2/assets/empresas/05_btm_bombas.png" }
+    ];
+    const RAFFLE_BRAND_BY_KEY = new Map(
+      RAFFLE_BRANDS.map((brand) => [brand.key, brand])
+    );
 
     function escapeHtml(value) {
       return String(value ?? "")
@@ -623,6 +718,29 @@
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#39;");
+    }
+
+    function normalizeBrandKey(value) {
+      return String(value ?? "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "");
+    }
+
+    function getBrandInfo(value) {
+      const key = normalizeBrandKey(value);
+      return RAFFLE_BRAND_BY_KEY.get(key) || null;
+    }
+
+    function getBrandLabel(value) {
+      const brand = getBrandInfo(value);
+      return brand?.name || "Sin marca";
+    }
+
+    function getBrandLogo(value) {
+      const brand = getBrandInfo(value);
+      return brand?.logo || "";
     }
 
     function formatDate(value) {
@@ -779,6 +897,22 @@
         : 1;
       raffleCountByEvent.set(key, normalizedValue);
       return normalizedValue;
+    }
+
+    function getRaffleBrandState(item, index) {
+      const key = getEventKey(item, index);
+      return normalizeBrandKey(raffleBrandByEvent.get(key));
+    }
+
+    function setRaffleBrandState(item, index, brandKey) {
+      const key = getEventKey(item, index);
+      const normalizedBrandKey = normalizeBrandKey(brandKey);
+      if (!normalizedBrandKey) {
+        raffleBrandByEvent.delete(key);
+        return "";
+      }
+      raffleBrandByEvent.set(key, normalizedBrandKey);
+      return normalizedBrandKey;
     }
 
     function normalizeDniValue(value) {
@@ -952,14 +1086,18 @@
       raffleWinnerByEvent.set(key, rows);
     }
 
-    function updateRaffleStateLocally(eventItem, dni, sorteado) {
+    function updateRaffleStateLocally(eventItem, dni, sorteado, brandKey) {
       const normalizedDni = normalizeDniValue(dni);
+      const normalizedBrandKey = normalizeBrandKey(brandKey);
       const rows = Array.isArray(eventItem?.inscripciones) ? eventItem.inscripciones : [];
       let matchedRow = null;
 
       for (const row of rows) {
         if (normalizeDniValue(row?.dni) !== normalizedDni) continue;
         row.sorteado = sorteado === true;
+        if (normalizedBrandKey) {
+          row.marca_sorteo = normalizedBrandKey;
+        }
         if (!matchedRow) {
           matchedRow = row;
         }
@@ -968,7 +1106,47 @@
       return matchedRow;
     }
 
-    async function drawRaffleWinner(eventItem, cantidad) {
+    function groupRaffleWinnersByBrand(rows) {
+      const groups = new Map();
+      for (const row of Array.isArray(rows) ? rows : []) {
+        const brandKey = normalizeBrandKey(row?.marca_sorteo) || "sin_marca";
+        if (!groups.has(brandKey)) {
+          groups.set(brandKey, []);
+        }
+        groups.get(brandKey).push(row);
+      }
+      return [...groups.entries()].map(([brandKey, winners]) => ({
+        brandKey,
+        brandLabel: getBrandLabel(brandKey),
+        brandLogo: getBrandLogo(brandKey),
+        winners
+      }));
+    }
+
+    function buildRaffleBrandGroupsHtml(rows) {
+      const groups = groupRaffleWinnersByBrand(rows);
+      return groups.map((group) => `
+        <div class="raffle-brand-group">
+          ${
+            group.brandLogo
+              ? `<img class="raffle-brand-logo" src="${escapeHtml(group.brandLogo)}" alt="Logo ${escapeHtml(group.brandLabel)}">`
+              : ""
+          }
+          <div class="raffle-brand-info">
+            <div class="raffle-brand-name">${escapeHtml(group.brandLabel)}</div>
+            <ul class="raffle-brand-names">
+              ${group.winners.map((winner) => `
+                <li class="raffle-row">
+                  ${escapeHtml(winner.nombre_apellido || "-")} - DNI ${escapeHtml(winner.dni || "-")}
+                </li>
+              `).join("")}
+            </ul>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function drawRaffleWinner(eventItem, cantidad, marca) {
       const response = await fetch("/api/admin-inscripciones", {
         method: "POST",
         headers: {
@@ -978,7 +1156,8 @@
         body: JSON.stringify({
           action: "draw_raffle",
           evento: eventItem?.evento || "",
-          cantidad
+          cantidad,
+          marca
         })
       });
 
@@ -1002,6 +1181,7 @@
       const lastWinners = getRaffleState(item, index);
       const isDrawing = raffleInFlight.has(index);
       const drawCount = getRaffleDrawCount(item, index, eligibleRows.length);
+      const selectedBrand = getRaffleBrandState(item, index);
 
       if (rows.length === 0) {
         return `
@@ -1021,6 +1201,21 @@
           <div class="raffle-actions">
             <span class="counter counter-attendance">${eligibleRows.length} disponibles</span>
             <span class="counter counter-attendance">${winnerRows.length} sorteados</span>
+            <label class="raffle-brand-wrap">
+              <span class="raffle-brand-label">Marca</span>
+              <select
+                class="raffle-brand-select"
+                data-raffle-brand-select="${index}"
+                ${isDrawing ? "disabled" : ""}
+              >
+                <option value="">Elegir marca</option>
+                ${RAFFLE_BRANDS.map((brand) => `
+                  <option value="${escapeHtml(brand.key)}" ${brand.key === selectedBrand ? "selected" : ""}>
+                    ${escapeHtml(brand.name)}
+                  </option>
+                `).join("")}
+              </select>
+            </label>
             <label class="raffle-count-wrap">
               <span class="raffle-count-label">Cantidad a sortear</span>
               <input
@@ -1048,10 +1243,7 @@
               ? `
                 <div class="raffle-winner">
                   <h4>${lastWinners.length === 1 ? "Ultimo ganador sorteado" : "Ultimos ganadores sorteados"}</h4>
-                  ${lastWinners.map((winner) => `
-                    <p class="raffle-row"><strong>Nombre y apellido:</strong> ${escapeHtml(winner.nombre_apellido || "-")}</p>
-                    <p class="raffle-row"><strong>DNI:</strong> ${escapeHtml(winner.dni || "-")}</p>
-                  `).join("")}
+                  ${buildRaffleBrandGroupsHtml(lastWinners)}
                 </div>
               `
               : ""
@@ -1060,19 +1252,7 @@
             <h4>Ganadores ya sorteados</h4>
             ${
               winnerRows.length > 0
-                ? `
-                  <ul>
-                    ${winnerRows
-                      .map((row) => `
-                        <li>
-                          <strong>${escapeHtml(row.nombre_apellido || "-")}</strong>
-                          - DNI ${escapeHtml(row.dni || "-")}
-                          ${row.localidad ? ` - ${escapeHtml(row.localidad)}` : ""}
-                        </li>
-                      `)
-                      .join("")}
-                  </ul>
-                `
+                ? buildRaffleBrandGroupsHtml(winnerRows)
                 : `<p class="raffle-hint">Todavia no se sorteo ningun ganador en este encuentro.</p>`
             }
           </div>
@@ -1867,12 +2047,18 @@
         if (!selected) return;
         const eligibleRows = getEligibleRaffleRows(selected);
         const drawCount = getRaffleDrawCount(selected, drawIndex, eligibleRows.length);
+        const selectedBrand = getRaffleBrandState(selected, drawIndex);
+
+        if (!selectedBrand) {
+          setStatusMessage("Selecciona una marca antes de hacer el sorteo.", "error");
+          return;
+        }
 
         raffleInFlight.add(drawIndex);
         renderEvents(currentEventos);
 
         try {
-          const result = await drawRaffleWinner(selected, drawCount);
+          const result = await drawRaffleWinner(selected, drawCount, selectedBrand);
           if (result.redirected) return;
 
           const responseWinners = Array.isArray(result?.ganadores)
@@ -1880,7 +2066,14 @@
             : (result?.ganador ? [result.ganador] : []);
 
           const localWinners = responseWinners
-            .map((winner) => updateRaffleStateLocally(selected, winner?.dni, true) || winner)
+            .map((winner) =>
+              updateRaffleStateLocally(
+                selected,
+                winner?.dni,
+                true,
+                winner?.marca_sorteo || selectedBrand
+              ) || winner
+            )
             .filter(Boolean);
 
           setRaffleState(selected, drawIndex, localWinners);
@@ -1893,9 +2086,10 @@
           const namesText = extraCount > 0
             ? `${namesPreview} y ${extraCount} mas`
             : namesPreview;
+          const brandLabel = getBrandLabel(selectedBrand);
 
           setStatusMessage(
-            `Sorteo realizado en ${selected.evento}: ${winnerNames.length} ganador${winnerNames.length === 1 ? "" : "es"}${namesText ? ` (${namesText})` : ""}.`
+            `Sorteo realizado en ${selected.evento} para ${brandLabel}: ${winnerNames.length} ganador${winnerNames.length === 1 ? "" : "es"}${namesText ? ` (${namesText})` : ""}.`
           );
         } catch (error) {
           setStatusMessage(`Error: ${error.message}`, "error");
@@ -1922,6 +2116,21 @@
     });
 
     eventsContainer.addEventListener("change", async (event) => {
+      const raffleBrandSelect = event.target.closest("[data-raffle-brand-select]");
+      if (raffleBrandSelect) {
+        const raffleIndex = Number.parseInt(
+          raffleBrandSelect.getAttribute("data-raffle-brand-select"),
+          10
+        );
+        if (!Number.isInteger(raffleIndex)) return;
+
+        const selected = currentEventos[raffleIndex];
+        if (!selected) return;
+
+        setRaffleBrandState(selected, raffleIndex, raffleBrandSelect.value);
+        return;
+      }
+
       const raffleCountInput = event.target.closest("[data-raffle-count-input]");
       if (raffleCountInput) {
         const raffleIndex = Number.parseInt(

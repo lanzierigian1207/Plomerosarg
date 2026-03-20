@@ -19,6 +19,7 @@ const STATUS_TABLE = "encuentros_estado";
 const ATTENDANCE_KEY_PREFIX = "__attendance__::";
 const RECONFIRM_KEY_PREFIX = "__reconfirm__::";
 const RAFFLE_KEY_PREFIX = "__raffle__::";
+const RAFFLE_BRAND_KEY_PREFIX = "__rafflebrand__::";
 const INSCRIPCIONES_SELECT_BASE =
   "id,encuentro,dni,nombre_apellido,mail,provincia,localidad,asociado,profesion,origen,acepto_terminos,created_at";
 const INSCRIPCIONES_SELECT_WITH_EXPOSITOR_INFO =
@@ -49,6 +50,14 @@ function normalizeDniValue(value) {
   return String(value ?? "")
     .replace(/\D+/g, "")
     .trim();
+}
+
+function normalizeBrandKey(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
 }
 
 function buildInscriptoMapKey(eventName, dni) {
@@ -190,13 +199,68 @@ function parseRaffleStorageKey(storageKey) {
   };
 }
 
+function buildRaffleBrandStorageKey(eventName, dni, brandKey) {
+  const canonicalEvent = getCanonicalEventName(eventName);
+  const normalizedDni = normalizeDniValue(dni);
+  const normalizedBrandKey = normalizeBrandKey(brandKey);
+  if (
+    !canonicalEvent ||
+    canonicalEvent === "Sin evento" ||
+    !normalizedDni ||
+    !normalizedBrandKey
+  ) {
+    return "";
+  }
+
+  return `${RAFFLE_BRAND_KEY_PREFIX}${encodeURIComponent(canonicalEvent)}::${normalizedDni}::${normalizedBrandKey}`;
+}
+
+function parseRaffleBrandStorageKey(storageKey) {
+  const raw = String(storageKey ?? "");
+  if (!raw.startsWith(RAFFLE_BRAND_KEY_PREFIX)) {
+    return null;
+  }
+
+  const tail = raw.slice(RAFFLE_BRAND_KEY_PREFIX.length);
+  const parts = tail.split("::");
+  if (parts.length !== 3) {
+    return null;
+  }
+
+  const [encodedEvent, rawDni, rawBrandKey] = parts;
+  const normalizedDni = normalizeDniValue(rawDni);
+  const normalizedBrandKey = normalizeBrandKey(rawBrandKey);
+  if (!normalizedDni || !normalizedBrandKey) {
+    return null;
+  }
+
+  let decodedEvent = "";
+  try {
+    decodedEvent = decodeURIComponent(encodedEvent);
+  } catch {
+    return null;
+  }
+
+  const canonicalEvent = getCanonicalEventName(decodedEvent);
+  if (!canonicalEvent || canonicalEvent === "Sin evento") {
+    return null;
+  }
+
+  return {
+    eventName: canonicalEvent,
+    dni: normalizedDni,
+    brandKey: normalizedBrandKey
+  };
+}
+
 async function fetchAttendanceAndFlagStateMaps({ supabaseUrl, serviceRoleKey }) {
   const attendanceMap = new Map();
   const reconfirmMap = new Map();
   const raffleMap = new Map();
+  const raffleBrandMap = new Map();
 
   if (!supabaseUrl || !serviceRoleKey) {
-    return { attendanceMap, reconfirmMap, raffleMap };
+    return { attendanceMap, reconfirmMap, raffleMap, raffleBrandMap };
   }
 
   const endpoint = new URL(
@@ -215,7 +279,7 @@ async function fetchAttendanceAndFlagStateMaps({ supabaseUrl, serviceRoleKey }) 
   });
 
   if (!response.ok) {
-    return { attendanceMap, reconfirmMap, raffleMap };
+    return { attendanceMap, reconfirmMap, raffleMap, raffleBrandMap };
   }
 
   const rows = await response.json().catch(() => []);
@@ -243,9 +307,20 @@ async function fetchAttendanceAndFlagStateMaps({ supabaseUrl, serviceRoleKey }) 
         raffleMap.set(raffleKey, row.activo !== false);
       }
     }
+
+    const parsedRaffleBrand = parseRaffleBrandStorageKey(row.encuentro);
+    if (parsedRaffleBrand) {
+      const raffleBrandKey = buildInscriptoMapKey(
+        parsedRaffleBrand.eventName,
+        parsedRaffleBrand.dni
+      );
+      if (raffleBrandKey) {
+        raffleBrandMap.set(raffleBrandKey, parsedRaffleBrand.brandKey);
+      }
+    }
   }
 
-  return { attendanceMap, reconfirmMap, raffleMap };
+  return { attendanceMap, reconfirmMap, raffleMap, raffleBrandMap };
 }
 
 async function upsertAttendanceState({
@@ -342,6 +417,58 @@ async function upsertRaffleState({
     return {
       ok: false,
       error: `No se pudo guardar el resultado del sorteo (${response.status}).`,
+      detail,
+      tableMissing: detail.toLowerCase().includes("does not exist")
+    };
+  }
+
+  return {
+    ok: true
+  };
+}
+
+async function upsertRaffleBrandState({
+  supabaseUrl,
+  serviceRoleKey,
+  eventName,
+  dni,
+  brandKey
+}) {
+  const storageKey = buildRaffleBrandStorageKey(eventName, dni, brandKey);
+  if (!storageKey) {
+    return {
+      ok: false,
+      error: "Encuentro, DNI o marca invalida.",
+      tableMissing: false
+    };
+  }
+
+  const endpoint = new URL(
+    `${supabaseUrl.replace(/\/$/, "")}/rest/v1/${STATUS_TABLE}`
+  );
+  endpoint.searchParams.set("on_conflict", "encuentro");
+
+  const response = await fetch(endpoint.toString(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      Prefer: "resolution=merge-duplicates,return=representation"
+    },
+    body: JSON.stringify([
+      {
+        encuentro: storageKey,
+        activo: true
+      }
+    ])
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    return {
+      ok: false,
+      error: `No se pudo guardar la marca del sorteo (${response.status}).`,
       detail,
       tableMissing: detail.toLowerCase().includes("does not exist")
     };
@@ -632,6 +759,9 @@ async function handleGet(req, res, adminRole) {
     const raffleMap = flagsState?.raffleMap instanceof Map
       ? flagsState.raffleMap
       : new Map();
+    const raffleBrandMap = flagsState?.raffleBrandMap instanceof Map
+      ? flagsState.raffleBrandMap
+      : new Map();
 
     if (!inscripcionesResult.ok) {
       return res.status(500).json({
@@ -665,7 +795,9 @@ async function handleGet(req, res, adminRole) {
         reconfirmado:
           reconfirmMap.get(buildInscriptoMapKey(eventName, row.dni)) === true,
         sorteado:
-          raffleMap.get(buildInscriptoMapKey(eventName, row.dni)) === true
+          raffleMap.get(buildInscriptoMapKey(eventName, row.dni)) === true,
+        marca_sorteo:
+          raffleBrandMap.get(buildInscriptoMapKey(eventName, row.dni)) || ""
       };
 
       if (!grouped.has(eventName)) {
@@ -729,7 +861,8 @@ async function handleGet(req, res, adminRole) {
             created_at: row.created_at,
             asistio: row.asistio === true,
             reconfirmado: row.reconfirmado === true,
-            sorteado: row.sorteado === true
+            sorteado: row.sorteado === true,
+            marca_sorteo: row.marca_sorteo || ""
           }))
         }))
       : eventos;
@@ -887,6 +1020,7 @@ async function handlePost(req, res, adminRole) {
     const eventInput = cleanText(payload.evento, 80);
     const canonicalEvent = getCanonicalEventName(eventInput);
     const requestedCount = Number.parseInt(String(payload.cantidad ?? "1"), 10);
+    const raffleBrandKey = normalizeBrandKey(payload.marca);
 
     if (!canonicalEvent || canonicalEvent === "Sin evento") {
       return res.status(422).json({
@@ -899,6 +1033,13 @@ async function handlePost(req, res, adminRole) {
       return res.status(422).json({
         ok: false,
         error: "Tenes que indicar una cantidad valida para el sorteo."
+      });
+    }
+
+    if (!raffleBrandKey) {
+      return res.status(422).json({
+        ok: false,
+        error: "Tenes que seleccionar una marca para el sorteo."
       });
     }
 
@@ -925,6 +1066,9 @@ async function handlePost(req, res, adminRole) {
     const raffleMap = flagsState?.raffleMap instanceof Map
       ? flagsState.raffleMap
       : new Map();
+    const raffleBrandMap = flagsState?.raffleBrandMap instanceof Map
+      ? flagsState.raffleBrandMap
+      : new Map();
 
     const normalizedRows = (Array.isArray(inscripcionesResult.rows) ? inscripcionesResult.rows : [])
       .map((row) => {
@@ -941,7 +1085,8 @@ async function handlePost(req, res, adminRole) {
           profesion: formatProfesion(row.profesion),
           created_at: row.created_at || null,
           asistio: attendanceMap.get(buildAttendanceMapKey(canonicalEvent, dni)) === true,
-          sorteado: raffleMap.get(winnerKey) === true
+          sorteado: raffleMap.get(winnerKey) === true,
+          marca_sorteo: raffleBrandMap.get(winnerKey) || ""
         };
       })
       .sort(compareRegistrationOrder);
@@ -987,7 +1132,26 @@ async function handlePost(req, res, adminRole) {
         });
       }
 
-      winners.push(winner);
+      const savedBrand = await upsertRaffleBrandState({
+        supabaseUrl,
+        serviceRoleKey,
+        eventName: canonicalEvent,
+        dni: winner.dni,
+        brandKey: raffleBrandKey
+      });
+
+      if (!savedBrand.ok) {
+        return res.status(500).json({
+          ok: false,
+          error: savedBrand.error || "No se pudo guardar la marca del sorteo.",
+          detail: savedBrand.detail || ""
+        });
+      }
+
+      winners.push({
+        ...winner,
+        marca_sorteo: raffleBrandKey
+      });
     }
 
     if (winners.length === 0) {
@@ -1009,7 +1173,8 @@ async function handlePost(req, res, adminRole) {
         provincia: winners[0].provincia,
         localidad: winners[0].localidad,
         profesion: winners[0].profesion,
-        created_at: winners[0].created_at
+        created_at: winners[0].created_at,
+        marca_sorteo: winners[0].marca_sorteo || raffleBrandKey
       },
       ganadores: winners.map((winner) => ({
         id: winner.id,
@@ -1019,7 +1184,8 @@ async function handlePost(req, res, adminRole) {
         provincia: winner.provincia,
         localidad: winner.localidad,
         profesion: winner.profesion,
-        created_at: winner.created_at
+        created_at: winner.created_at,
+        marca_sorteo: winner.marca_sorteo || raffleBrandKey
       })),
       cantidad_solicitada: requestedCount,
       cantidad_sorteada: winners.length,
