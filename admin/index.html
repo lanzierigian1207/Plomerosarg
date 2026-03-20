@@ -506,6 +506,173 @@
       gap: 4px;
     }
 
+    .raffle-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 1200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      background: rgba(7, 20, 40, 0.78);
+      backdrop-filter: blur(6px);
+    }
+
+    .raffle-screen.is-open {
+      display: flex;
+    }
+
+    .raffle-screen-panel {
+      width: min(1200px, 100%);
+      min-height: min(82vh, 820px);
+      border-radius: 26px;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      background:
+        radial-gradient(circle at top left, rgba(122, 173, 255, 0.28), transparent 38%),
+        radial-gradient(circle at bottom right, rgba(255, 214, 150, 0.24), transparent 34%),
+        linear-gradient(135deg, #07214a 0%, #0f4ea8 56%, #1d6fd0 100%);
+      color: #fff;
+      box-shadow: 0 28px 90px rgba(4, 17, 36, 0.4);
+      display: grid;
+      grid-template-rows: auto 1fr;
+      overflow: hidden;
+    }
+
+    .raffle-screen-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 22px 26px 0;
+    }
+
+    .raffle-screen-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      color: #d8e8ff;
+      font-size: 0.92rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .raffle-screen-event {
+      margin-top: 12px;
+      font-size: clamp(1.6rem, 4vw, 3rem);
+      line-height: 1.05;
+      font-weight: 900;
+      max-width: 760px;
+    }
+
+    .raffle-screen-close {
+      border: 1px solid rgba(255, 255, 255, 0.36);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      padding: 10px 16px;
+      font: inherit;
+      font-size: 0.92rem;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .raffle-screen-body {
+      display: grid;
+      grid-template-columns: minmax(260px, 340px) 1fr;
+      gap: 22px;
+      padding: 24px 26px 26px;
+      align-items: stretch;
+    }
+
+    .raffle-screen-brand {
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 18px;
+      padding: 28px 22px;
+      text-align: center;
+    }
+
+    .raffle-screen-brand-logo {
+      width: min(240px, 100%);
+      max-height: 170px;
+      object-fit: contain;
+      filter: drop-shadow(0 12px 18px rgba(4, 17, 36, 0.28));
+    }
+
+    .raffle-screen-brand-name {
+      font-size: clamp(1.3rem, 2.2vw, 2rem);
+      line-height: 1.1;
+      font-weight: 900;
+      letter-spacing: 0.03em;
+    }
+
+    .raffle-screen-brand-copy {
+      color: #d6e6ff;
+      font-size: 1rem;
+      line-height: 1.45;
+      font-weight: 600;
+    }
+
+    .raffle-screen-winners {
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 28px 28px 22px;
+      display: grid;
+      align-content: start;
+      gap: 18px;
+    }
+
+    .raffle-screen-title {
+      font-size: clamp(1.4rem, 2.8vw, 2.4rem);
+      line-height: 1.05;
+      font-weight: 900;
+    }
+
+    .raffle-screen-subtitle {
+      color: #d6e6ff;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .raffle-screen-list {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .raffle-screen-item {
+      display: grid;
+      gap: 4px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    .raffle-screen-item-name {
+      font-size: clamp(1.2rem, 2.6vw, 2rem);
+      line-height: 1.06;
+      font-weight: 900;
+    }
+
+    .raffle-screen-item-dni {
+      color: #d6e6ff;
+      font-size: clamp(1rem, 1.8vw, 1.26rem);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
     .raffle-winner {
       border: 1px solid #cfe0f4;
       border-radius: 10px;
@@ -624,6 +791,31 @@
       body {
         padding: 16px;
       }
+
+      .raffle-screen {
+        padding: 14px;
+      }
+
+      .raffle-screen-panel {
+        min-height: 0;
+      }
+
+      .raffle-screen-head {
+        padding: 18px 18px 0;
+      }
+
+      .raffle-screen-body {
+        grid-template-columns: 1fr;
+        padding: 18px;
+      }
+
+      .raffle-screen-brand {
+        padding: 20px 18px;
+      }
+
+      .raffle-screen-winners {
+        padding: 20px 18px;
+      }
     }
   </style>
 </head>
@@ -658,6 +850,30 @@
     <section class="events" id="eventsContainer"></section>
   </main>
 
+  <section class="raffle-screen" id="raffleScreen" aria-hidden="true">
+    <div class="raffle-screen-panel" role="dialog" aria-modal="true" aria-labelledby="raffleScreenEvent">
+      <div class="raffle-screen-head">
+        <div>
+          <div class="raffle-screen-kicker">Resultado del sorteo</div>
+          <h2 class="raffle-screen-event" id="raffleScreenEvent">Ganadores</h2>
+        </div>
+        <button class="raffle-screen-close" id="raffleScreenClose" type="button">Cerrar</button>
+      </div>
+      <div class="raffle-screen-body">
+        <aside class="raffle-screen-brand">
+          <img class="raffle-screen-brand-logo" id="raffleScreenBrandLogo" alt="">
+          <div class="raffle-screen-brand-name" id="raffleScreenBrandName">Marca</div>
+          <p class="raffle-screen-brand-copy">Premio asignado a esta marca.</p>
+        </aside>
+        <section class="raffle-screen-winners">
+          <h3 class="raffle-screen-title">Ganadores</h3>
+          <p class="raffle-screen-subtitle" id="raffleScreenSubtitle">Personas sorteadas</p>
+          <div class="raffle-screen-list" id="raffleScreenList"></div>
+        </section>
+      </div>
+    </div>
+  </section>
+
   <script>
     const statusBox = document.getElementById("status");
     const eventsContainer = document.getElementById("eventsContainer");
@@ -670,6 +886,13 @@
     const viewAsistenciaBtn = document.getElementById("viewAsistenciaBtn");
     const viewSorteosBtn = document.getElementById("viewSorteosBtn");
     const viewCertificadosBtn = document.getElementById("viewCertificadosBtn");
+    const raffleScreen = document.getElementById("raffleScreen");
+    const raffleScreenClose = document.getElementById("raffleScreenClose");
+    const raffleScreenEvent = document.getElementById("raffleScreenEvent");
+    const raffleScreenBrandLogo = document.getElementById("raffleScreenBrandLogo");
+    const raffleScreenBrandName = document.getElementById("raffleScreenBrandName");
+    const raffleScreenSubtitle = document.getElementById("raffleScreenSubtitle");
+    const raffleScreenList = document.getElementById("raffleScreenList");
     const DEFAULT_VISIBLE_ROWS = 25;
     const ADMIN_LOGIN_URL = "/api/admin";
     const PANEL_VIEW_INSCRIPCIONES = "inscripciones";
@@ -741,6 +964,48 @@
     function getBrandLogo(value) {
       const brand = getBrandInfo(value);
       return brand?.logo || "";
+    }
+
+    function closeRaffleScreen() {
+      raffleScreen.classList.remove("is-open");
+      raffleScreen.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    }
+
+    function openRaffleScreen({ eventName, brandKey, winners }) {
+      const brandLabel = getBrandLabel(brandKey);
+      const brandLogo = getBrandLogo(brandKey);
+      const safeWinners = Array.isArray(winners) ? winners : [];
+
+      raffleScreenEvent.textContent = eventName || "Ganadores";
+      raffleScreenBrandName.textContent = brandLabel;
+      raffleScreenSubtitle.textContent =
+        safeWinners.length === 1
+          ? "Persona ganadora del sorteo"
+          : `${safeWinners.length} personas ganadoras del sorteo`;
+
+      if (brandLogo) {
+        raffleScreenBrandLogo.src = brandLogo;
+        raffleScreenBrandLogo.alt = `Logo ${brandLabel}`;
+        raffleScreenBrandLogo.style.display = "";
+      } else {
+        raffleScreenBrandLogo.removeAttribute("src");
+        raffleScreenBrandLogo.alt = "";
+        raffleScreenBrandLogo.style.display = "none";
+      }
+
+      raffleScreenList.innerHTML = safeWinners
+        .map((winner) => `
+          <article class="raffle-screen-item">
+            <div class="raffle-screen-item-name">${escapeHtml(winner?.nombre_apellido || "-")}</div>
+            <div class="raffle-screen-item-dni">DNI ${escapeHtml(winner?.dni || "-")}</div>
+          </article>
+        `)
+        .join("");
+
+      raffleScreen.classList.add("is-open");
+      raffleScreen.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
     }
 
     function formatDate(value) {
@@ -2088,6 +2353,12 @@
             : namesPreview;
           const brandLabel = getBrandLabel(selectedBrand);
 
+          openRaffleScreen({
+            eventName: selected.evento,
+            brandKey: selectedBrand,
+            winners: localWinners
+          });
+
           setStatusMessage(
             `Sorteo realizado en ${selected.evento} para ${brandLabel}: ${winnerNames.length} ganador${winnerNames.length === 1 ? "" : "es"}${namesText ? ` (${namesText})` : ""}.`
           );
@@ -2197,6 +2468,18 @@
 
     viewSorteosBtn.addEventListener("click", () => {
       setPanelView(PANEL_VIEW_SORTEOS);
+    });
+
+    raffleScreenClose.addEventListener("click", closeRaffleScreen);
+    raffleScreen.addEventListener("click", (event) => {
+      if (event.target === raffleScreen) {
+        closeRaffleScreen();
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && raffleScreen.classList.contains("is-open")) {
+        closeRaffleScreen();
+      }
     });
 
     renderViewButtons();
