@@ -206,6 +206,7 @@
       box-shadow: 0 18px 34px rgba(13, 43, 90, 0.1);
       aspect-ratio: 16 / 9;
       min-height: 280px;
+      touch-action: pan-y;
     }
 
     .carousel-slide {
@@ -284,6 +285,14 @@
       transform: scale(1.16);
     }
 
+    .carousel-swipe-hint {
+      display: none;
+      color: var(--ink-soft);
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
     .thanks {
       display: grid;
       gap: 16px;
@@ -345,12 +354,26 @@
 
       .carousel-viewport {
         min-height: 220px;
+        border-radius: 22px;
       }
 
       .carousel-controls {
         justify-content: center;
+        gap: 10px;
       }
 
+      .carousel-btn {
+        display: none;
+      }
+
+      .carousel-dot {
+        width: 11px;
+        height: 11px;
+      }
+
+      .carousel-swipe-hint {
+        display: block;
+      }
     }
   </style>
 </head>
@@ -405,6 +428,7 @@
             <div class="carousel-dots" data-carousel-dots></div>
             <button class="carousel-btn" type="button" data-carousel-next>Siguiente</button>
           </div>
+          <p class="carousel-swipe-hint">Desliz&aacute; las fotos o esper&aacute; para ver la siguiente.</p>
         </div>
       </section>
 
@@ -435,6 +459,7 @@
             <div class="carousel-dots" data-carousel-dots></div>
             <button class="carousel-btn" type="button" data-carousel-next>Siguiente</button>
           </div>
+          <p class="carousel-swipe-hint">Desliz&aacute; las fotos o esper&aacute; para ver la siguiente.</p>
         </div>
       </section>
 
@@ -458,12 +483,16 @@
 
     carousels.forEach((carousel) => {
       const slides = Array.from(carousel.querySelectorAll(".carousel-slide"));
+      const viewport = carousel.querySelector(".carousel-viewport");
       const prevButton = carousel.querySelector("[data-carousel-prev]");
       const nextButton = carousel.querySelector("[data-carousel-next]");
       const dotsWrap = carousel.querySelector("[data-carousel-dots]");
-      if (slides.length === 0 || !prevButton || !nextButton || !dotsWrap) return;
+      if (slides.length === 0 || !viewport || !prevButton || !nextButton || !dotsWrap) return;
 
       let currentIndex = slides.findIndex((slide) => slide.classList.contains("is-active"));
+      let autoAdvance = null;
+      let touchStartX = 0;
+      let touchCurrentX = 0;
       if (currentIndex < 0) {
         currentIndex = 0;
         slides[0].classList.add("is-active");
@@ -489,9 +518,41 @@
         });
       }
 
+      function restartAutoAdvance() {
+        if (autoAdvance) {
+          window.clearInterval(autoAdvance);
+        }
+        autoAdvance = window.setInterval(() => {
+          setSlide(currentIndex + 1);
+        }, 4200);
+      }
+
       prevButton.addEventListener("click", () => setSlide(currentIndex - 1));
       nextButton.addEventListener("click", () => setSlide(currentIndex + 1));
+      viewport.addEventListener("touchstart", (event) => {
+        touchStartX = event.changedTouches[0]?.clientX || 0;
+        touchCurrentX = touchStartX;
+        restartAutoAdvance();
+      }, { passive: true });
+      viewport.addEventListener("touchmove", (event) => {
+        touchCurrentX = event.changedTouches[0]?.clientX || touchCurrentX;
+      }, { passive: true });
+      viewport.addEventListener("touchend", () => {
+        const deltaX = touchCurrentX - touchStartX;
+        if (Math.abs(deltaX) > 45) {
+          setSlide(currentIndex + (deltaX < 0 ? 1 : -1));
+        }
+        restartAutoAdvance();
+      }, { passive: true });
+      viewport.addEventListener("mouseenter", () => {
+        if (autoAdvance) {
+          window.clearInterval(autoAdvance);
+          autoAdvance = null;
+        }
+      });
+      viewport.addEventListener("mouseleave", restartAutoAdvance);
       setSlide(currentIndex);
+      restartAutoAdvance();
     });
   </script>
 </body>
