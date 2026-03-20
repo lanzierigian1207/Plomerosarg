@@ -171,38 +171,97 @@
       gap: 16px;
     }
 
-    .gallery-grid {
+    .photo-carousel {
       display: grid;
-      grid-template-columns: repeat(12, minmax(0, 1fr));
       gap: 14px;
     }
 
-    .photo-card {
+    .carousel-viewport {
+      position: relative;
       overflow: hidden;
-      border-radius: 22px;
+      border-radius: 24px;
       border: 1px solid var(--line);
       background: #eaf2ff;
-      box-shadow: 0 14px 28px rgba(13, 43, 90, 0.08);
+      box-shadow: 0 18px 34px rgba(13, 43, 90, 0.1);
+      aspect-ratio: 16 / 9;
+      min-height: 280px;
     }
 
-    .photo-card img {
+    .carousel-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transform: scale(1.02);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      pointer-events: none;
+    }
+
+    .carousel-slide.is-active {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+    }
+
+    .carousel-slide img {
       display: block;
       width: 100%;
       height: 100%;
-      min-height: 220px;
       object-fit: cover;
     }
 
-    .photo-card.tall img {
-      min-height: 320px;
+    .carousel-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
     }
 
-    .span-7 { grid-column: span 7; }
-    .span-5 { grid-column: span 5; }
-    .span-4 { grid-column: span 4; }
-    .span-6 { grid-column: span 6; }
-    .span-8 { grid-column: span 8; }
-    .span-12 { grid-column: span 12; }
+    .carousel-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 130px;
+      padding: 11px 16px;
+      border-radius: 999px;
+      border: 1px solid #c8daf3;
+      background: #ffffff;
+      color: var(--blue-700);
+      font: inherit;
+      font-size: 0.92rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(13, 43, 90, 0.06);
+    }
+
+    .carousel-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .carousel-dots {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex: 1 1 auto;
+      flex-wrap: wrap;
+    }
+
+    .carousel-dot {
+      width: 12px;
+      height: 12px;
+      border: 0;
+      border-radius: 50%;
+      background: #c7d8f1;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .carousel-dot.is-active {
+      background: var(--blue-700);
+      transform: scale(1.16);
+    }
 
     .thanks {
       display: grid;
@@ -253,21 +312,6 @@
       transform: translateY(-1px);
     }
 
-    @media (max-width: 900px) {
-      .span-7,
-      .span-5,
-      .span-4,
-      .span-6,
-      .span-8 {
-        grid-column: span 12;
-      }
-
-      .photo-card img,
-      .photo-card.tall img {
-        min-height: 230px;
-      }
-    }
-
     @media (max-width: 720px) {
       body {
         padding: 16px;
@@ -276,6 +320,14 @@
       .hero,
       .content-card {
         border-radius: 22px;
+      }
+
+      .carousel-viewport {
+        min-height: 220px;
+      }
+
+      .carousel-controls {
+        justify-content: center;
       }
 
     }
@@ -315,16 +367,23 @@
           <h2>Galer&iacute;a del encuentro en Bah&iacute;a Blanca</h2>
           <p>Un recorrido visual por la jornada, las capacitaciones, la participaci&oacute;n del p&uacute;blico y los premios.</p>
         </div>
-        <div class="gallery-grid">
-          <figure class="photo-card span-7 tall"><img src="/Prueba_2/assets/noticias/encuentros-27-28/bahia-1.jpg" alt="Encuentro de Bah&iacute;a Blanca 1" loading="lazy"></figure>
-          <figure class="photo-card span-5"><img src="/Prueba_2/assets/noticias/encuentros-27-28/bahia-premios-1.jpg" alt="Premios del encuentro de Bah&iacute;a Blanca 1" loading="lazy"></figure>
-          <figure class="photo-card span-4"><img src="/Prueba_2/assets/noticias/encuentros-27-28/bahia-2.jpg" alt="Encuentro de Bah&iacute;a Blanca 2" loading="lazy"></figure>
-          <figure class="photo-card span-4"><img src="/Prueba_2/assets/noticias/encuentros-27-28/bahia-3.jpg" alt="Encuentro de Bah&iacute;a Blanca 3" loading="lazy"></figure>
-          <figure class="photo-card span-4"><img src="/Prueba_2/assets/noticias/encuentros-27-28/bahia-4.jpg" alt="Encuentro de Bah&iacute;a Blanca 4" loading="lazy"></figure>
-          <figure class="photo-card span-4"><img src="/Prueba_2/assets/noticias/encuentros-27-28/bahia-5.jpg" alt="Encuentro de Bah&iacute;a Blanca 5" loading="lazy"></figure>
-          <figure class="photo-card span-4"><img src="/Prueba_2/assets/noticias/encuentros-27-28/bahia-6.jpg" alt="Encuentro de Bah&iacute;a Blanca 6" loading="lazy"></figure>
-          <figure class="photo-card span-4"><img src="/Prueba_2/assets/noticias/encuentros-27-28/bahia-premios-4.jpg" alt="Premios del encuentro de Bah&iacute;a Blanca 4" loading="lazy"></figure>
-          <figure class="photo-card span-12"><img src="/Prueba_2/assets/noticias/encuentros-27-28/bahia-premios-5.jpg" alt="Premios del encuentro de Bah&iacute;a Blanca 5" loading="lazy"></figure>
+        <div class="photo-carousel" data-carousel>
+          <div class="carousel-viewport">
+            <figure class="carousel-slide is-active"><img src="/Prueba_2/assets/noticias/encuentros-27-28/bahia-1.jpg" alt="Encuentro de Bah&iacute;a Blanca 1" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentros-27-28/bahia-premios-1.jpg" alt="Premios del encuentro de Bah&iacute;a Blanca 1" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentros-27-28/bahia-2.jpg" alt="Encuentro de Bah&iacute;a Blanca 2" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentros-27-28/bahia-3.jpg" alt="Encuentro de Bah&iacute;a Blanca 3" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentros-27-28/bahia-4.jpg" alt="Encuentro de Bah&iacute;a Blanca 4" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentros-27-28/bahia-5.jpg" alt="Encuentro de Bah&iacute;a Blanca 5" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentros-27-28/bahia-6.jpg" alt="Encuentro de Bah&iacute;a Blanca 6" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentros-27-28/bahia-premios-4.jpg" alt="Premios del encuentro de Bah&iacute;a Blanca 4" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentros-27-28/bahia-premios-5.jpg" alt="Premios del encuentro de Bah&iacute;a Blanca 5" loading="lazy"></figure>
+          </div>
+          <div class="carousel-controls">
+            <button class="carousel-btn" type="button" data-carousel-prev>Anterior</button>
+            <div class="carousel-dots" data-carousel-dots></div>
+            <button class="carousel-btn" type="button" data-carousel-next>Siguiente</button>
+          </div>
         </div>
       </section>
 
@@ -341,13 +400,20 @@
           <h2>Galer&iacute;a del encuentro en Mar del Plata</h2>
           <p>Im&aacute;genes del segundo encuentro, con momentos destacados de la jornada, asistentes y sorteos.</p>
         </div>
-        <div class="gallery-grid">
-          <figure class="photo-card span-7 tall"><img src="/Prueba_2/assets/noticias/encuentros-27-28/mardel-0.jpg" alt="Encuentro de Mar del Plata 1" loading="lazy"></figure>
-          <figure class="photo-card span-5"><img src="/Prueba_2/assets/noticias/encuentros-27-28/mardel-premios-1.jpg" alt="Premios del encuentro de Mar del Plata 1" loading="lazy"></figure>
-          <figure class="photo-card span-4"><img src="/Prueba_2/assets/noticias/encuentros-27-28/mardel-1.jpg" alt="Encuentro de Mar del Plata 2" loading="lazy"></figure>
-          <figure class="photo-card span-4"><img src="/Prueba_2/assets/noticias/encuentros-27-28/mardel-2.jpg" alt="Encuentro de Mar del Plata 3" loading="lazy"></figure>
-          <figure class="photo-card span-4"><img src="/Prueba_2/assets/noticias/encuentros-27-28/mardel-3.jpg" alt="Encuentro de Mar del Plata 4" loading="lazy"></figure>
-          <figure class="photo-card span-12"><img src="/Prueba_2/assets/noticias/encuentros-27-28/mardel-premios-2.jpg" alt="Premios del encuentro de Mar del Plata 2" loading="lazy"></figure>
+        <div class="photo-carousel" data-carousel>
+          <div class="carousel-viewport">
+            <figure class="carousel-slide is-active"><img src="/Prueba_2/assets/noticias/encuentros-27-28/mardel-0.jpg" alt="Encuentro de Mar del Plata 1" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentros-27-28/mardel-premios-1.jpg" alt="Premios del encuentro de Mar del Plata 1" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentros-27-28/mardel-1.jpg" alt="Encuentro de Mar del Plata 2" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentros-27-28/mardel-2.jpg" alt="Encuentro de Mar del Plata 3" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentros-27-28/mardel-3.jpg" alt="Encuentro de Mar del Plata 4" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentros-27-28/mardel-premios-2.jpg" alt="Premios del encuentro de Mar del Plata 2" loading="lazy"></figure>
+          </div>
+          <div class="carousel-controls">
+            <button class="carousel-btn" type="button" data-carousel-prev>Anterior</button>
+            <div class="carousel-dots" data-carousel-dots></div>
+            <button class="carousel-btn" type="button" data-carousel-next>Siguiente</button>
+          </div>
         </div>
       </section>
 
@@ -366,5 +432,46 @@
       </section>
     </article>
   </main>
+  <script>
+    const carousels = document.querySelectorAll("[data-carousel]");
+
+    carousels.forEach((carousel) => {
+      const slides = Array.from(carousel.querySelectorAll(".carousel-slide"));
+      const prevButton = carousel.querySelector("[data-carousel-prev]");
+      const nextButton = carousel.querySelector("[data-carousel-next]");
+      const dotsWrap = carousel.querySelector("[data-carousel-dots]");
+      if (slides.length === 0 || !prevButton || !nextButton || !dotsWrap) return;
+
+      let currentIndex = slides.findIndex((slide) => slide.classList.contains("is-active"));
+      if (currentIndex < 0) {
+        currentIndex = 0;
+        slides[0].classList.add("is-active");
+      }
+
+      const dots = slides.map((_, index) => {
+        const dot = document.createElement("button");
+        dot.type = "button";
+        dot.className = "carousel-dot";
+        dot.setAttribute("aria-label", `Ir a la foto ${index + 1}`);
+        dot.addEventListener("click", () => setSlide(index));
+        dotsWrap.appendChild(dot);
+        return dot;
+      });
+
+      function setSlide(index) {
+        currentIndex = (index + slides.length) % slides.length;
+        slides.forEach((slide, slideIndex) => {
+          slide.classList.toggle("is-active", slideIndex === currentIndex);
+        });
+        dots.forEach((dot, dotIndex) => {
+          dot.classList.toggle("is-active", dotIndex === currentIndex);
+        });
+      }
+
+      prevButton.addEventListener("click", () => setSlide(currentIndex - 1));
+      nextButton.addEventListener("click", () => setSlide(currentIndex + 1));
+      setSlide(currentIndex);
+    });
+  </script>
 </body>
 </html>
