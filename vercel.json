@@ -1,8 +1,19 @@
 {
+  "redirects": [
+    {
+      "source": "/conocenos.html",
+      "destination": "/noticias",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/Prueba_2/whatsapp.html",
       "destination": "/whatsapp.html"
+    },
+    {
+      "source": "/noticias",
+      "destination": "/conocenos.html"
     },
     {
       "source": "/reconfirmacion",
