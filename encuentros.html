@@ -330,6 +330,16 @@
         .trim();
     };
 
+    const getInactiveButtonLabel = (card) => {
+      const eventKey = normalizeEventKey(card?.getAttribute("data-encuentro") || "");
+
+      if (eventKey.includes("bahia blanca") || eventKey.includes("mar del plata")) {
+        return "Localidades Agotadas";
+      }
+
+      return "Proximamente";
+    };
+
     const eventCards = Array.from(document.querySelectorAll(".event[data-encuentro]"));
 
     const setEventState = (card, isActive) => {
@@ -361,7 +371,7 @@
       }
 
       button.classList.add("btn-disabled");
-      button.textContent = "Inactivo";
+      button.textContent = getInactiveButtonLabel(card);
       button.removeAttribute("href");
       button.setAttribute("aria-disabled", "true");
       if (status) {
