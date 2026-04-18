@@ -411,7 +411,7 @@ function buildConfirmationEmailPayload({
     safeEventPrizeHighlightTitle || safeEventPrizeHighlightText
       ? `
       <p style="margin:0 0 12px;color:#5c4620;font-size:15px;line-height:1.6;">
-        <strong>${safeEventPrizeHighlightTitle}.</strong>
+        <strong style="font-size:14px;">${safeEventPrizeHighlightTitle}.</strong>
         ${safeEventPrizeHighlightText}
       </p>
     `
@@ -429,7 +429,7 @@ function buildConfirmationEmailPayload({
       : `<p style="margin:0 0 10px;">Que tengan buen d&iacute;a</p>`;
   const eventWhatsappIntroHtml = eventExtras
     ? `
-      <p style="margin:0 0 12px;color:#c62828;font-size:16px;font-weight:600;line-height:1.5;">
+      <p style="margin:0 0 12px;color:#c62828;font-size:15px;font-weight:600;line-height:1.5;">
         Para terminar la inscripci&oacute;n, unite al grupo exclusivo de WhatsApp y empez&aacute; a vivir la experiencia del encuentro.
         Vas a poder hacer consultas, participar de sorteos y estar al d&iacute;a con informaci&oacute;n y comunicados.
       </p>
@@ -441,7 +441,7 @@ function buildConfirmationEmailPayload({
       </p>
     `;
   const eventDonationNoticeHtml =
-    `<p style="margin:0 0 12px;padding:10px 12px;border-left:4px solid #111111;background:#f6f6f6;color:#111111;font-weight:900;font-size:15px;">${safeEventDonationNotice}</p>`;
+    `<p style="margin:0 0 12px;padding:10px 12px;border-left:4px solid #111111;background:#f6f6f6;color:#111111;font-weight:900;font-size:14px;">${safeEventDonationNotice}</p>`;
   const eventDetailRowsHtml = safeEventDetailRows.length
     ? `
       <div style="margin:0 0 14px;">
@@ -449,7 +449,7 @@ function buildConfirmationEmailPayload({
           .map(
             (item) => `
               <p style="margin:0 0 8px;color:#173b63;font-size:15px;">
-                <strong>${item.label}:</strong> ${item.href
+                <strong style="font-size:14px;">${item.label}:</strong> ${item.href
                   ? `<a href="${item.href}" target="_blank" rel="noopener noreferrer" style="color:#0d63c7;text-decoration:none;">${item.value}</a>`
                   : item.value}
               </p>
@@ -508,7 +508,7 @@ function buildConfirmationEmailPayload({
           Ingresar al grupo de WhatsApp
         </a>
       </p>
-      <p style="margin:0 0 14px;color:#c62828;font-weight:800;">
+      <p style="margin:0 0 14px;color:#c62828;font-weight:800;font-size:15px;">
         Unos d&iacute;as antes del encuentro recibir&aacute; un mail para que confirme su asistencia.
       </p>
       ${eventBuenDiaHtml}
