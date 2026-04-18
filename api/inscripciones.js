@@ -65,6 +65,11 @@ const MAIL_EVENT_EXTRAS = [
       { label: "Fecha", value: "09/05/2026" },
       { label: "Horario", value: "08:00 a 16:30 hs" },
       { label: "Ubicacion", value: "Espacio Cultural Julio Le Parc" },
+      {
+        label: "Link lugar",
+        value: "https://maps.app.goo.gl/Y49wHh722F2bY6uJ8",
+        href: "https://maps.app.goo.gl/Y49wHh722F2bY6uJ8"
+      },
       { label: "Direccion", value: "Mitre y Godoy Cruz, Guaymallen, Mendoza" }
     ],
     prizeHighlightTitle: "Grandes sorteos exclusivos al cierre del evento",
@@ -367,7 +372,8 @@ function buildConfirmationEmailPayload({
     ? eventExtras.detailRows
         .map((item) => ({
           label: escapeHtml(item?.label || ""),
-          value: escapeHtml(item?.value || "")
+          value: escapeHtml(item?.value || ""),
+          href: escapeHtml(item?.href || "")
         }))
         .filter((item) => item.label && item.value)
     : [];
@@ -443,7 +449,9 @@ function buildConfirmationEmailPayload({
           .map(
             (item) => `
               <p style="margin:0 0 8px;color:#173b63;font-size:15px;">
-                <strong>${item.label}:</strong> ${item.value}
+                <strong>${item.label}:</strong> ${item.href
+                  ? `<a href="${item.href}" target="_blank" rel="noopener noreferrer" style="color:#0d63c7;text-decoration:none;">${item.value}</a>`
+                  : item.value}
               </p>
             `
           )
