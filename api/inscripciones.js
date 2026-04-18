@@ -55,6 +55,29 @@ const MAIL_EVENT_EXTRAS = [
     locationUrl: "https://share.google/KA62Zn0H6wtiLd0La",
     imageUrl:
       "https://plomerosarg.com/Prueba_2/assets/WhatsApp%20Image%202026-02-23%20at%2010.13.49%20PM.jpeg"
+  },
+  {
+    eventKey: "mendoza 9/5",
+    locationAddress: "Espacio Cultural Julio Le Parc",
+    ingresoHorarioLabel: "Horario de Entrada",
+    ingresoHorario: "08:00 a 16:30 hs",
+    detailRows: [
+      { label: "Fecha", value: "09/05/2026" },
+      { label: "Horario", value: "08:00 a 16:30 hs" },
+      { label: "Ubicacion", value: "Espacio Cultural Julio Le Parc" },
+      { label: "Direccion", value: "Mitre y Godoy Cruz, Guaymallen, Mendoza" }
+    ],
+    summary:
+      "Jornada tecnica, networking y capacitacion con colegas del rubro.",
+    prizeHighlightTitle: "Grandes sorteos exclusivos al cierre del evento",
+    prizeHighlightText:
+      "Quienes esten presentes durante toda la jornada podran participar de los sorteos.",
+    capacityNotice:
+      "Cupos limitados. Es necesario realizar la inscripcion previa para participar del evento y de los sorteos.",
+    hideBuenDiaLine: true,
+    donationNotice:
+      "Ingreso solidario: para participar del evento, es necesario llevar 2 alimentos no perecederos.",
+    imageUrl: "https://plomerosarg.com/Prueba_2/assets/mendoza.jpg"
   }
 ];
 const WHATSAPP_GROUP_MATCHERS = [
@@ -65,6 +88,10 @@ const WHATSAPP_GROUP_MATCHERS = [
   {
     key: "mar del plata",
     url: "https://chat.whatsapp.com/JbQnGOHFcsuBEc2kgKRuBy"
+  },
+  {
+    key: "mendoza",
+    url: "https://chat.whatsapp.com/GOoRw0Fg6wUEtHNBEWZtXe"
   }
 ];
 const DEFAULT_REGISTRO_RESET_AT = "2026-02-21T20:33:01.000Z";
@@ -305,17 +332,20 @@ function resolveMailEventExtras(encuentro) {
   return MAIL_EVENT_EXTRAS.find((item) => item.eventKey === normalizedEventKey) || null;
 }
 
-async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) {
-  const resendApiKey = process.env.RESEND_API_KEY;
-  const mailFrom = process.env.MAIL_FROM;
-  const replyTo = process.env.MAIL_REPLY_TO;
+function buildConfirmationEmailPayload({
+  to,
+  nombre,
+  encuentro,
+  numeroRegistro,
+  mailFrom,
+  replyTo
+}) {
   const whatsappGroupUrl = resolveWhatsappGroupUrl(encuentro);
   const logoUrl = "https://plomerosarg.com/Prueba_2/assets/logo-plomeros-circular.png";
   const eventExtras = resolveMailEventExtras(encuentro);
   const normalizedTo = cleanText(to, 120).toLowerCase();
-
-  if (!resendApiKey || !mailFrom || !normalizedTo) {
-    return { sent: false, skipped: true, reason: "missing_config" };
+  if (!mailFrom || !normalizedTo) {
+    return null;
   }
 
   const safeNombre = escapeHtml(nombre || "participante");
@@ -333,8 +363,24 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
   const safeEventIngresoHorario = escapeHtml(eventExtras?.ingresoHorario || "");
   const safeEventLocationUrl = escapeHtml(eventExtras?.locationUrl || "");
   const safeEventMailImageUrl = escapeHtml(eventExtras?.imageUrl || "");
-  const eventLocationUrlLineHtml = eventExtras
-    ? eventExtras.locationLinkLabel
+  const safeEventSummary = escapeHtml(eventExtras?.summary || "");
+  const safeEventPrizeHighlightTitle = escapeHtml(eventExtras?.prizeHighlightTitle || "");
+  const safeEventPrizeHighlightText = escapeHtml(eventExtras?.prizeHighlightText || "");
+  const safeEventCapacityNotice = escapeHtml(eventExtras?.capacityNotice || "");
+  const safeEventDetailRows = Array.isArray(eventExtras?.detailRows)
+    ? eventExtras.detailRows
+        .map((item) => ({
+          label: escapeHtml(item?.label || ""),
+          value: escapeHtml(item?.value || "")
+        }))
+        .filter((item) => item.label && item.value)
+    : [];
+  const hasEventIngresoHorario =
+    eventExtras != null &&
+    Object.prototype.hasOwnProperty.call(eventExtras, "ingresoHorario");
+  const eventLocationUrlLineHtml =
+    eventExtras?.locationUrl
+      ? eventExtras.locationLinkLabel
       ? `
         <br />
         <strong>${safeEventLocationLinkLabel}:</strong>
@@ -348,14 +394,40 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
           ${safeEventLocationUrl}
         </a>
       `
-    : "";
+      : "";
   const eventIngresoHorarioHtml =
-    eventExtras?.ingresoHorario
+    hasEventIngresoHorario
       ? `
         <br />
         <strong>${safeEventIngresoHorarioLabel}:</strong> ${safeEventIngresoHorario}
       `
       : "";
+  const eventSummaryHtml = safeEventSummary
+    ? `<p style="margin:0 0 14px;color:#1e4b7a;font-size:15px;font-weight:600;">${safeEventSummary}</p>`
+    : "";
+  const eventPrizeHighlightHtml =
+    safeEventPrizeHighlightTitle || safeEventPrizeHighlightText
+      ? `
+      <div style="margin:0 0 14px;padding:16px 18px;border:2px solid #f4b400;border-radius:18px;background:linear-gradient(135deg,#fff8d6 0%,#ffe28a 100%);box-shadow:0 10px 24px rgba(171,123,0,0.18);">
+        <div style="margin:0 0 6px;color:#7a4b00;font-size:12px;font-weight:900;letter-spacing:0.08em;text-transform:uppercase;">
+          Sorteos y Premios
+        </div>
+        <div style="margin:0 0 6px;color:#3b2a00;font-size:20px;font-weight:900;line-height:1.25;">
+          ${safeEventPrizeHighlightTitle}
+        </div>
+        <div style="color:#4d3905;font-size:14px;line-height:1.55;font-weight:700;">
+          ${safeEventPrizeHighlightText}
+        </div>
+      </div>
+    `
+      : "";
+  const eventCapacityNoticeHtml = safeEventCapacityNotice
+    ? `
+      <p style="margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#fff4f1;color:#a12f1f;border:1px solid #f2c3ba;font-weight:800;">
+        ${safeEventCapacityNotice}
+      </p>
+    `
+    : "";
   const eventBuenDiaHtml =
     eventExtras?.hideBuenDiaLine === true
       ? ""
@@ -375,7 +447,31 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
     `;
   const eventDonationNoticeHtml =
     `<p style="margin:0 0 12px;padding:10px 12px;border-left:4px solid #111111;background:#f6f6f6;color:#111111;font-weight:900;font-size:15px;">${safeEventDonationNotice}</p>`;
-  const eventLocationHtml = eventExtras
+  const eventDetailRowsHtml = safeEventDetailRows.length
+    ? `
+      <div style="margin:0 0 14px;padding:14px 16px;border:1px solid #d7e3f4;border-radius:16px;background:#f8fbff;">
+        ${safeEventDetailRows
+          .map(
+            (item) => `
+              <p style="margin:0 0 8px;color:#173b63;font-size:15px;">
+                <strong>${item.label}:</strong> ${item.value}
+              </p>
+            `
+          )
+          .join("")}
+        ${eventLocationUrlLineHtml
+          ? `
+            <p style="margin:0;color:#173b63;font-size:15px;">
+              ${eventLocationUrlLineHtml.replace("<br />", "")}
+            </p>
+          `
+          : ""}
+      </div>
+    `
+    : "";
+  const eventLocationHtml = safeEventDetailRows.length
+    ? eventDetailRowsHtml
+    : eventExtras
     ? `
       <p style="margin:0 0 12px;">
         <strong>Lugar del Encuentro:</strong>${eventExtras.locationAddress ? ` ${safeEventLocationAddress}` : ""}
@@ -400,6 +496,9 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
       <p>Hola ${safeNombre}</p>
       <p>Ya est&aacute; confirmada su vacante para el encuentro <strong>${safeEncuentro}</strong>.</p>
       ${eventLocationHtml}
+      ${eventSummaryHtml}
+      ${eventPrizeHighlightHtml}
+      ${eventCapacityNoticeHtml}
       ${eventDonationNoticeHtml}
       ${eventWhatsappIntroHtml}
       <p style="margin:10px 0 14px;">
@@ -442,13 +541,33 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
     payload.reply_to = replyTo;
   }
 
+  return { normalizedTo, payload };
+}
+
+async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const mailFrom = process.env.MAIL_FROM;
+  const replyTo = process.env.MAIL_REPLY_TO;
+  const builtPayload = buildConfirmationEmailPayload({
+    to,
+    nombre,
+    encuentro,
+    numeroRegistro,
+    mailFrom,
+    replyTo
+  });
+
+  if (!resendApiKey || !builtPayload) {
+    return { sent: false, skipped: true, reason: "missing_config" };
+  }
+
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${resendApiKey}`
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(builtPayload.payload)
   });
 
   if (!response.ok) {
@@ -464,7 +583,7 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
   return { sent: true, skipped: false };
 }
 
-module.exports = async (req, res) => {
+const handler = async (req, res) => {
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "Método no permitido. Usá POST." });
   }
@@ -665,4 +784,7 @@ module.exports = async (req, res) => {
     });
   }
 };
+
+module.exports = handler;
+module.exports.buildConfirmationEmailPayload = buildConfirmationEmailPayload;
 
