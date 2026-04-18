@@ -67,13 +67,9 @@ const MAIL_EVENT_EXTRAS = [
       { label: "Ubicacion", value: "Espacio Cultural Julio Le Parc" },
       { label: "Direccion", value: "Mitre y Godoy Cruz, Guaymallen, Mendoza" }
     ],
-    summary:
-      "Jornada tecnica, networking y capacitacion con colegas del rubro.",
     prizeHighlightTitle: "Grandes sorteos exclusivos al cierre del evento",
     prizeHighlightText:
       "Quienes esten presentes durante toda la jornada podran participar de los sorteos.",
-    capacityNotice:
-      "Cupos limitados. Es necesario realizar la inscripcion previa para participar del evento y de los sorteos.",
     hideBuenDiaLine: true,
     donationNotice:
       "Ingreso solidario: para participar del evento, es necesario llevar 2 alimentos no perecederos.",
@@ -408,17 +404,10 @@ function buildConfirmationEmailPayload({
   const eventPrizeHighlightHtml =
     safeEventPrizeHighlightTitle || safeEventPrizeHighlightText
       ? `
-      <div style="margin:0 0 14px;padding:16px 18px;border:2px solid #f4b400;border-radius:18px;background:linear-gradient(135deg,#fff8d6 0%,#ffe28a 100%);box-shadow:0 10px 24px rgba(171,123,0,0.18);">
-        <div style="margin:0 0 6px;color:#7a4b00;font-size:12px;font-weight:900;letter-spacing:0.08em;text-transform:uppercase;">
-          Sorteos y Premios
-        </div>
-        <div style="margin:0 0 6px;color:#3b2a00;font-size:20px;font-weight:900;line-height:1.25;">
-          ${safeEventPrizeHighlightTitle}
-        </div>
-        <div style="color:#4d3905;font-size:14px;line-height:1.55;font-weight:700;">
-          ${safeEventPrizeHighlightText}
-        </div>
-      </div>
+      <p style="margin:0 0 12px;color:#5c4620;font-size:15px;line-height:1.6;">
+        <strong>${safeEventPrizeHighlightTitle}.</strong>
+        ${safeEventPrizeHighlightText}
+      </p>
     `
       : "";
   const eventCapacityNoticeHtml = safeEventCapacityNotice
@@ -449,7 +438,7 @@ function buildConfirmationEmailPayload({
     `<p style="margin:0 0 12px;padding:10px 12px;border-left:4px solid #111111;background:#f6f6f6;color:#111111;font-weight:900;font-size:15px;">${safeEventDonationNotice}</p>`;
   const eventDetailRowsHtml = safeEventDetailRows.length
     ? `
-      <div style="margin:0 0 14px;padding:14px 16px;border:1px solid #d7e3f4;border-radius:16px;background:#f8fbff;">
+      <div style="margin:0 0 14px;">
         ${safeEventDetailRows
           .map(
             (item) => `
