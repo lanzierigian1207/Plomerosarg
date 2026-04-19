@@ -78,7 +78,7 @@ const MAIL_EVENT_EXTRAS = [
     hideBuenDiaLine: true,
     donationNotice:
       "Ingreso solidario: para participar del evento, es necesario llevar 2 alimentos no perecederos.",
-    imageUrl: "https://plomerosarg.com/Prueba_2/assets/mendoza-mail.jpeg"
+    imageUrl: "https://plomerosarg.com/Prueba_2/assets/mendoza-nos-acompanan.jpeg"
   }
 ];
 const WHATSAPP_GROUP_MATCHERS = [
