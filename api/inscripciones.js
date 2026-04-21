@@ -81,7 +81,7 @@ const MAIL_EVENT_EXTRAS = [
     hideBuenDiaLine: true,
     donationNotice:
       "Ingreso solidario: para participar del evento, es necesario llevar 2 alimentos no perecederos.",
-    imageUrl: "https://plomerosarg.com/Prueba_2/assets/mendoza-nos-acompanan.jpeg"
+    imageUrl: "https://plomerosarg.com/Prueba_2/assets/mendoza-mail-2026-04-20.jpeg"
   }
 ];
 const WHATSAPP_GROUP_MATCHERS = [
@@ -95,7 +95,7 @@ const WHATSAPP_GROUP_MATCHERS = [
   },
   {
     key: "mendoza",
-    url: "https://chat.whatsapp.com/GOoRw0Fg6wUEtHNBEWZtXe"
+    url: "https://chat.whatsapp.com/GV8KdETutlOKcTXcEcLBHK"
   }
 ];
 const DEFAULT_REGISTRO_RESET_AT = "2026-02-21T20:33:01.000Z";
