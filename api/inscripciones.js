@@ -95,7 +95,7 @@ const WHATSAPP_GROUP_MATCHERS = [
   },
   {
     key: "mendoza",
-    url: "https://chat.whatsapp.com/GV8KdETutlOKcTXcEcLBHK"
+    url: "https://chat.whatsapp.com/FORvQKFYbUY3NzgS0oS7H7"
   }
 ];
 const DEFAULT_REGISTRO_RESET_AT = "2026-02-21T20:33:01.000Z";
