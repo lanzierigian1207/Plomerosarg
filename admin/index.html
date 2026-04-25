@@ -140,6 +140,10 @@
       overflow: hidden;
     }
 
+    .event-card.is-collapsed .event-head {
+      border-bottom: 0;
+    }
+
     .event-head {
       display: flex;
       justify-content: space-between;
@@ -151,9 +155,49 @@
       flex-wrap: wrap;
     }
 
+    .event-heading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
     .event-title {
       font-size: 1.12rem;
       line-height: 1.2;
+      min-width: 0;
+    }
+
+    .event-expand {
+      width: 30px;
+      height: 30px;
+      border: 1px solid #95b8ea;
+      border-radius: 999px;
+      background: #ffffff;
+      color: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+
+    .event-expand:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .event-expand-icon {
+      width: 9px;
+      height: 9px;
+      border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(45deg) translate(-1px, -1px);
+      transition: transform 0.18s ease;
+    }
+
+    .event-expand[aria-expanded="true"] .event-expand-icon {
+      transform: rotate(225deg) translate(-1px, -1px);
     }
 
     .counter {
@@ -932,6 +976,7 @@
     const toggleInFlight = new Set();
     const certificateToggleInFlight = new Set();
     const raffleInFlight = new Set();
+    const expandedEventsByEvent = new Map();
     const visibleRowsByEvent = new Map();
     const attendanceLookupByEvent = new Map();
     const raffleCountByEvent = new Map();
@@ -1137,6 +1182,16 @@
 
     function getEventKey(item, index) {
       return `${String(item?.evento || "evento").toLowerCase()}::${index}`;
+    }
+
+    function isEventExpanded(item, index) {
+      const key = getEventKey(item, index);
+      return expandedEventsByEvent.get(key) === true;
+    }
+
+    function setEventExpanded(item, index, nextValue) {
+      const key = getEventKey(item, index);
+      expandedEventsByEvent.set(key, nextValue === true);
     }
 
     function getVisibleRows(item, index, totalRows) {
@@ -1924,6 +1979,8 @@
           const showAsistencia = currentPanelView === PANEL_VIEW_ASISTENCIA;
           const showSorteos = canManageEvents && currentPanelView === PANEL_VIEW_SORTEOS;
           const showCertificados = canManageEvents && currentPanelView === PANEL_VIEW_CERTIFICADOS;
+          const isExpanded = isEventExpanded(item, index);
+          const showExpandControl = showInscripciones && rows.length > 0;
 
           const attendanceSectionHtml = `
             <section class="attendance-box">
@@ -2021,9 +2078,27 @@
           `;
 
           return `
-            <article class="event-card">
+            <article class="event-card ${showInscripciones && !isExpanded ? "is-collapsed" : ""}">
               <header class="event-head">
-                <h2 class="event-title">Evento ${escapeHtml(item.evento || "Sin evento")}</h2>
+                <div class="event-heading">
+                  ${
+                    showExpandControl
+                      ? `
+                        <button
+                          class="event-expand"
+                          type="button"
+                          data-toggle-rows="${index}"
+                          aria-label="${isExpanded ? "Ocultar inscripciones" : "Mostrar inscripciones"}"
+                          aria-expanded="${isExpanded ? "true" : "false"}"
+                          title="${isExpanded ? "Ocultar inscripciones" : "Mostrar inscripciones"}"
+                        >
+                          <span class="event-expand-icon" aria-hidden="true"></span>
+                        </button>
+                      `
+                      : ""
+                  }
+                  <h2 class="event-title">Evento ${escapeHtml(item.evento || "Sin evento")}</h2>
+                </div>
                 ${
                   showCertificados
                     ? ""
@@ -2076,7 +2151,7 @@
                 }
               </header>
               ${showAsistencia ? attendanceSectionHtml : ""}
-              ${showInscripciones ? inscripcionesSectionHtml : ""}
+              ${showInscripciones && isExpanded ? inscripcionesSectionHtml : ""}
               ${showSorteos ? buildRaffleSectionHtml(item, index) : ""}
               ${showCertificados ? certificateSectionHtml : ""}
             </article>
@@ -2292,6 +2367,23 @@
         } finally {
           renderEvents(currentEventos);
         }
+        return;
+      }
+
+      const rowToggleButton = event.target.closest("[data-toggle-rows]");
+      if (rowToggleButton) {
+        const toggleRowsIndex = Number.parseInt(rowToggleButton.getAttribute("data-toggle-rows"), 10);
+        if (!Number.isInteger(toggleRowsIndex)) return;
+        const selected = currentEventos[toggleRowsIndex];
+        if (!selected) return;
+        const totalRows = Array.isArray(selected.inscripciones) ? selected.inscripciones.length : 0;
+        if (totalRows === 0) return;
+        const nextExpanded = !isEventExpanded(selected, toggleRowsIndex);
+        setEventExpanded(selected, toggleRowsIndex, nextExpanded);
+        if (nextExpanded) {
+          setVisibleRows(selected, toggleRowsIndex, DEFAULT_VISIBLE_ROWS);
+        }
+        renderEvents(currentEventos);
         return;
       }
 
