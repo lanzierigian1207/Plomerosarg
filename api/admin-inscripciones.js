@@ -1075,7 +1075,7 @@ async function handlePost(req, res, adminRole) {
     });
   }
 
-  if (adminRole !== ROLE_ADMIN) {
+  if (adminRole !== ROLE_ADMIN && action !== "set_lunch") {
     return res.status(403).json({
       ok: false,
       error: "No autorizado para modificar el estado de encuentros."

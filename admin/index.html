@@ -1145,10 +1145,14 @@
     function renderViewButtons() {
       const asistenciaOnly = currentAdminRole === "asistencia";
       viewInscripcionesBtn.style.display = asistenciaOnly ? "none" : "inline-flex";
-      viewLunchBtn.style.display = asistenciaOnly ? "none" : "inline-flex";
+      viewLunchBtn.style.display = "inline-flex";
       viewSorteosBtn.style.display = asistenciaOnly ? "none" : "inline-flex";
       viewCertificadosBtn.style.display = asistenciaOnly ? "none" : "inline-flex";
-      if (asistenciaOnly && currentPanelView !== PANEL_VIEW_ASISTENCIA) {
+      if (
+        asistenciaOnly &&
+        currentPanelView !== PANEL_VIEW_ASISTENCIA &&
+        currentPanelView !== PANEL_VIEW_ALMUERZO
+      ) {
         currentPanelView = PANEL_VIEW_ASISTENCIA;
       }
       viewInscripcionesBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_INSCRIPCIONES);
@@ -1179,7 +1183,11 @@
     }
 
     function setPanelView(nextView) {
-      if (currentAdminRole === "asistencia" && nextView !== PANEL_VIEW_ASISTENCIA) {
+      if (
+        currentAdminRole === "asistencia" &&
+        nextView !== PANEL_VIEW_ASISTENCIA &&
+        nextView !== PANEL_VIEW_ALMUERZO
+      ) {
         nextView = PANEL_VIEW_ASISTENCIA;
       }
       if (
@@ -2143,7 +2151,7 @@
           const canManageEvents = currentAdminRole === "admin";
           const showInscripciones = canViewInscripciones && currentPanelView === PANEL_VIEW_INSCRIPCIONES;
           const showAsistencia = currentPanelView === PANEL_VIEW_ASISTENCIA;
-          const showLunch = canManageEvents && currentPanelView === PANEL_VIEW_ALMUERZO;
+          const showLunch = currentPanelView === PANEL_VIEW_ALMUERZO;
           const showSorteos = canManageEvents && currentPanelView === PANEL_VIEW_SORTEOS;
           const showCertificados = canManageEvents && currentPanelView === PANEL_VIEW_CERTIFICADOS;
           const isExpanded = isEventExpanded(item, index);
