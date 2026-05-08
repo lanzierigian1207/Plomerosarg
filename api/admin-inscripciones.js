@@ -17,6 +17,7 @@ const ROLE_ADMIN = "admin";
 const ROLE_ASISTENCIA = "asistencia";
 const STATUS_TABLE = "encuentros_estado";
 const ATTENDANCE_KEY_PREFIX = "__attendance__::";
+const LUNCH_KEY_PREFIX = "__lunch__::";
 const RECONFIRM_KEY_PREFIX = "__reconfirm__::";
 const RAFFLE_KEY_PREFIX = "__raffle__::";
 const RAFFLE_BRAND_KEY_PREFIX = "__rafflebrand__::";
@@ -73,6 +74,10 @@ function buildAttendanceMapKey(eventName, dni) {
   return buildInscriptoMapKey(eventName, dni);
 }
 
+function buildLunchMapKey(eventName, dni) {
+  return buildInscriptoMapKey(eventName, dni);
+}
+
 function buildAttendanceStorageKey(eventName, dni) {
   const canonicalEvent = getCanonicalEventName(eventName);
   const normalizedDni = normalizeDniValue(dni);
@@ -82,6 +87,15 @@ function buildAttendanceStorageKey(eventName, dni) {
   return `${ATTENDANCE_KEY_PREFIX}${encodeURIComponent(canonicalEvent)}::${normalizedDni}`;
 }
 
+function buildLunchStorageKey(eventName, dni) {
+  const canonicalEvent = getCanonicalEventName(eventName);
+  const normalizedDni = normalizeDniValue(dni);
+  if (!canonicalEvent || canonicalEvent === "Sin evento" || !normalizedDni) {
+    return "";
+  }
+  return `${LUNCH_KEY_PREFIX}${encodeURIComponent(canonicalEvent)}::${normalizedDni}`;
+}
+
 function parseAttendanceStorageKey(storageKey) {
   const raw = String(storageKey ?? "");
   if (!raw.startsWith(ATTENDANCE_KEY_PREFIX)) {
@@ -89,6 +103,42 @@ function parseAttendanceStorageKey(storageKey) {
   }
 
   const tail = raw.slice(ATTENDANCE_KEY_PREFIX.length);
+  const separatorIndex = tail.lastIndexOf("::");
+  if (separatorIndex <= 0) {
+    return null;
+  }
+
+  const encodedEvent = tail.slice(0, separatorIndex);
+  const normalizedDni = normalizeDniValue(tail.slice(separatorIndex + 2));
+  if (!normalizedDni) {
+    return null;
+  }
+
+  let decodedEvent = "";
+  try {
+    decodedEvent = decodeURIComponent(encodedEvent);
+  } catch {
+    return null;
+  }
+
+  const canonicalEvent = getCanonicalEventName(decodedEvent);
+  if (!canonicalEvent || canonicalEvent === "Sin evento") {
+    return null;
+  }
+
+  return {
+    eventName: canonicalEvent,
+    dni: normalizedDni
+  };
+}
+
+function parseLunchStorageKey(storageKey) {
+  const raw = String(storageKey ?? "");
+  if (!raw.startsWith(LUNCH_KEY_PREFIX)) {
+    return null;
+  }
+
+  const tail = raw.slice(LUNCH_KEY_PREFIX.length);
   const separatorIndex = tail.lastIndexOf("::");
   if (separatorIndex <= 0) {
     return null;
@@ -255,12 +305,13 @@ function parseRaffleBrandStorageKey(storageKey) {
 
 async function fetchAttendanceAndFlagStateMaps({ supabaseUrl, serviceRoleKey }) {
   const attendanceMap = new Map();
+  const lunchMap = new Map();
   const reconfirmMap = new Map();
   const raffleMap = new Map();
   const raffleBrandMap = new Map();
 
   if (!supabaseUrl || !serviceRoleKey) {
-    return { attendanceMap, reconfirmMap, raffleMap, raffleBrandMap };
+    return { attendanceMap, lunchMap, reconfirmMap, raffleMap, raffleBrandMap };
   }
 
   const endpoint = new URL(
@@ -279,7 +330,7 @@ async function fetchAttendanceAndFlagStateMaps({ supabaseUrl, serviceRoleKey }) 
   });
 
   if (!response.ok) {
-    return { attendanceMap, reconfirmMap, raffleMap, raffleBrandMap };
+    return { attendanceMap, lunchMap, reconfirmMap, raffleMap, raffleBrandMap };
   }
 
   const rows = await response.json().catch(() => []);
@@ -289,6 +340,14 @@ async function fetchAttendanceAndFlagStateMaps({ supabaseUrl, serviceRoleKey }) 
       const attendanceKey = buildAttendanceMapKey(parsedAttendance.eventName, parsedAttendance.dni);
       if (attendanceKey) {
         attendanceMap.set(attendanceKey, row.activo !== false);
+      }
+    }
+
+    const parsedLunch = parseLunchStorageKey(row.encuentro);
+    if (parsedLunch) {
+      const lunchKey = buildLunchMapKey(parsedLunch.eventName, parsedLunch.dni);
+      if (lunchKey) {
+        lunchMap.set(lunchKey, row.activo !== false);
       }
     }
 
@@ -320,7 +379,7 @@ async function fetchAttendanceAndFlagStateMaps({ supabaseUrl, serviceRoleKey }) 
     }
   }
 
-  return { attendanceMap, reconfirmMap, raffleMap, raffleBrandMap };
+  return { attendanceMap, lunchMap, reconfirmMap, raffleMap, raffleBrandMap };
 }
 
 async function upsertAttendanceState({
@@ -365,6 +424,58 @@ async function upsertAttendanceState({
     return {
       ok: false,
       error: `No se pudo guardar la asistencia (${response.status}).`,
+      detail,
+      tableMissing: detail.toLowerCase().includes("does not exist")
+    };
+  }
+
+  return {
+    ok: true
+  };
+}
+
+async function upsertLunchState({
+  supabaseUrl,
+  serviceRoleKey,
+  eventName,
+  dni,
+  almuerzo
+}) {
+  const storageKey = buildLunchStorageKey(eventName, dni);
+  if (!storageKey) {
+    return {
+      ok: false,
+      error: "Encuentro o DNI invalido.",
+      tableMissing: false
+    };
+  }
+
+  const endpoint = new URL(
+    `${supabaseUrl.replace(/\/$/, "")}/rest/v1/${STATUS_TABLE}`
+  );
+  endpoint.searchParams.set("on_conflict", "encuentro");
+
+  const response = await fetch(endpoint.toString(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      Prefer: "resolution=merge-duplicates,return=representation"
+    },
+    body: JSON.stringify([
+      {
+        encuentro: storageKey,
+        activo: almuerzo !== false
+      }
+    ])
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    return {
+      ok: false,
+      error: `No se pudo guardar el almuerzo (${response.status}).`,
       detail,
       tableMissing: detail.toLowerCase().includes("does not exist")
     };
@@ -753,6 +864,9 @@ async function handleGet(req, res, adminRole) {
     const attendanceMap = flagsState?.attendanceMap instanceof Map
       ? flagsState.attendanceMap
       : new Map();
+    const lunchMap = flagsState?.lunchMap instanceof Map
+      ? flagsState.lunchMap
+      : new Map();
     const reconfirmMap = flagsState?.reconfirmMap instanceof Map
       ? flagsState.reconfirmMap
       : new Map();
@@ -792,6 +906,8 @@ async function handleGet(req, res, adminRole) {
         created_at: row.created_at || null,
         asistio:
           attendanceMap.get(buildAttendanceMapKey(eventName, row.dni)) === true,
+        almuerzo:
+          lunchMap.get(buildLunchMapKey(eventName, row.dni)) === true,
         reconfirmado:
           reconfirmMap.get(buildInscriptoMapKey(eventName, row.dni)) === true,
         sorteado:
@@ -860,6 +976,7 @@ async function handleGet(req, res, adminRole) {
             localidad: row.localidad,
             created_at: row.created_at,
             asistio: row.asistio === true,
+            almuerzo: row.almuerzo === true,
             reconfirmado: row.reconfirmado === true,
             sorteado: row.sorteado === true,
             marca_sorteo: row.marca_sorteo || ""
@@ -962,6 +1079,59 @@ async function handlePost(req, res, adminRole) {
     return res.status(403).json({
       ok: false,
       error: "No autorizado para modificar el estado de encuentros."
+    });
+  }
+
+  if (action === "set_lunch") {
+    const eventInput = cleanText(payload.evento, 80);
+    const canonicalEvent = getCanonicalEventName(eventInput);
+    const dni = normalizeDniValue(payload.dni);
+    const almuerzo = parseBooleanInput(payload.almuerzo);
+
+    if (!canonicalEvent || canonicalEvent === "Sin evento") {
+      return res.status(422).json({
+        ok: false,
+        error: "Tenes que indicar un encuentro valido."
+      });
+    }
+
+    if (!dni) {
+      return res.status(422).json({
+        ok: false,
+        error: "Tenes que indicar un DNI valido."
+      });
+    }
+
+    if (almuerzo === null) {
+      return res.status(422).json({
+        ok: false,
+        error: "Tenes que indicar almuerzo true/false."
+      });
+    }
+
+    const savedLunch = await upsertLunchState({
+      supabaseUrl,
+      serviceRoleKey,
+      eventName: canonicalEvent,
+      dni,
+      almuerzo
+    });
+
+    if (!savedLunch.ok) {
+      return res.status(500).json({
+        ok: false,
+        error: savedLunch.error || "No se pudo guardar el almuerzo.",
+        detail: savedLunch.detail || ""
+      });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      action: "set_lunch",
+      evento: canonicalEvent,
+      dni,
+      almuerzo: almuerzo === true,
+      updated_at: new Date().toISOString()
     });
   }
 
