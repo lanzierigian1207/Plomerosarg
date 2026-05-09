@@ -1,3 +1,5 @@
+const { fetchSupabaseRows } = require("./_supabase-pagination");
+
 const KNOWN_EVENTS = [
   "Bah\u00eda Blanca 11/3",
   "Mar del Plata 14/3",
@@ -148,29 +150,28 @@ async function fetchEventStatusMap({ supabaseUrl, serviceRoleKey }) {
   const endpoint = new URL(buildSupabaseEndpoint(supabaseUrl, EVENT_STATUS_TABLE));
   endpoint.searchParams.set("select", "encuentro,activo,updated_at");
   endpoint.searchParams.set("order", "encuentro.asc");
-  endpoint.searchParams.set("limit", "20000");
 
-  const response = await fetch(endpoint.toString(), {
-    method: "GET",
+  const rowsResult = await fetchSupabaseRows({
+    endpoint,
     headers: buildSupabaseHeaders(serviceRoleKey)
   });
 
-  if (!response.ok) {
-    const detail = await response.text().catch(() => "");
+  if (!rowsResult.ok) {
+    const detail = rowsResult.detail || "";
 
-    if (isMissingStatusTable(response.status, detail)) {
+    if (isMissingStatusTable(rowsResult.status, detail)) {
       result.warning =
         "Tabla de estado de encuentros no disponible. Todos los encuentros quedan activos por defecto.";
       return result;
     }
 
     result.warning =
-      `No se pudo leer el estado de encuentros (${response.status}). ` +
+      `No se pudo leer el estado de encuentros (${rowsResult.status}). ` +
       `${getErrorSummary(detail) || "Todo queda activo por defecto."}`;
     return result;
   }
 
-  const rows = await response.json().catch(() => []);
+  const rows = rowsResult.rows;
   const resolvedByEvent = new Map();
 
   for (const row of Array.isArray(rows) ? rows : []) {
@@ -279,29 +280,28 @@ async function fetchCertificateStatusMap({ supabaseUrl, serviceRoleKey }) {
   const endpoint = new URL(buildSupabaseEndpoint(supabaseUrl, EVENT_STATUS_TABLE));
   endpoint.searchParams.set("select", "encuentro,activo");
   endpoint.searchParams.set("order", "encuentro.asc");
-  endpoint.searchParams.set("limit", "20000");
 
-  const response = await fetch(endpoint.toString(), {
-    method: "GET",
+  const rowsResult = await fetchSupabaseRows({
+    endpoint,
     headers: buildSupabaseHeaders(serviceRoleKey)
   });
 
-  if (!response.ok) {
-    const detail = await response.text().catch(() => "");
+  if (!rowsResult.ok) {
+    const detail = rowsResult.detail || "";
 
-    if (isMissingStatusTable(response.status, detail)) {
+    if (isMissingStatusTable(rowsResult.status, detail)) {
       result.warning =
         "Tabla de estado de encuentros no disponible. Los certificados quedan visibles por defecto.";
       return result;
     }
 
     result.warning =
-      `No se pudo leer el estado de certificados (${response.status}). ` +
+      `No se pudo leer el estado de certificados (${rowsResult.status}). ` +
       `${getErrorSummary(detail) || "Quedan visibles por defecto."}`;
     return result;
   }
 
-  const rows = await response.json().catch(() => []);
+  const rows = rowsResult.rows;
   for (const row of Array.isArray(rows) ? rows : []) {
     const eventName = parseCertificateStorageKey(row.encuentro);
     if (!eventName) continue;

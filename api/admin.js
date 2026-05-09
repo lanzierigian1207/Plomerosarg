@@ -1,5 +1,7 @@
 const crypto = require("crypto");
 
+const { fetchSupabaseRows } = require("./_supabase-pagination");
+
 const COOKIE_NAME = "admin_session";
 const SESSION_MAX_AGE = 60 * 60 * 12;
 const ROLE_ADMIN = "admin";
@@ -221,11 +223,16 @@ async function fetchInscripciones(env) {
     };
   }
 
-  const endpoint = `${supabaseUrl.replace(/\/$/, "")}/rest/v1/inscripciones?select=id,created_at,encuentro,dni,nombre_apellido,mail,provincia,localidad,asociado,profesion,origen&order=created_at.desc&limit=1000`;
+  const endpoint = new URL(`${supabaseUrl.replace(/\/$/, "")}/rest/v1/inscripciones`);
+  endpoint.searchParams.set(
+    "select",
+    "id,created_at,encuentro,dni,nombre_apellido,mail,provincia,localidad,asociado,profesion,origen"
+  );
+  endpoint.searchParams.set("order", "created_at.desc");
 
   try {
-    const response = await fetch(endpoint, {
-      method: "GET",
+    const result = await fetchSupabaseRows({
+      endpoint,
       headers: {
         apikey: serviceRoleKey,
         Authorization: `Bearer ${serviceRoleKey}`,
@@ -233,20 +240,14 @@ async function fetchInscripciones(env) {
       }
     });
 
-    if (!response.ok) {
-      const detail = await response.text();
+    if (!result.ok) {
       return {
         rows: [],
-        error: `No se pudo leer inscripciones (${response.status}). ${detail}`
+        error: `No se pudo leer inscripciones (${result.status}). ${result.detail}`
       };
     }
 
-    const rows = await response.json();
-    if (!Array.isArray(rows)) {
-      return { rows: [], error: "Respuesta invalida de Supabase." };
-    }
-
-    return { rows, error: "" };
+    return { rows: result.rows, error: "" };
   } catch (error) {
     return {
       rows: [],

@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 
+const { fetchSupabaseRows } = require("./_supabase-pagination");
 const {
   KNOWN_EVENTS,
   cleanText,
@@ -319,21 +320,20 @@ async function fetchAttendanceAndFlagStateMaps({ supabaseUrl, serviceRoleKey }) 
   );
   endpoint.searchParams.set("select", "encuentro,activo");
   endpoint.searchParams.set("order", "encuentro.asc");
-  endpoint.searchParams.set("limit", "20000");
 
-  const response = await fetch(endpoint.toString(), {
-    method: "GET",
+  const rowsResult = await fetchSupabaseRows({
+    endpoint,
     headers: {
       apikey: serviceRoleKey,
       Authorization: `Bearer ${serviceRoleKey}`
     }
   });
 
-  if (!response.ok) {
+  if (!rowsResult.ok) {
     return { attendanceMap, lunchMap, reconfirmMap, raffleMap, raffleBrandMap };
   }
 
-  const rows = await response.json().catch(() => []);
+  const rows = rowsResult.rows;
   for (const row of Array.isArray(rows) ? rows : []) {
     const parsedAttendance = parseAttendanceStorageKey(row.encuentro);
     if (parsedAttendance) {
@@ -707,40 +707,34 @@ async function fetchInscripcionesRows({ endpoint, serviceRoleKey }) {
     Authorization: `Bearer ${serviceRoleKey}`
   };
 
-  endpoint.searchParams.set("select", INSCRIPCIONES_SELECT_WITH_EXPOSITOR_INFO);
-  let response = await fetch(endpoint.toString(), {
-    method: "GET",
-    headers
+  const result = await fetchSupabaseRows({
+    endpoint,
+    headers,
+    select: INSCRIPCIONES_SELECT_WITH_EXPOSITOR_INFO
   });
 
-  if (!response.ok) {
-    const detail = await response.text().catch(() => "");
-    if (!isMissingExpositorInfoColumnError(detail)) {
-      return {
-        ok: false,
-        detail
-      };
+  if (!result.ok) {
+    if (isMissingExpositorInfoColumnError(result.detail)) {
+      const fallbackResult = await fetchSupabaseRows({
+        endpoint,
+        headers,
+        select: INSCRIPCIONES_SELECT_BASE
+      });
+
+      return fallbackResult.ok
+        ? { ok: true, rows: fallbackResult.rows }
+        : { ok: false, detail: fallbackResult.detail || result.detail };
     }
 
-    endpoint.searchParams.set("select", INSCRIPCIONES_SELECT_BASE);
-    response = await fetch(endpoint.toString(), {
-      method: "GET",
-      headers
-    });
-
-    if (!response.ok) {
-      const fallbackDetail = await response.text().catch(() => "");
-      return {
-        ok: false,
-        detail: fallbackDetail || detail
-      };
-    }
+    return {
+      ok: false,
+      detail: result.detail
+    };
   }
 
-  const rows = await response.json().catch(() => []);
   return {
     ok: true,
-    rows: Array.isArray(rows) ? rows : []
+    rows: result.rows
   };
 }
 
@@ -754,28 +748,25 @@ async function fetchEventInscripcionesRows({ supabaseUrl, serviceRoleKey, eventN
   );
   endpoint.searchParams.set("encuentro", `eq.${eventName}`);
   endpoint.searchParams.set("order", "id.asc");
-  endpoint.searchParams.set("limit", "10000");
 
-  const response = await fetch(endpoint.toString(), {
-    method: "GET",
+  const result = await fetchSupabaseRows({
+    endpoint,
     headers: {
       apikey: serviceRoleKey,
       Authorization: `Bearer ${serviceRoleKey}`
     }
   });
 
-  if (!response.ok) {
-    const detail = await response.text().catch(() => "");
+  if (!result.ok) {
     return {
       ok: false,
-      detail
+      detail: result.detail
     };
   }
 
-  const rows = await response.json().catch(() => []);
   return {
     ok: true,
-    rows: Array.isArray(rows) ? rows : []
+    rows: result.rows
   };
 }
 
@@ -840,16 +831,10 @@ async function handleGet(req, res, adminRole) {
     });
   }
 
-  const limitInput = Number.parseInt(String(req.query?.limit ?? "5000"), 10);
-  const limit = Number.isFinite(limitInput)
-    ? Math.min(Math.max(limitInput, 1), 10000)
-    : 5000;
-
   const endpoint = new URL(
     `${supabaseUrl.replace(/\/$/, "")}/rest/v1/inscripciones`
   );
   endpoint.searchParams.set("order", "id.asc");
-  endpoint.searchParams.set("limit", String(limit));
 
   try {
     const [statusResult, certificateStatusResult, flagsState] = await Promise.all([
