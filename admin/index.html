@@ -995,12 +995,17 @@
       { key: "parsecs", name: "Parsecs", logo: "/Prueba_2/assets/empresas/29_parsecs.png" },
       { key: "vasser", name: "Vasser", logo: "/Prueba_2/assets/empresas/34_vasser.png" },
       { key: "msb", name: "MSB", logo: "/Prueba_2/assets/empresas/39_msb_industria_argentina.png" },
+      { key: "saladillo", name: "Saladillo", logo: "/Prueba_2/assets/empresas/19_industrias_saladillo_sa.png" },
+      { key: "mygas", name: "MyGas", logo: "/Prueba_2/assets/empresas/image_2026-05-09_105216174.png" },
       { key: "reed", name: "Reed", logo: "/Prueba_2/assets/empresas/43_reed.png" },
       { key: "deckert", name: "Deckert", logo: "/Prueba_2/assets/empresas/44_deckert.png" },
       { key: "bahco", name: "Bahco", logo: "/Prueba_2/assets/empresas/42_bahco.png" },
       { key: "redeco_termofusion", name: "Redeco", logo: "/Prueba_2/assets/empresas/38_redeco_termofusion.png" },
       { key: "duke", name: "Duke", logo: "/Prueba_2/assets/empresas/21_duke.png" },
       { key: "egeo", name: "Egeo", logo: "/Prueba_2/assets/empresas/32_egeo.png" },
+      { key: "fusio_gas", name: "Fusiogas", logo: "/Prueba_2/assets/empresas/20_fusio_gas.png" },
+      { key: "latyn", name: "Latyn", logo: "/Prueba_2/assets/empresas/07_grupo_latyn.png" },
+      { key: "politivo", name: "Politivo", logo: "" },
       { key: "chicote", name: "Chicote", logo: "/Prueba_2/assets/empresas/08_chicote.png" },
       { key: "krewen", name: "Krewen", logo: "/Prueba_2/assets/empresas/10_krewen.png" },
       { key: "waterplast", name: "Waterplast", logo: "/Prueba_2/assets/empresas/04_waterplast.png" },
@@ -1063,10 +1068,17 @@
           : `${safeWinners.length} personas ganadoras del sorteo`;
 
       if (brandLogo) {
+        raffleScreenBrandLogo.onload = () => {
+          raffleScreenBrandLogo.style.display = "";
+        };
+        raffleScreenBrandLogo.onerror = () => {
+          raffleScreenBrandLogo.style.display = "none";
+        };
         raffleScreenBrandLogo.src = brandLogo;
         raffleScreenBrandLogo.alt = `Logo ${brandLabel}`;
-        raffleScreenBrandLogo.style.display = "";
       } else {
+        raffleScreenBrandLogo.onload = null;
+        raffleScreenBrandLogo.onerror = null;
         raffleScreenBrandLogo.removeAttribute("src");
         raffleScreenBrandLogo.alt = "";
         raffleScreenBrandLogo.style.display = "none";
@@ -1638,7 +1650,7 @@
         <div class="raffle-brand-group">
           ${
             group.brandLogo
-              ? `<img class="raffle-brand-logo" src="${escapeHtml(group.brandLogo)}" alt="Logo ${escapeHtml(group.brandLabel)}">`
+              ? `<img class="raffle-brand-logo" src="${escapeHtml(group.brandLogo)}" alt="Logo ${escapeHtml(group.brandLabel)}" onerror="this.style.display='none'">`
               : ""
           }
           <div class="raffle-brand-info">
