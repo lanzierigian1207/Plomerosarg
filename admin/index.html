@@ -857,6 +857,33 @@
       font-size: 0.82rem;
       line-height: 1.2;
       color: #213750;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .raffle-row-name {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .raffle-remove-btn {
+      border: 1px solid #f3b4b4;
+      border-radius: 6px;
+      background: #fff4f4;
+      color: #9f1d1d;
+      cursor: pointer;
+      flex: 0 0 auto;
+      font: inherit;
+      font-size: 0.74rem;
+      font-weight: 800;
+      padding: 4px 7px;
+    }
+
+    .raffle-remove-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
     }
 
     .raffle-list {
@@ -1801,7 +1828,9 @@
       for (const row of rows) {
         if (normalizeDniValue(row?.dni) !== normalizedDni) continue;
         row.sorteado = sorteado === true;
-        if (normalizedBrandKey) {
+        if (row.sorteado !== true) {
+          row.marca_sorteo = "";
+        } else if (normalizedBrandKey) {
           row.marca_sorteo = normalizedBrandKey;
         }
         if (!matchedRow) {
@@ -1829,8 +1858,10 @@
       }));
     }
 
-    function buildRaffleBrandGroupsHtml(rows) {
+    function buildRaffleBrandGroupsHtml(rows, options = {}) {
       const groups = groupRaffleWinnersByBrand(rows);
+      const canRemove = options.canRemove === true;
+      const eventIndex = Number.isInteger(options.eventIndex) ? options.eventIndex : -1;
       return groups.map((group) => `
         <div class="raffle-brand-group">
           ${
@@ -1843,7 +1874,24 @@
             <ul class="raffle-brand-names">
               ${group.winners.map((winner) => `
                 <li class="raffle-row">
-                  ${escapeHtml(winner.nombre_apellido || "-")} - DNI ${escapeHtml(winner.dni || "-")}
+                  <span class="raffle-row-name">
+                    ${escapeHtml(winner.nombre_apellido || "-")} - DNI ${escapeHtml(winner.dni || "-")}
+                  </span>
+                  ${
+                    canRemove && eventIndex >= 0
+                      ? `
+                        <button
+                          class="raffle-remove-btn"
+                          type="button"
+                          data-reset-raffle="${eventIndex}"
+                          data-raffle-dni="${escapeHtml(winner.dni || "")}"
+                          data-raffle-name="${escapeHtml(winner.nombre_apellido || "")}"
+                        >
+                          Eliminar
+                        </button>
+                      `
+                      : ""
+                  }
                 </li>
               `).join("")}
             </ul>
@@ -1875,6 +1923,33 @@
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.ok) {
         throw new Error(data.error || "No se pudo realizar el sorteo.");
+      }
+
+      return data;
+    }
+
+    async function resetRaffleWinner(eventItem, dni) {
+      const response = await fetch("/api/admin-inscripciones", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          action: "reset_raffle_winner",
+          evento: eventItem?.evento || "",
+          dni
+        })
+      });
+
+      if (response.status === 401) {
+        window.location.href = ADMIN_LOGIN_URL;
+        return { ok: false, redirected: true };
+      }
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || "No se pudo eliminar el ganador del sorteo.");
       }
 
       return data;
@@ -1958,7 +2033,10 @@
             <h4>Ganadores ya sorteados</h4>
             ${
               winnerRows.length > 0
-                ? buildRaffleBrandGroupsHtml(winnerRows)
+                ? buildRaffleBrandGroupsHtml(winnerRows, {
+                    canRemove: !isDrawing,
+                    eventIndex: index
+                  })
                 : `<p class="raffle-hint">Todavia no se sorteo ningun ganador en este encuentro.</p>`
             }
           </div>
@@ -2863,6 +2941,48 @@
         if (!selected) return;
 
         downloadEventExcel(selected.evento || "evento", selected.inscripciones || []);
+        return;
+      }
+
+      const resetRaffleButton = event.target.closest("[data-reset-raffle]");
+      if (resetRaffleButton) {
+        const resetIndex = Number.parseInt(resetRaffleButton.getAttribute("data-reset-raffle"), 10);
+        if (!Number.isInteger(resetIndex) || raffleInFlight.has(resetIndex)) return;
+
+        const selected = currentEventos[resetIndex];
+        if (!selected) return;
+
+        const dni = normalizeDniValue(resetRaffleButton.getAttribute("data-raffle-dni"));
+        if (!dni) return;
+
+        const participantName = resetRaffleButton.getAttribute("data-raffle-name") || "este ganador";
+        const confirmed = window.confirm(
+          `Eliminar a ${participantName} del listado de ganadores y permitir que vuelva a participar?`
+        );
+        if (!confirmed) return;
+
+        raffleInFlight.add(resetIndex);
+        renderEvents(currentEventos);
+
+        try {
+          const result = await resetRaffleWinner(selected, dni);
+          if (result.redirected) return;
+
+          updateRaffleStateLocally(selected, dni, false, "");
+          const remainingLastWinners = getRaffleState(selected, resetIndex).filter(
+            (winner) => normalizeDniValue(winner?.dni) !== dni
+          );
+          setRaffleState(selected, resetIndex, remainingLastWinners);
+
+          setStatusMessage(
+            `${participantName} fue eliminado de ganadores y ya puede volver a participar en los sorteos.`
+          );
+        } catch (error) {
+          setStatusMessage(`Error: ${error.message}`, "error");
+        } finally {
+          raffleInFlight.delete(resetIndex);
+          renderEvents(currentEventos);
+        }
         return;
       }
 

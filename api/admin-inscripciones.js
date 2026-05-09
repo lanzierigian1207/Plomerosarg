@@ -367,7 +367,9 @@ async function fetchAttendanceAndFlagStateMaps({ supabaseUrl, serviceRoleKey }) 
       }
     }
 
-    const parsedRaffleBrand = parseRaffleBrandStorageKey(row.encuentro);
+    const parsedRaffleBrand = row.activo !== false
+      ? parseRaffleBrandStorageKey(row.encuentro)
+      : null;
     if (parsedRaffleBrand) {
       const raffleBrandKey = buildInscriptoMapKey(
         parsedRaffleBrand.eventName,
@@ -587,6 +589,60 @@ async function upsertRaffleBrandState({
 
   return {
     ok: true
+  };
+}
+
+async function deactivateRaffleBrandStates({
+  supabaseUrl,
+  serviceRoleKey,
+  eventName,
+  dni
+}) {
+  const canonicalEvent = getCanonicalEventName(eventName);
+  const normalizedDni = normalizeDniValue(dni);
+  if (!canonicalEvent || canonicalEvent === "Sin evento" || !normalizedDni) {
+    return {
+      ok: false,
+      error: "Encuentro o DNI invalido.",
+      tableMissing: false
+    };
+  }
+
+  const storagePrefix =
+    `${RAFFLE_BRAND_KEY_PREFIX}${encodeURIComponent(canonicalEvent)}::${normalizedDni}::`;
+  const endpoint = new URL(
+    `${supabaseUrl.replace(/\/$/, "")}/rest/v1/${STATUS_TABLE}`
+  );
+  endpoint.searchParams.set("encuentro", `like.${storagePrefix}*`);
+
+  const response = await fetch(endpoint.toString(), {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      Prefer: "return=representation"
+    },
+    body: JSON.stringify({
+      activo: false
+    })
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    return {
+      ok: false,
+      error: `No se pudo limpiar la marca del sorteo (${response.status}).`,
+      detail,
+      tableMissing: detail.toLowerCase().includes("does not exist")
+    };
+  }
+
+  const rows = await response.json().catch(() => []);
+
+  return {
+    ok: true,
+    count: Array.isArray(rows) ? rows.length : 0
   };
 }
 
@@ -1167,6 +1223,68 @@ async function handlePost(req, res, adminRole) {
       action: "set_certificado_visible",
       evento: savedCertificate.eventName,
       certificado_activo: savedCertificate.active,
+      updated_at: new Date().toISOString()
+    });
+  }
+
+  if (action === "reset_raffle_winner") {
+    const eventInput = cleanText(payload.evento, 80);
+    const canonicalEvent = getCanonicalEventName(eventInput);
+    const dni = normalizeDniValue(payload.dni);
+
+    if (!canonicalEvent || canonicalEvent === "Sin evento") {
+      return res.status(422).json({
+        ok: false,
+        error: "Tenes que indicar un encuentro valido."
+      });
+    }
+
+    if (!dni) {
+      return res.status(422).json({
+        ok: false,
+        error: "Tenes que indicar un DNI valido."
+      });
+    }
+
+    const savedRaffle = await upsertRaffleState({
+      supabaseUrl,
+      serviceRoleKey,
+      eventName: canonicalEvent,
+      dni,
+      sorteado: false
+    });
+
+    if (!savedRaffle.ok) {
+      return res.status(500).json({
+        ok: false,
+        error: savedRaffle.error || "No se pudo actualizar el estado del sorteo.",
+        detail: savedRaffle.detail || ""
+      });
+    }
+
+    const cleanedBrand = await deactivateRaffleBrandStates({
+      supabaseUrl,
+      serviceRoleKey,
+      eventName: canonicalEvent,
+      dni
+    });
+
+    if (!cleanedBrand.ok) {
+      return res.status(500).json({
+        ok: false,
+        error: cleanedBrand.error || "No se pudo limpiar la marca del sorteo.",
+        detail: cleanedBrand.detail || ""
+      });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      action: "reset_raffle_winner",
+      evento: canonicalEvent,
+      dni,
+      sorteado: false,
+      marca_sorteo: "",
+      marcas_limpiadas: cleanedBrand.count || 0,
       updated_at: new Date().toISOString()
     });
   }
