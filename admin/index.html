@@ -648,6 +648,7 @@
     }
 
     .raffle-screen-brand-media {
+      position: relative;
       width: 100%;
       min-height: 250px;
       border-radius: 24px;
@@ -663,11 +664,51 @@
         0 18px 36px rgba(5, 19, 40, 0.18);
     }
 
+    .raffle-screen-logo-expand {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 40px;
+      height: 40px;
+      border: 1px solid rgba(13, 99, 199, 0.24);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.92);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(5, 19, 40, 0.14);
+    }
+
+    .raffle-screen-logo-expand:hover {
+      background: #ffffff;
+      border-color: rgba(13, 99, 199, 0.42);
+    }
+
+    .raffle-screen-logo-expand[hidden] {
+      display: none;
+    }
+
+    .fullscreen-corners {
+      width: 18px;
+      height: 18px;
+      display: block;
+      background:
+        linear-gradient(#0d63c7, #0d63c7) left top / 8px 2px no-repeat,
+        linear-gradient(#0d63c7, #0d63c7) left top / 2px 8px no-repeat,
+        linear-gradient(#0d63c7, #0d63c7) right top / 8px 2px no-repeat,
+        linear-gradient(#0d63c7, #0d63c7) right top / 2px 8px no-repeat,
+        linear-gradient(#0d63c7, #0d63c7) left bottom / 8px 2px no-repeat,
+        linear-gradient(#0d63c7, #0d63c7) left bottom / 2px 8px no-repeat,
+        linear-gradient(#0d63c7, #0d63c7) right bottom / 8px 2px no-repeat,
+        linear-gradient(#0d63c7, #0d63c7) right bottom / 2px 8px no-repeat;
+    }
+
     .raffle-screen-brand-logo {
       width: min(300px, 100%);
       max-height: 210px;
       object-fit: contain;
       filter: drop-shadow(0 16px 24px rgba(4, 17, 36, 0.18));
+      cursor: zoom-in;
     }
 
     .raffle-screen-brand-name {
@@ -684,6 +725,55 @@
       line-height: 1.45;
       font-weight: 700;
       max-width: 300px;
+    }
+
+    .brand-logo-viewer {
+      position: fixed;
+      inset: 0;
+      z-index: 1300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(20px, 5vw, 62px);
+      background: rgba(3, 13, 28, 0.92);
+      backdrop-filter: blur(8px);
+    }
+
+    .brand-logo-viewer.is-open {
+      display: flex;
+    }
+
+    .brand-logo-viewer-close {
+      position: fixed;
+      top: 18px;
+      left: 18px;
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(255, 255, 255, 0.36);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      font: inherit;
+      font-size: 1.15rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .brand-logo-viewer-image-wrap {
+      width: min(92vw, 980px);
+      min-height: min(68vh, 620px);
+      border-radius: 24px;
+      background: #ffffff;
+      display: grid;
+      place-items: center;
+      padding: clamp(22px, 6vw, 70px);
+      box-shadow: 0 28px 90px rgba(0, 0, 0, 0.42);
+    }
+
+    .brand-logo-viewer-image {
+      width: min(100%, 820px);
+      max-height: 70vh;
+      object-fit: contain;
     }
 
     .raffle-screen-winners {
@@ -933,6 +1023,16 @@
       <div class="raffle-screen-body">
         <aside class="raffle-screen-brand">
           <div class="raffle-screen-brand-media">
+            <button
+              class="raffle-screen-logo-expand"
+              id="raffleScreenLogoExpand"
+              type="button"
+              aria-label="Ver logo en pantalla completa"
+              title="Ver logo en pantalla completa"
+              hidden
+            >
+              <span class="fullscreen-corners" aria-hidden="true"></span>
+            </button>
             <img class="raffle-screen-brand-logo" id="raffleScreenBrandLogo" alt="">
           </div>
           <div class="raffle-screen-brand-name" id="raffleScreenBrandName">Marca</div>
@@ -944,6 +1044,13 @@
           <div class="raffle-screen-list" id="raffleScreenList"></div>
         </section>
       </div>
+    </div>
+  </section>
+
+  <section class="brand-logo-viewer" id="brandLogoViewer" aria-hidden="true">
+    <button class="brand-logo-viewer-close" id="brandLogoViewerClose" type="button" aria-label="Cerrar logo">X</button>
+    <div class="brand-logo-viewer-image-wrap" role="dialog" aria-modal="true" aria-label="Logo de la marca">
+      <img class="brand-logo-viewer-image" id="brandLogoViewerImage" alt="">
     </div>
   </section>
 
@@ -965,9 +1072,13 @@
     const raffleScreenClose = document.getElementById("raffleScreenClose");
     const raffleScreenEvent = document.getElementById("raffleScreenEvent");
     const raffleScreenBrandLogo = document.getElementById("raffleScreenBrandLogo");
+    const raffleScreenLogoExpand = document.getElementById("raffleScreenLogoExpand");
     const raffleScreenBrandName = document.getElementById("raffleScreenBrandName");
     const raffleScreenSubtitle = document.getElementById("raffleScreenSubtitle");
     const raffleScreenList = document.getElementById("raffleScreenList");
+    const brandLogoViewer = document.getElementById("brandLogoViewer");
+    const brandLogoViewerClose = document.getElementById("brandLogoViewerClose");
+    const brandLogoViewerImage = document.getElementById("brandLogoViewerImage");
     const DEFAULT_VISIBLE_ROWS = 25;
     const ADMIN_LOGIN_URL = "/api/admin";
     const PANEL_VIEW_INSCRIPCIONES = "inscripciones";
@@ -1050,9 +1161,36 @@
     }
 
     function closeRaffleScreen() {
+      if (brandLogoViewer.classList.contains("is-open")) {
+        closeBrandLogoViewer();
+      }
       raffleScreen.classList.remove("is-open");
       raffleScreen.setAttribute("aria-hidden", "true");
       document.body.style.overflow = "";
+    }
+
+    function closeBrandLogoViewer() {
+      brandLogoViewer.classList.remove("is-open");
+      brandLogoViewer.setAttribute("aria-hidden", "true");
+      brandLogoViewerImage.removeAttribute("src");
+      brandLogoViewerImage.alt = "";
+      if (!raffleScreen.classList.contains("is-open")) {
+        document.body.style.overflow = "";
+      }
+    }
+
+    function openBrandLogoViewer() {
+      const logoSrc = raffleScreenBrandLogo.getAttribute("src");
+      const logoAlt = raffleScreenBrandLogo.getAttribute("alt") || "Logo de la marca";
+      if (!logoSrc || raffleScreenBrandLogo.style.display === "none") {
+        return;
+      }
+
+      brandLogoViewerImage.src = logoSrc;
+      brandLogoViewerImage.alt = logoAlt;
+      brandLogoViewer.classList.add("is-open");
+      brandLogoViewer.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
     }
 
     function openRaffleScreen({ eventName, brandKey, winners }) {
@@ -1070,9 +1208,11 @@
       if (brandLogo) {
         raffleScreenBrandLogo.onload = () => {
           raffleScreenBrandLogo.style.display = "";
+          raffleScreenLogoExpand.hidden = false;
         };
         raffleScreenBrandLogo.onerror = () => {
           raffleScreenBrandLogo.style.display = "none";
+          raffleScreenLogoExpand.hidden = true;
         };
         raffleScreenBrandLogo.src = brandLogo;
         raffleScreenBrandLogo.alt = `Logo ${brandLabel}`;
@@ -1082,6 +1222,7 @@
         raffleScreenBrandLogo.removeAttribute("src");
         raffleScreenBrandLogo.alt = "";
         raffleScreenBrandLogo.style.display = "none";
+        raffleScreenLogoExpand.hidden = true;
       }
 
       raffleScreenList.innerHTML = safeWinners
@@ -2853,13 +2994,31 @@
     });
 
     raffleScreenClose.addEventListener("click", closeRaffleScreen);
+    raffleScreenLogoExpand.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openBrandLogoViewer();
+    });
+    raffleScreenBrandLogo.addEventListener("click", openBrandLogoViewer);
     raffleScreen.addEventListener("click", (event) => {
       if (event.target === raffleScreen) {
         closeRaffleScreen();
       }
     });
+    brandLogoViewerClose.addEventListener("click", closeBrandLogoViewer);
+    brandLogoViewer.addEventListener("click", (event) => {
+      if (event.target === brandLogoViewer) {
+        closeBrandLogoViewer();
+      }
+    });
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && raffleScreen.classList.contains("is-open")) {
+      if (event.key !== "Escape") {
+        return;
+      }
+      if (brandLogoViewer.classList.contains("is-open")) {
+        closeBrandLogoViewer();
+        return;
+      }
+      if (raffleScreen.classList.contains("is-open")) {
         closeRaffleScreen();
       }
     });
