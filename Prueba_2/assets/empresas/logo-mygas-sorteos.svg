@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" role="img" aria-label="MyGas">
+  <rect width="1000" height="300" fill="#0b0b0b"/>
+  <text
+    x="500"
+    y="156"
+    fill="#f5dd3b"
+    stroke="#f5dd3b"
+    stroke-width="3"
+    paint-order="stroke fill"
+    font-family="Arial Black, Impact, Arial, sans-serif"
+    font-size="130"
+    font-weight="900"
+    letter-spacing="14"
+    text-anchor="middle"
+  >MAYGAS</text>
+  <text
+    x="500"
+    y="232"
+    fill="#f5dd3b"
+    font-family="Arial Black, Arial, sans-serif"
+    font-size="34"
+    font-weight="900"
+    letter-spacing="10"
+    text-anchor="middle"
+  >MALEABLE - FUSION</text>
+</svg>

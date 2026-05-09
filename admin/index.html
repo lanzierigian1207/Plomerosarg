@@ -760,8 +760,9 @@
     }
 
     .brand-logo-viewer-image-wrap {
-      width: min(92vw, 980px);
-      min-height: min(68vh, 620px);
+      width: fit-content;
+      max-width: min(92vw, 1120px);
+      max-height: 82vh;
       border-radius: 24px;
       background: #ffffff;
       display: grid;
@@ -771,9 +772,18 @@
     }
 
     .brand-logo-viewer-image {
-      width: min(100%, 820px);
-      max-height: 70vh;
+      display: block;
+      width: auto;
+      height: auto;
+      max-width: min(78vw, var(--brand-logo-max-width, 820px));
+      max-height: min(68vh, var(--brand-logo-max-height, 70vh));
       object-fit: contain;
+    }
+
+    .brand-logo-viewer-image.is-vector {
+      width: min(78vw, 920px);
+      max-width: min(78vw, 920px);
+      max-height: 68vh;
     }
 
     .raffle-screen-winners {
@@ -1102,26 +1112,26 @@
     const RAFFLE_BRANDS = [
       { key: "rheem", name: "Rheem", logo: "/Prueba_2/assets/empresas/36_rheem.png" },
       { key: "piazza", name: "Piazza", logo: "/Prueba_2/assets/empresas/12_piazza.png" },
-      { key: "pluvius", name: "Pluvius", logo: "/Prueba_2/assets/empresas/13_pluvius.png" },
-      { key: "parsecs", name: "Parsecs", logo: "/Prueba_2/assets/empresas/29_parsecs.png" },
-      { key: "vasser", name: "Vasser", logo: "/Prueba_2/assets/empresas/34_vasser.png" },
+      { key: "pluvius", name: "Pluvius", logo: "/Prueba_2/assets/empresas/logo-pluvius.svg" },
+      { key: "parsecs", name: "Parsecs", logo: "/Prueba_2/assets/empresas/logo-parsecs.svg" },
+      { key: "vasser", name: "Vasser", logo: "/Prueba_2/assets/empresas/logo-vasser.svg" },
       { key: "msb", name: "MSB", logo: "/Prueba_2/assets/empresas/39_msb_industria_argentina.png" },
-      { key: "saladillo", name: "Saladillo", logo: "/Prueba_2/assets/empresas/19_industrias_saladillo_sa.png" },
-      { key: "mygas", name: "MyGas", logo: "/Prueba_2/assets/empresas/image_2026-05-09_105216174.png" },
+      { key: "saladillo", name: "Saladillo", logo: "/Prueba_2/assets/empresas/logo-saladillo-sorteos.svg" },
+      { key: "mygas", name: "MyGas", logo: "/Prueba_2/assets/empresas/logo-mygas-sorteos.svg" },
       { key: "reed", name: "Reed", logo: "/Prueba_2/assets/empresas/43_reed.png" },
       { key: "deckert", name: "Deckert", logo: "/Prueba_2/assets/empresas/44_deckert.png" },
       { key: "bahco", name: "Bahco", logo: "/Prueba_2/assets/empresas/42_bahco.png" },
-      { key: "redeco_termofusion", name: "Redeco", logo: "/Prueba_2/assets/empresas/38_redeco_termofusion.png" },
-      { key: "duke", name: "Duke", logo: "/Prueba_2/assets/empresas/21_duke.png" },
-      { key: "egeo", name: "Egeo", logo: "/Prueba_2/assets/empresas/32_egeo.png" },
+      { key: "redeco_termofusion", name: "Redeco", logo: "/Prueba_2/assets/empresas/38_redeco_termofusion.png", logoLarge: "/Prueba_2/assets/empresas/logo-redeco.png" },
+      { key: "duke", name: "Duke", logo: "/Prueba_2/assets/empresas/21_duke.png", logoLarge: "/Prueba_2/assets/empresas/logo-duke.png" },
+      { key: "egeo", name: "Egeo", logo: "/Prueba_2/assets/empresas/32_egeo.png", logoLarge: "/Prueba_2/assets/empresas/logo-egeo.png" },
       { key: "fusio_gas", name: "Fusiogas", logo: "/Prueba_2/assets/empresas/20_fusio_gas.png" },
       { key: "latyn", name: "Latyn", logo: "/Prueba_2/assets/empresas/07_grupo_latyn.png" },
       { key: "politivo", name: "Politivo", logo: "" },
       { key: "chicote", name: "Chicote", logo: "/Prueba_2/assets/empresas/08_chicote.png" },
-      { key: "krewen", name: "Krewen", logo: "/Prueba_2/assets/empresas/10_krewen_sorteos_v2.png" },
-      { key: "waterplast", name: "Waterplast", logo: "/Prueba_2/assets/empresas/04_waterplast.png" },
-      { key: "rao", name: "RAO", logo: "/Prueba_2/assets/empresas/26_rao.png" },
-      { key: "dinatecnica", name: "Dinatecnica", logo: "/Prueba_2/assets/empresas/27_dinatecnica.png" },
+      { key: "krewen", name: "Krewen", logo: "/Prueba_2/assets/empresas/logo-krewen-sorteos.svg" },
+      { key: "waterplast", name: "Waterplast", logo: "/Prueba_2/assets/empresas/logo-waterplast.svg" },
+      { key: "rao", name: "RAO", logo: "/Prueba_2/assets/empresas/26_rao.png", logoLarge: "/Prueba_2/assets/empresas/logo-rao.jpg" },
+      { key: "dinatecnica", name: "Dinatecnica", logo: "/Prueba_2/assets/empresas/27_dinatecnica.png", logoLarge: "/Prueba_2/assets/empresas/logo-dinatecnica.png" },
       { key: "btm_bombas", name: "BTM", logo: "/Prueba_2/assets/empresas/05_btm_bombas.png" }
     ];
     const RAFFLE_BRAND_BY_KEY = new Map(
@@ -1160,6 +1170,15 @@
       return brand?.logo || "";
     }
 
+    function getBrandLogoLarge(value) {
+      const brand = getBrandInfo(value);
+      return brand?.logoLarge || brand?.logo || "";
+    }
+
+    function isVectorLogo(src) {
+      return /\.svg(?:[?#].*)?$/i.test(String(src || ""));
+    }
+
     function closeRaffleScreen() {
       if (brandLogoViewer.classList.contains("is-open")) {
         closeBrandLogoViewer();
@@ -1174,18 +1193,40 @@
       brandLogoViewer.setAttribute("aria-hidden", "true");
       brandLogoViewerImage.removeAttribute("src");
       brandLogoViewerImage.alt = "";
+      brandLogoViewerImage.classList.remove("is-vector");
+      brandLogoViewerImage.style.removeProperty("--brand-logo-max-width");
+      brandLogoViewerImage.style.removeProperty("--brand-logo-max-height");
       if (!raffleScreen.classList.contains("is-open")) {
         document.body.style.overflow = "";
       }
     }
 
     function openBrandLogoViewer() {
-      const logoSrc = raffleScreenBrandLogo.getAttribute("src");
+      const logoSrc =
+        raffleScreenBrandLogo.dataset.largeLogo ||
+        raffleScreenBrandLogo.getAttribute("src");
       const logoAlt = raffleScreenBrandLogo.getAttribute("alt") || "Logo de la marca";
       if (!logoSrc || raffleScreenBrandLogo.style.display === "none") {
         return;
       }
 
+      brandLogoViewerImage.onload = () => {
+        const vector = isVectorLogo(logoSrc);
+        brandLogoViewerImage.classList.toggle("is-vector", vector);
+        if (!vector && brandLogoViewerImage.naturalWidth && brandLogoViewerImage.naturalHeight) {
+          brandLogoViewerImage.style.setProperty(
+            "--brand-logo-max-width",
+            `${brandLogoViewerImage.naturalWidth}px`
+          );
+          brandLogoViewerImage.style.setProperty(
+            "--brand-logo-max-height",
+            `${brandLogoViewerImage.naturalHeight}px`
+          );
+        }
+      };
+      brandLogoViewerImage.onerror = () => {
+        closeBrandLogoViewer();
+      };
       brandLogoViewerImage.src = logoSrc;
       brandLogoViewerImage.alt = logoAlt;
       brandLogoViewer.classList.add("is-open");
@@ -1196,6 +1237,7 @@
     function openRaffleScreen({ eventName, brandKey, winners }) {
       const brandLabel = getBrandLabel(brandKey);
       const brandLogo = getBrandLogo(brandKey);
+      const brandLogoLarge = getBrandLogoLarge(brandKey);
       const safeWinners = Array.isArray(winners) ? winners : [];
 
       raffleScreenEvent.textContent = eventName || "Ganadores";
@@ -1216,6 +1258,7 @@
         };
         raffleScreenBrandLogo.src = brandLogo;
         raffleScreenBrandLogo.alt = `Logo ${brandLabel}`;
+        raffleScreenBrandLogo.dataset.largeLogo = brandLogoLarge || brandLogo;
       } else {
         raffleScreenBrandLogo.onload = null;
         raffleScreenBrandLogo.onerror = null;
@@ -1223,6 +1266,7 @@
         raffleScreenBrandLogo.alt = "";
         raffleScreenBrandLogo.style.display = "none";
         raffleScreenLogoExpand.hidden = true;
+        delete raffleScreenBrandLogo.dataset.largeLogo;
       }
 
       raffleScreenList.innerHTML = safeWinners
