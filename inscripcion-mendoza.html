@@ -289,8 +289,8 @@
       </div>
 
       <div class="field">
-        <label class="required" for="mail">Mail</label>
-        <input id="mail" name="mail" type="email" required>
+        <label for="mail">Mail</label>
+        <input id="mail" name="mail" type="email" placeholder="(Opcional)">
       </div>
 
       <div class="field">
@@ -330,9 +330,9 @@
       </div>
 
       <div class="field">
-        <label class="required" for="asociado">&iquest;Sos asociado a AAPSYA?</label>
-        <select id="asociado" name="asociado" required>
-          <option value="">Seleccionar</option>
+        <label for="asociado">&iquest;Sos asociado a AAPSYA?</label>
+        <select id="asociado" name="asociado">
+          <option value="">Seleccionar (opcional)</option>
           <option value="si">S&iacute;</option>
           <option value="no">No</option>
         </select>
@@ -416,7 +416,7 @@
         <button class="btn btn-primary" type="submit">Enviar</button>
         <a class="btn btn-secondary" href="encuentros.html">Volver a Encuentros</a>
       </div>
-      <p class="success-message" id="successMessage" role="status">Inscripci&oacute;n confirmada.<br>Le llegar&aacute; un correo con la informaci&oacute;n.<br><strong>Grupo de WhatsApp:</strong> hac&eacute; clic <a href="https://chat.whatsapp.com/FORvQKFYbUY3NzgS0oS7H7" target="_blank" rel="noopener noreferrer">aqu&iacute;</a>.<br><strong>IMPORTANTE:</strong> En caso de que no llegue a la bandeja principal, busc&aacute; en correo no deseado o spam, y tambi&eacute;n en Notificaciones o Social.</p>
+      <p class="success-message" id="successMessage" role="status">Inscripci&oacute;n confirmada.<br><strong>Grupo de WhatsApp:</strong> hac&eacute; clic <a href="https://chat.whatsapp.com/FORvQKFYbUY3NzgS0oS7H7" target="_blank" rel="noopener noreferrer">aqu&iacute;</a>.</p>
     </form>
   </main>
   <script>
@@ -496,7 +496,7 @@
           throw new Error(data.error || "No fue posible guardar la inscripci&oacute;n.");
         }
 
-        successMessage.innerHTML = "Inscripci&oacute;n confirmada.<br>Le llegar&aacute; un correo con la informaci&oacute;n.<br><strong>Grupo de WhatsApp:</strong> hac&eacute; clic <a href=\"https://chat.whatsapp.com/FORvQKFYbUY3NzgS0oS7H7\" target=\"_blank\" rel=\"noopener noreferrer\">aqu&iacute;</a>.<br><strong>IMPORTANTE:</strong> En caso de que no llegue a la bandeja principal, busc&aacute; en correo no deseado o spam, y tambi&eacute;n en Notificaciones o Social.";
+        successMessage.innerHTML = "Inscripci&oacute;n confirmada.<br><strong>Grupo de WhatsApp:</strong> hac&eacute; clic <a href=\"https://chat.whatsapp.com/FORvQKFYbUY3NzgS0oS7H7\" target=\"_blank\" rel=\"noopener noreferrer\">aqu&iacute;</a>.";
         successMessage.style.display = "block";
         form.reset();
         toggleExpositorField();

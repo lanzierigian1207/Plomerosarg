@@ -136,7 +136,16 @@ function normalizeLookupText(value) {
 
 function isMailOptionalForEvent(encuentro) {
   const normalizedEvent = normalizeLookupText(encuentro);
-  return normalizedEvent === "bahia blanca 11/3" || normalizedEvent === "mar del plata 14/3";
+  return (
+    normalizedEvent === "bahia blanca 11/3" ||
+    normalizedEvent === "mar del plata 14/3" ||
+    normalizedEvent === "mendoza 9/5"
+  );
+}
+
+function isAsociadoOptionalForEvent(encuentro) {
+  const normalizedEvent = normalizeLookupText(encuentro);
+  return normalizedEvent === "mendoza 9/5";
 }
 
 function normalizeBody(body) {
@@ -604,6 +613,7 @@ const handler = async (req, res) => {
   const origen = cleanText(payload.origen, 40);
   const acepto_terminos = cleanText(payload.acepto_terminos, 5).toLowerCase() === "si";
   const mailRequired = !isMailOptionalForEvent(encuentro);
+  const asociadoRequired = !isAsociadoOptionalForEvent(encuentro);
 
   if (
     !dni ||
@@ -612,7 +622,7 @@ const handler = async (req, res) => {
     !nombre_apellido ||
     (mailRequired && !mail) ||
     !provincia ||
-    !asociado ||
+    (asociadoRequired && !asociado) ||
     profesiones.length === 0 ||
     !origen ||
     !acepto_terminos
@@ -631,7 +641,7 @@ const handler = async (req, res) => {
     return res.status(422).json({ ok: false, error: "Provincia inválida." });
   }
 
-  if (!ALLOWED_ASOCIADO.has(asociado)) {
+  if (asociado && !ALLOWED_ASOCIADO.has(asociado)) {
     return res.status(422).json({ ok: false, error: "Valor de asociado inválido." });
   }
 
