@@ -867,7 +867,7 @@
         { src: "/Prueba_2/assets/empresas/20_fusio_gas.png", alt: "Fusiogas" },
         { src: "/Prueba_2/assets/empresas/43_reed.png", alt: "Reed" },
         { src: "/Prueba_2/assets/empresas/44_deckert.png", alt: "Deckert" },
-        { src: "/Prueba_2/assets/empresas/logo-redeco-fumigacion.svg", alt: "RedEco Fumigacion" },
+        { src: "/Prueba_2/assets/empresas/logo-redeco-fumigacion.png", alt: "RedEco Fumigacion" },
         { src: "/Prueba_2/assets/empresas/21_duke.png", alt: "Duke" }
       ],
       [
@@ -1171,6 +1171,22 @@
       return `certificado-${slugifySegment(eventName)}-${slugifySegment(personName)}.pdf`;
     }
 
+    function waitForImages(root) {
+      const images = Array.from(root.querySelectorAll("img"));
+      return Promise.all(
+        images.map((img) => {
+          if (img.complete && img.naturalWidth !== 0) {
+            return Promise.resolve();
+          }
+
+          return new Promise((resolve) => {
+            img.addEventListener("load", resolve, { once: true });
+            img.addEventListener("error", resolve, { once: true });
+          });
+        })
+      );
+    }
+
     async function renderDesktopCanvasForPdf() {
       const host = document.createElement("div");
       host.setAttribute("aria-hidden", "true");
@@ -1192,6 +1208,8 @@
       document.body.appendChild(host);
 
       try {
+        await waitForImages(cardClone);
+
         const canvas = await window.html2canvas(cardClone, {
           scale: 2,
           useCORS: true,
