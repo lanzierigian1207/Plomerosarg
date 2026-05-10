@@ -447,17 +447,28 @@
     }
 
     .cert-logos {
-      width: min(800px, 100%);
+      width: min(820px, 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: stretch;
+      gap: 7px;
+      padding-inline: 4px;
+    }
+
+    .cert-logo-row {
+      width: 100%;
+      min-width: 0;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 10px 12px;
-      padding-inline: 4px;
+      gap: 8px 12px;
     }
 
     .cert-logos img {
       max-height: 34px;
+      max-width: 156px;
       width: auto;
       object-fit: contain;
       filter: saturate(1.05);
@@ -710,24 +721,7 @@
             capacitaciones de las siguientes empresas:
           </p>
 
-          <div class="cert-logos" aria-label="Empresas participantes">
-            <img src="/Prueba_2/assets/empresas/36_rheem.png" alt="Rheem">
-            <img src="/Prueba_2/assets/empresas/12_piazza.png" alt="Piazza">
-            <img src="/Prueba_2/assets/empresas/13_pluvius.png" alt="Pluvius">
-            <img src="/Prueba_2/assets/empresas/29_parsecs.png" alt="Parsecs">
-            <img src="/Prueba_2/assets/empresas/39_msb_industria_argentina.png" alt="MSB Industria Argentina">
-            <img src="/Prueba_2/assets/empresas/43_reed.png" alt="Reed">
-            <img src="/Prueba_2/assets/empresas/44_deckert.png" alt="Deckert">
-            <img src="/Prueba_2/assets/empresas/42_bahco.png" alt="Bahco">
-            <img src="/Prueba_2/assets/empresas/38_redeco_termofusion.png" alt="RedEco Termofusion">
-            <img src="/Prueba_2/assets/empresas/34_vasser.png" alt="Vasser">
-            <img src="/Prueba_2/assets/empresas/21_duke.png" alt="Duke">
-            <img src="/Prueba_2/assets/empresas/32_egeo.png" alt="Egeo">
-            <img src="/Prueba_2/assets/empresas/45_icono_herramienta.png" alt="Icono herramienta">
-            <img src="/Prueba_2/assets/empresas/08_chicote.png" alt="Chicote">
-            <img src="/Prueba_2/assets/empresas/10_krewen.png" alt="Krewen">
-            <img src="/Prueba_2/assets/empresas/04_waterplast.png" alt="Waterplast">
-          </div>
+          <div class="cert-logos" id="certLogos" aria-label="Empresas participantes"></div>
 
           <p class="cert-time" id="certTiempoCapacitado" hidden>
             Tiempo capacitado: 270 minutos
@@ -768,6 +762,51 @@
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script>
+    const DEFAULT_CERT_LOGO_ROWS = [[
+      { src: "/Prueba_2/assets/empresas/36_rheem.png", alt: "Rheem" },
+      { src: "/Prueba_2/assets/empresas/12_piazza.png", alt: "Piazza" },
+      { src: "/Prueba_2/assets/empresas/13_pluvius.png", alt: "Pluvius" },
+      { src: "/Prueba_2/assets/empresas/29_parsecs.png", alt: "Parsecs" },
+      { src: "/Prueba_2/assets/empresas/39_msb_industria_argentina.png", alt: "MSB Industria Argentina" },
+      { src: "/Prueba_2/assets/empresas/43_reed.png", alt: "Reed" },
+      { src: "/Prueba_2/assets/empresas/44_deckert.png", alt: "Deckert" },
+      { src: "/Prueba_2/assets/empresas/42_bahco.png", alt: "Bahco" },
+      { src: "/Prueba_2/assets/empresas/38_redeco_termofusion.png", alt: "RedEco Termofusion" },
+      { src: "/Prueba_2/assets/empresas/34_vasser.png", alt: "Vasser" },
+      { src: "/Prueba_2/assets/empresas/21_duke.png", alt: "Duke" },
+      { src: "/Prueba_2/assets/empresas/32_egeo.png", alt: "Egeo" },
+      { src: "/Prueba_2/assets/empresas/45_icono_herramienta.png", alt: "Icono herramienta" },
+      { src: "/Prueba_2/assets/empresas/08_chicote.png", alt: "Chicote" },
+      { src: "/Prueba_2/assets/empresas/10_krewen.png", alt: "Krewen" },
+      { src: "/Prueba_2/assets/empresas/04_waterplast.png", alt: "Waterplast" }
+    ]];
+
+    const MENDOZA_CERT_LOGO_ROWS = [
+      [
+        { src: "/Prueba_2/assets/empresas/12_piazza.png", alt: "Piazza" },
+        { src: "/Prueba_2/assets/empresas/13_pluvius.png", alt: "Pluvius" },
+        { src: "/Prueba_2/assets/empresas/29_parsecs.png", alt: "Parsecs" },
+        { src: "/Prueba_2/assets/empresas/34_vasser.png", alt: "Vasser" },
+        { src: "/Prueba_2/assets/empresas/39_msb_industria_argentina.png", alt: "MSB Industria Argentina" }
+      ],
+      [
+        { src: "/Prueba_2/assets/empresas/image_2026-05-09_105216174.png", alt: "Maygas" },
+        { src: "/Prueba_2/assets/empresas/20_fusio_gas.png", alt: "Fusiogas" },
+        { src: "/Prueba_2/assets/empresas/43_reed.png", alt: "Reed" },
+        { src: "/Prueba_2/assets/empresas/44_deckert.png", alt: "Deckert" },
+        { src: "/Prueba_2/assets/empresas/logo-redeco-fumigacion.svg", alt: "RedEco Fumigacion" },
+        { src: "/Prueba_2/assets/empresas/21_duke.png", alt: "Duke" }
+      ],
+      [
+        { src: "/Prueba_2/assets/empresas/27_dinatecnica.png", alt: "Dinatecnica" },
+        { src: "/Prueba_2/assets/empresas/10_krewen.png", alt: "Krewen" },
+        { src: "/Prueba_2/assets/empresas/26_rao.png", alt: "RAO" },
+        { src: "/Prueba_2/assets/empresas/04_waterplast.png", alt: "Waterplast" },
+        { src: "/Prueba_2/assets/empresas/08_chicote.png", alt: "Chicote" },
+        { src: "/Prueba_2/assets/empresas/32_egeo.png", alt: "Egeo" }
+      ]
+    ];
+
     const EVENT_DETAILS = {
       "bahia blanca 11/3": {
         label: "Bahía Blanca 11/3",
@@ -787,7 +826,8 @@
         label: "Mendoza 9/5",
         numero: "29",
         fecha: "Mendoza, Sábado 9 de Mayo de 2026",
-        image: "/Prueba_2/assets/mendoza.jpg"
+        image: "/Prueba_2/assets/mendoza.jpg",
+        logoRows: MENDOZA_CERT_LOGO_ROWS
       },
       "salta 6/6": {
         label: "Salta 6/6",
@@ -820,6 +860,7 @@
     const certNumeroEncuentro = document.getElementById("certNumeroEncuentro");
     const certTiempoCapacitado = document.getElementById("certTiempoCapacitado");
     const certEventoFecha = document.getElementById("certEventoFecha");
+    const certLogos = document.getElementById("certLogos");
     const PDF_PAGE_WIDTH = 1123;
     const PDF_PAGE_HEIGHT = 794;
 
@@ -843,6 +884,30 @@
     function getEventDetailsByName(eventName) {
       const key = normalizeEventKey(eventName);
       return EVENT_DETAILS[key] || null;
+    }
+
+    function renderCertificateLogos(logoRows = DEFAULT_CERT_LOGO_ROWS) {
+      if (!certLogos) return;
+
+      const rows = Array.isArray(logoRows) && logoRows.length > 0
+        ? logoRows
+        : DEFAULT_CERT_LOGO_ROWS;
+
+      certLogos.innerHTML = rows
+        .map((row) => {
+          const logos = Array.isArray(row) ? row : [row];
+          const logoMarkup = logos
+            .filter((logo) => logo?.src)
+            .map((logo) => (
+              `<img src="${escapeHtml(logo.src)}" alt="${escapeHtml(logo.alt || "")}">`
+            ))
+            .join("");
+
+          return logoMarkup
+            ? `<div class="cert-logo-row">${logoMarkup}</div>`
+            : "";
+        })
+        .join("");
     }
 
     function buildEncuentroOptionId(eventName, index) {
@@ -1212,6 +1277,7 @@
       certTiempoCapacitado.textContent = tiempoCapacitado;
       certTiempoCapacitado.hidden = !tiempoCapacitado;
       certEventoFecha.textContent = eventInfo?.fecha || selectedEvent;
+      renderCertificateLogos(eventInfo?.logoRows || DEFAULT_CERT_LOGO_ROWS);
       certificadoPanel.hidden = false;
       certificadoPanel.scrollIntoView({ behavior: "smooth", block: "start" });
       generarBtn.disabled = false;
@@ -1222,6 +1288,7 @@
       downloadCertificatePdf();
     });
 
+    renderCertificateLogos(DEFAULT_CERT_LOGO_ROWS);
     loadEncuentrosForCertificates();
   </script>
 </body>
