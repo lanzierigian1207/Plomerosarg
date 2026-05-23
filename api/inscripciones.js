@@ -88,7 +88,15 @@ const MAIL_EVENT_EXTRAS = [
     detailRows: [
       { label: "Fecha", value: "06/06/2026" },
       { label: "Horario", value: " " },
-      { label: "Ubicacion", value: " " }
+      {
+        label: "Lugar",
+        value: "Escuela de Educaci\u00f3n T\u00e9cnica N\u00b0 3138 \"Alberto Einstein\""
+      },
+      {
+        label: "Link Lugar",
+        value: "https://share.google/Mwqcz7jmD6iIZX6HM",
+        href: "https://share.google/Mwqcz7jmD6iIZX6HM"
+      }
     ],
     prizeHighlightTitle: "Grandes sorteos exclusivos al cierre del evento",
     prizeHighlightText:
