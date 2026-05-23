@@ -87,7 +87,7 @@ const MAIL_EVENT_EXTRAS = [
     eventKey: "salta 6/6",
     detailRows: [
       { label: "Fecha", value: "06/06/2026" },
-      { label: "Horario", value: " " },
+      { label: "Horario", value: "08:30" },
       {
         label: "Lugar",
         value: "Escuela de Educaci\u00f3n T\u00e9cnica N\u00b0 3138 \"Alberto Einstein\""
