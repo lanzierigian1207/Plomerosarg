@@ -82,6 +82,21 @@ const MAIL_EVENT_EXTRAS = [
     donationNotice:
       "Ingreso solidario: para participar del evento, es necesario llevar 2 alimentos no perecederos.",
     imageUrl: "https://plomerosarg.com/Prueba_2/assets/WhatsApp%20Image%202026-04-24%20at%208.47.55%20AM.jpeg"
+  },
+  {
+    eventKey: "salta 6/6",
+    detailRows: [
+      { label: "Fecha", value: "06/06/2026" },
+      { label: "Horario", value: " " },
+      { label: "Ubicacion", value: " " }
+    ],
+    prizeHighlightTitle: "Grandes sorteos exclusivos al cierre del evento",
+    prizeHighlightText:
+      "Quienes esten presentes durante toda la jornada podran participar de los sorteos.",
+    hideBuenDiaLine: true,
+    donationNotice:
+      "Ingreso solidario: para participar del evento, es necesario llevar 2 alimentos no perecederos.",
+    imageUrl: "https://plomerosarg.com/Prueba_2/assets/salta-mail-2026-05-23.jpeg"
   }
 ];
 const WHATSAPP_GROUP_MATCHERS = [
