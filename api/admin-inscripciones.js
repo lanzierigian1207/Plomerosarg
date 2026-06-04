@@ -837,6 +837,28 @@ function normalizeEmail(value) {
   return cleanText(value, 120).toLowerCase();
 }
 
+function normalizeRecipientSelection(value) {
+  if (!Array.isArray(value)) {
+    return null;
+  }
+
+  const selected = new Set();
+  for (const item of value) {
+    const rawMail =
+      typeof item === "string"
+        ? item
+        : item && typeof item === "object"
+          ? item.mail || item.email
+          : "";
+    const mail = normalizeEmail(rawMail);
+    if (mail && isValidEmail(mail)) {
+      selected.add(mail);
+    }
+  }
+
+  return selected;
+}
+
 function escapeHtml(text) {
   return String(text ?? "")
     .replace(/&/g, "&amp;")
@@ -864,12 +886,13 @@ function formatMailMessageHtml(message) {
     .join("");
 }
 
-function getUniqueMailRecipients(rows) {
+function getUniqueMailRecipients(rows, selectedMailSet = null) {
   const recipients = [];
   const seen = new Set();
   let duplicates = 0;
   let withoutMail = 0;
   let invalidMail = 0;
+  let notSelected = 0;
 
   for (const row of Array.isArray(rows) ? rows : []) {
     const mail = normalizeEmail(row?.mail);
@@ -880,6 +903,11 @@ function getUniqueMailRecipients(rows) {
 
     if (!isValidEmail(mail)) {
       invalidMail += 1;
+      continue;
+    }
+
+    if (selectedMailSet instanceof Set && !selectedMailSet.has(mail)) {
+      notSelected += 1;
       continue;
     }
 
@@ -900,7 +928,8 @@ function getUniqueMailRecipients(rows) {
     recipients,
     duplicates,
     withoutMail,
-    invalidMail
+    invalidMail,
+    notSelected
   };
 }
 
@@ -985,11 +1014,14 @@ async function sendBulkEventEmail({
   serviceRoleKey,
   eventName,
   subject,
-  message
+  message,
+  selectedMails
 }) {
   const resendApiKey = String(process.env.RESEND_API_KEY || "").trim();
   const mailFrom = String(process.env.MAIL_FROM || "").trim();
   const replyTo = String(process.env.MAIL_REPLY_TO || "").trim();
+  const selectedMailSet = normalizeRecipientSelection(selectedMails);
+  const hasSelection = Array.isArray(selectedMails);
 
   if (!resendApiKey || !mailFrom) {
     return {
@@ -1014,21 +1046,40 @@ async function sendBulkEventEmail({
     };
   }
 
-  const recipientState = getUniqueMailRecipients(inscripcionesResult.rows);
+  if (hasSelection && selectedMailSet.size === 0) {
+    return {
+      ok: false,
+      status: 422,
+      error: "Selecciona al menos un mail valido.",
+      total_inscripciones: Array.isArray(inscripcionesResult.rows)
+        ? inscripcionesResult.rows.length
+        : 0,
+      destinatarios: 0,
+      duplicados: 0,
+      sin_mail: 0,
+      mails_invalidos: 0,
+      no_seleccionados: 0
+    };
+  }
+
+  const recipientState = getUniqueMailRecipients(inscripcionesResult.rows, selectedMailSet);
   const recipients = recipientState.recipients;
 
   if (recipients.length === 0) {
     return {
       ok: false,
       status: 409,
-      error: "No hay mails validos para este encuentro.",
+      error: hasSelection
+        ? "No hay mails seleccionados que correspondan a este encuentro."
+        : "No hay mails validos para este encuentro.",
       total_inscripciones: Array.isArray(inscripcionesResult.rows)
         ? inscripcionesResult.rows.length
         : 0,
       destinatarios: 0,
       duplicados: recipientState.duplicates,
       sin_mail: recipientState.withoutMail,
-      mails_invalidos: recipientState.invalidMail
+      mails_invalidos: recipientState.invalidMail,
+      no_seleccionados: recipientState.notSelected
     };
   }
 
@@ -1084,7 +1135,8 @@ async function sendBulkEventEmail({
     fallidos_detalle: failed.slice(0, 25),
     duplicados: recipientState.duplicates,
     sin_mail: recipientState.withoutMail,
-    mails_invalidos: recipientState.invalidMail
+    mails_invalidos: recipientState.invalidMail,
+    no_seleccionados: recipientState.notSelected
   };
 }
 
@@ -1417,7 +1469,8 @@ async function handlePost(req, res, adminRole) {
       serviceRoleKey,
       eventName: canonicalEvent,
       subject,
-      message
+      message,
+      selectedMails: payload.destinatarios || payload.mails || payload.emails
     });
 
     return res.status(mailResult.status || (mailResult.ok ? 200 : 500)).json({
@@ -1434,6 +1487,7 @@ async function handlePost(req, res, adminRole) {
       duplicados: mailResult.duplicados || 0,
       sin_mail: mailResult.sin_mail || 0,
       mails_invalidos: mailResult.mails_invalidos || 0,
+      no_seleccionados: mailResult.no_seleccionados || 0,
       updated_at: new Date().toISOString()
     });
   }

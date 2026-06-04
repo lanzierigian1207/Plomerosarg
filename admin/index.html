@@ -444,6 +444,59 @@
       font-weight: 600;
     }
 
+    .mail-recipient-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mail-recipient-list {
+      max-height: 230px;
+      overflow: auto;
+      border: 1px solid #dbe6f5;
+      border-radius: 10px;
+      background: #ffffff;
+    }
+
+    .mail-recipient-option {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 9px 10px;
+      border-bottom: 1px solid #edf3fb;
+      cursor: pointer;
+    }
+
+    .mail-recipient-option:last-child {
+      border-bottom: 0;
+    }
+
+    .mail-recipient-option input {
+      width: 16px;
+      height: 16px;
+      margin-top: 2px;
+      accent-color: var(--accent);
+    }
+
+    .mail-recipient-name {
+      display: block;
+      color: var(--ink);
+      font-size: 0.9rem;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .mail-recipient-mail {
+      display: block;
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 600;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
     .mail-grid {
       display: grid;
       gap: 10px;
@@ -1564,6 +1617,23 @@
       return seen.size;
     }
 
+    function getUniqueMailRecipientRows(rows) {
+      const seen = new Set();
+      const recipients = [];
+      for (const row of Array.isArray(rows) ? rows : []) {
+        const mail = normalizeMailValue(row?.mail);
+        if (!mail || !isValidMail(mail) || seen.has(mail)) continue;
+        seen.add(mail);
+        recipients.push({
+          mail,
+          nombre: String(row?.nombre_apellido || "").trim(),
+          dni: normalizeDniValue(row?.dni),
+          id_evento: row?.id_evento ?? ""
+        });
+      }
+      return recipients;
+    }
+
     function getDefaultMailSubject(item) {
       return `Informacion importante - ${item?.evento || "Plomeros ARG"}`;
     }
@@ -1575,15 +1645,61 @@
           open: false,
           subject: getDefaultMailSubject(item),
           message: "",
+          selectedMails: null,
           result: null
         });
       }
       return mailComposerByEvent.get(key);
     }
 
+    function syncMailSelectionState(item, index) {
+      const state = getMailComposerState(item, index);
+      const recipients = getUniqueMailRecipientRows(item?.inscripciones);
+      const validMails = new Set(recipients.map((recipient) => recipient.mail));
+
+      if (!Array.isArray(state.selectedMails)) {
+        state.selectedMails = recipients.map((recipient) => recipient.mail);
+        return state.selectedMails;
+      }
+
+      state.selectedMails = state.selectedMails.filter((mail) => validMails.has(mail));
+      return state.selectedMails;
+    }
+
+    function getSelectedMailSet(item, index) {
+      return new Set(syncMailSelectionState(item, index));
+    }
+
+    function setAllMailRecipients(item, index, checked) {
+      const state = getMailComposerState(item, index);
+      state.selectedMails = checked === true
+        ? getUniqueMailRecipientRows(item?.inscripciones).map((recipient) => recipient.mail)
+        : [];
+      state.result = null;
+    }
+
+    function toggleMailRecipient(item, index, mail, checked) {
+      const normalizedMail = normalizeMailValue(mail);
+      if (!normalizedMail || !isValidMail(normalizedMail)) return;
+      const state = getMailComposerState(item, index);
+      const selected = getSelectedMailSet(item, index);
+
+      if (checked) {
+        selected.add(normalizedMail);
+      } else {
+        selected.delete(normalizedMail);
+      }
+
+      state.selectedMails = [...selected];
+      state.result = null;
+    }
+
     function setMailComposerOpen(item, index, open) {
       const state = getMailComposerState(item, index);
       state.open = open === true;
+      if (state.open && !Array.isArray(state.selectedMails)) {
+        syncMailSelectionState(item, index);
+      }
       state.result = null;
     }
 
@@ -1616,7 +1732,7 @@
       return `${base}${failedText}${skippedText}`.trim();
     }
 
-    async function sendEventMail(eventItem, subject, message) {
+    async function sendEventMail(eventItem, subject, message, selectedMails) {
       const response = await fetch("/api/admin-inscripciones", {
         method: "POST",
         headers: {
@@ -1627,7 +1743,8 @@
           action: "send_event_email",
           evento: eventItem?.evento || "",
           asunto: subject,
-          mensaje: message
+          mensaje: message,
+          destinatarios: Array.isArray(selectedMails) ? selectedMails : []
         })
       });
 
@@ -2134,8 +2251,10 @@
 
     function buildMailSectionHtml(item, index) {
       const rows = Array.isArray(item?.inscripciones) ? item.inscripciones : [];
-      const recipients = countUniqueMailRecipients(rows);
+      const recipients = getUniqueMailRecipientRows(rows);
       const state = getMailComposerState(item, index);
+      const selectedMailSet = getSelectedMailSet(item, index);
+      const selectedCount = selectedMailSet.size;
       const isSending = mailInFlight.has(index);
       const resultText = buildMailResultText(state.result);
 
@@ -2147,8 +2266,49 @@
         <section class="mail-box">
           <h3 class="mail-title">Envio masivo</h3>
           <p class="mail-hint">
-            Destinatarios validos: ${recipients}. Se omiten mails vacios, invalidos o repetidos.
+            Marcados: ${selectedCount} de ${recipients.length}. Se omiten mails vacios, invalidos o repetidos.
           </p>
+          <div class="mail-recipient-tools">
+            <button
+              class="btn-event"
+              type="button"
+              data-mail-select-all="${index}"
+              ${recipients.length === 0 || isSending ? "disabled" : ""}
+            >
+              Todos
+            </button>
+            <button
+              class="btn-event"
+              type="button"
+              data-mail-clear-all="${index}"
+              ${recipients.length === 0 || isSending ? "disabled" : ""}
+            >
+              Ninguno
+            </button>
+          </div>
+          <div class="mail-recipient-list">
+            ${recipients.length > 0
+              ? recipients.map((recipient) => `
+                <label class="mail-recipient-option">
+                  <input
+                    type="checkbox"
+                    data-mail-recipient="${index}"
+                    value="${escapeHtml(recipient.mail)}"
+                    ${selectedMailSet.has(recipient.mail) ? "checked" : ""}
+                    ${isSending ? "disabled" : ""}
+                  />
+                  <span>
+                    <span class="mail-recipient-name">
+                      ${escapeHtml(recipient.nombre || "Sin nombre")}
+                      ${recipient.dni ? ` - DNI ${escapeHtml(recipient.dni)}` : ""}
+                    </span>
+                    <span class="mail-recipient-mail">${escapeHtml(recipient.mail)}</span>
+                  </span>
+                </label>
+              `).join("")
+              : `<p class="empty">No hay mails validos para este encuentro.</p>`
+            }
+          </div>
           <div class="mail-grid">
             <label class="mail-field">
               Asunto
@@ -2177,9 +2337,9 @@
               class="btn-event"
               type="button"
               data-send-event-mail="${index}"
-              ${recipients === 0 || isSending ? "disabled" : ""}
+              ${selectedCount === 0 || isSending ? "disabled" : ""}
             >
-              ${isSending ? "Enviando..." : `Enviar a ${recipients} mails`}
+              ${isSending ? "Enviando..." : `Enviar a ${selectedCount} mails`}
             </button>
             <button
               class="btn-event"
@@ -3108,6 +3268,34 @@
         return;
       }
 
+      const mailSelectAllButton = event.target.closest("[data-mail-select-all]");
+      if (mailSelectAllButton) {
+        const mailIndex = Number.parseInt(
+          mailSelectAllButton.getAttribute("data-mail-select-all"),
+          10
+        );
+        if (!Number.isInteger(mailIndex)) return;
+        const selected = currentEventos[mailIndex];
+        if (!selected) return;
+        setAllMailRecipients(selected, mailIndex, true);
+        renderEvents(currentEventos);
+        return;
+      }
+
+      const mailClearAllButton = event.target.closest("[data-mail-clear-all]");
+      if (mailClearAllButton) {
+        const mailIndex = Number.parseInt(
+          mailClearAllButton.getAttribute("data-mail-clear-all"),
+          10
+        );
+        if (!Number.isInteger(mailIndex)) return;
+        const selected = currentEventos[mailIndex];
+        if (!selected) return;
+        setAllMailRecipients(selected, mailIndex, false);
+        renderEvents(currentEventos);
+        return;
+      }
+
       const mailSendButton = event.target.closest("[data-send-event-mail]");
       if (mailSendButton) {
         const mailIndex = Number.parseInt(
@@ -3124,7 +3312,8 @@
         const messageInput = eventsContainer.querySelector(`[data-mail-message="${mailIndex}"]`);
         const subject = String(subjectInput?.value || "").trim();
         const message = String(messageInput?.value || "").trim();
-        const recipientCount = countUniqueMailRecipients(selected.inscripciones);
+        const selectedMails = syncMailSelectionState(selected, mailIndex);
+        const recipientCount = selectedMails.length;
 
         updateMailComposerField(selected, mailIndex, "subject", subject);
         updateMailComposerField(selected, mailIndex, "message", message);
@@ -3158,7 +3347,7 @@
         renderEvents(currentEventos);
 
         try {
-          const result = await sendEventMail(selected, subject, message);
+          const result = await sendEventMail(selected, subject, message, selectedMails);
           if (result.redirected) return;
 
           state.result = { ...result, ok: true };
@@ -3442,6 +3631,25 @@
     });
 
     eventsContainer.addEventListener("change", async (event) => {
+      const mailRecipientInput = event.target.closest("[data-mail-recipient]");
+      if (mailRecipientInput) {
+        const mailIndex = Number.parseInt(
+          mailRecipientInput.getAttribute("data-mail-recipient"),
+          10
+        );
+        if (!Number.isInteger(mailIndex)) return;
+        const selected = currentEventos[mailIndex];
+        if (!selected) return;
+        toggleMailRecipient(
+          selected,
+          mailIndex,
+          mailRecipientInput.value,
+          mailRecipientInput.checked === true
+        );
+        renderEvents(currentEventos);
+        return;
+      }
+
       const raffleBrandSelect = event.target.closest("[data-raffle-brand-select]");
       if (raffleBrandSelect) {
         const raffleIndex = Number.parseInt(
