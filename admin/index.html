@@ -1729,7 +1729,11 @@
         : (result.error || "No se pudo enviar el mail masivo.");
       const failedText = failed > 0 ? ` Fallidos: ${failed}.` : "";
       const skippedText = skipped ? ` Omitidos: ${skipped}.` : "";
-      return `${base}${failedText}${skippedText}`.trim();
+      const failedDetail = Array.isArray(result.fallidos_detalle) && result.fallidos_detalle[0]
+        ? String(result.fallidos_detalle[0].detail || result.fallidos_detalle[0].type || "").trim()
+        : "";
+      const detailText = failedDetail ? ` Motivo: ${failedDetail}` : "";
+      return `${base}${failedText}${skippedText}${detailText}`.trim();
     }
 
     async function sendEventMail(eventItem, subject, message, selectedMails) {
@@ -1755,7 +1759,9 @@
 
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.ok) {
-        throw new Error(data.error || "No se pudo enviar el mail masivo.");
+        const error = new Error(data.error || "No se pudo enviar el mail masivo.");
+        error.data = data;
+        throw error;
       }
 
       return data;
@@ -3354,6 +3360,7 @@
           setStatusMessage(buildMailResultText(state.result));
         } catch (error) {
           state.result = {
+            ...(error?.data && typeof error.data === "object" ? error.data : {}),
             ok: false,
             error: error instanceof Error ? error.message : "No se pudo enviar el mail masivo."
           };

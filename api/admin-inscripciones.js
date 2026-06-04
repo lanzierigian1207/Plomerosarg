@@ -18,13 +18,15 @@ const ROLE_ADMIN = "admin";
 const ROLE_ASISTENCIA = "asistencia";
 const STATUS_TABLE = "encuentros_estado";
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
+const RESEND_BATCH_ENDPOINT = "https://api.resend.com/emails/batch";
 const ATTENDANCE_KEY_PREFIX = "__attendance__::";
 const LUNCH_KEY_PREFIX = "__lunch__::";
 const RECONFIRM_KEY_PREFIX = "__reconfirm__::";
 const RAFFLE_KEY_PREFIX = "__raffle__::";
 const RAFFLE_BRAND_KEY_PREFIX = "__rafflebrand__::";
-const BULK_MAIL_CONCURRENCY = 4;
 const BULK_MAIL_MAX_MESSAGE_LENGTH = 6000;
+const BULK_MAIL_BATCH_SIZE = 100;
+const BULK_MAIL_RETRY_ATTEMPTS = 4;
 const INSCRIPCIONES_SELECT_BASE =
   "id,encuentro,dni,nombre_apellido,mail,provincia,localidad,asociado,profesion,origen,acepto_terminos,created_at";
 const INSCRIPCIONES_SELECT_WITH_EXPOSITOR_INFO =
@@ -979,6 +981,76 @@ function buildBulkEventEmailPayload({
   return payload;
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function chunkArray(items, size) {
+  const chunks = [];
+  const list = Array.isArray(items) ? items : [];
+  const normalizedSize = Math.max(1, Number.parseInt(String(size || ""), 10) || 1);
+
+  for (let index = 0; index < list.length; index += normalizedSize) {
+    chunks.push(list.slice(index, index + normalizedSize));
+  }
+
+  return chunks;
+}
+
+function parseResendErrorDetail(detail) {
+  const raw = String(detail || "").trim();
+  if (!raw) {
+    return {
+      message: "",
+      type: ""
+    };
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    const error = parsed?.error && typeof parsed.error === "object"
+      ? parsed.error
+      : parsed;
+    return {
+      message: cleanText(error?.message || parsed?.message || raw, 500),
+      type: cleanText(error?.type || error?.name || parsed?.type || "", 120)
+    };
+  } catch {
+    return {
+      message: cleanText(raw, 500),
+      type: ""
+    };
+  }
+}
+
+function getRetryDelayMs(response, attempt) {
+  const retryAfter = Number.parseFloat(String(response?.headers?.get("retry-after") || ""));
+  if (Number.isFinite(retryAfter) && retryAfter > 0) {
+    return Math.min(Math.ceil(retryAfter * 1000), 15000);
+  }
+
+  const resetSeconds = Number.parseFloat(String(response?.headers?.get("ratelimit-reset") || ""));
+  if (Number.isFinite(resetSeconds) && resetSeconds > 0) {
+    return Math.min(Math.ceil(resetSeconds * 1000), 15000);
+  }
+
+  return Math.min(1000 * (attempt + 1), 6000);
+}
+
+function shouldRetryResendStatus(status) {
+  return [408, 425, 429, 500, 502, 503, 504].includes(Number(status));
+}
+
+function isQuotaError(detail) {
+  const parsed = parseResendErrorDetail(detail);
+  const normalized = `${parsed.type} ${parsed.message}`.toLowerCase();
+  return (
+    normalized.includes("daily_quota_exceeded") ||
+    normalized.includes("monthly_quota_exceeded") ||
+    normalized.includes("quota")
+  );
+}
+
 async function sendResendEmail({ resendApiKey, payload }) {
   try {
     const response = await fetch(RESEND_ENDPOINT, {
@@ -992,10 +1064,13 @@ async function sendResendEmail({ resendApiKey, payload }) {
 
     if (!response.ok) {
       const detail = await response.text().catch(() => "");
+      const parsedError = parseResendErrorDetail(detail);
       return {
         ok: false,
         status: response.status,
-        detail: detail.slice(0, 500)
+        detail: parsedError.message || detail.slice(0, 500),
+        type: parsedError.type,
+        quotaError: isQuotaError(detail)
       };
     }
 
@@ -1007,6 +1082,118 @@ async function sendResendEmail({ resendApiKey, payload }) {
       detail: error instanceof Error ? error.message : "Error desconocido"
     };
   }
+}
+
+async function sendResendBatch({ resendApiKey, payloads }) {
+  let lastError = {
+    status: 0,
+    detail: "",
+    type: ""
+  };
+
+  for (let attempt = 0; attempt < BULK_MAIL_RETRY_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await fetch(RESEND_BATCH_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${resendApiKey}`
+        },
+        body: JSON.stringify(payloads)
+      });
+
+      if (response.ok) {
+        const body = await response.json().catch(() => ({}));
+        const data = Array.isArray(body?.data) ? body.data : [];
+        return {
+          ok: true,
+          sent: data.length > 0 ? data.length : payloads.length
+        };
+      }
+
+      const detail = await response.text().catch(() => "");
+      const parsedError = parseResendErrorDetail(detail);
+      lastError = {
+        status: response.status,
+        detail: parsedError.message || detail.slice(0, 500),
+        type: parsedError.type,
+        quotaError: isQuotaError(detail)
+      };
+
+      if (!shouldRetryResendStatus(response.status) || lastError.quotaError) {
+        break;
+      }
+
+      if (attempt < BULK_MAIL_RETRY_ATTEMPTS - 1) {
+        await sleep(getRetryDelayMs(response, attempt));
+      }
+    } catch (error) {
+      lastError = {
+        status: 0,
+        detail: error instanceof Error ? error.message : "Error desconocido",
+        type: ""
+      };
+
+      if (attempt < BULK_MAIL_RETRY_ATTEMPTS - 1) {
+        await sleep(Math.min(1000 * (attempt + 1), 6000));
+      }
+    }
+  }
+
+  return {
+    ok: false,
+    status: lastError.status,
+    detail: lastError.detail,
+    type: lastError.type,
+    quotaError: lastError.quotaError === true
+  };
+}
+
+async function sendSingleEmailsSlowly({ resendApiKey, payloads, recipients }) {
+  let sent = 0;
+  const failed = [];
+
+  for (let index = 0; index < payloads.length; index += 1) {
+    const payload = payloads[index];
+    const recipient = recipients[index] || {};
+    let result = { ok: false, status: 0, detail: "No se pudo enviar." };
+
+    for (let attempt = 0; attempt < BULK_MAIL_RETRY_ATTEMPTS; attempt += 1) {
+      result = await sendResendEmail({ resendApiKey, payload });
+
+      if (result.ok) {
+        break;
+      }
+
+      if (!shouldRetryResendStatus(result.status) || result.quotaError) {
+        break;
+      }
+
+      if (attempt < BULK_MAIL_RETRY_ATTEMPTS - 1) {
+        await sleep(Math.min(1000 * (attempt + 1), 6000));
+      }
+    }
+
+    if (result.ok) {
+      sent += 1;
+    } else {
+      failed.push({
+        mail: recipient.mail || payload?.to?.[0] || "",
+        nombre: recipient.nombre || "",
+        status: result.status,
+        type: result.type || "",
+        detail: result.detail || ""
+      });
+
+      if (result.quotaError) {
+        break;
+      }
+    }
+
+    await sleep(260);
+  }
+
+  return { sent, failed };
 }
 
 async function sendBulkEventEmail({
@@ -1083,49 +1270,73 @@ async function sendBulkEventEmail({
     };
   }
 
-  let nextIndex = 0;
   let sent = 0;
   const failed = [];
-  const workersCount = Math.min(BULK_MAIL_CONCURRENCY, recipients.length);
+  const payloads = recipients.map((recipient) =>
+    buildBulkEventEmailPayload({
+      recipient,
+      eventName,
+      subject,
+      message,
+      mailFrom,
+      replyTo
+    })
+  );
+  const batchPayloadChunks = chunkArray(payloads, BULK_MAIL_BATCH_SIZE);
+  const recipientChunks = chunkArray(recipients, BULK_MAIL_BATCH_SIZE);
 
-  async function worker() {
-    while (nextIndex < recipients.length) {
-      const recipientIndex = nextIndex;
-      nextIndex += 1;
-      const recipient = recipients[recipientIndex];
-      const payload = buildBulkEventEmailPayload({
-        recipient,
-        eventName,
-        subject,
-        message,
-        mailFrom,
-        replyTo
-      });
-      const result = await sendResendEmail({ resendApiKey, payload });
+  for (let chunkIndex = 0; chunkIndex < batchPayloadChunks.length; chunkIndex += 1) {
+    const batchPayloads = batchPayloadChunks[chunkIndex];
+    const batchRecipients = recipientChunks[chunkIndex] || [];
+    const batchResult = await sendResendBatch({
+      resendApiKey,
+      payloads: batchPayloads
+    });
 
-      if (result.ok) {
-        sent += 1;
-      } else {
+    if (batchResult.ok) {
+      sent += batchResult.sent || batchPayloads.length;
+      continue;
+    }
+
+    if (batchResult.quotaError) {
+      for (const recipient of batchRecipients) {
         failed.push({
           mail: recipient.mail,
           nombre: recipient.nombre,
-          status: result.status,
-          detail: result.detail
+          status: batchResult.status,
+          type: batchResult.type || "",
+          detail: batchResult.detail || "Limite de envio alcanzado."
         });
       }
+      break;
+    }
+
+    const fallbackResult = await sendSingleEmailsSlowly({
+      resendApiKey,
+      payloads: batchPayloads,
+      recipients: batchRecipients
+    });
+    sent += fallbackResult.sent;
+    failed.push(...fallbackResult.failed);
+
+    if (fallbackResult.failed.some((item) => String(item.type || item.detail || "")
+      .toLowerCase()
+      .includes("quota"))) {
+      break;
     }
   }
 
-  await Promise.all(
-    Array.from({ length: workersCount }, () => worker())
-  );
-
   const allFailed = sent === 0 && failed.length > 0;
+  const partialFailed = sent > 0 && failed.length > 0;
 
   return {
     ok: !allFailed,
     status: allFailed ? 502 : 200,
-    error: allFailed ? "No se pudo enviar ningun mail." : "",
+    error: allFailed
+      ? "No se pudo enviar ningun mail."
+      : partialFailed
+        ? "Algunos mails no se pudieron enviar."
+        : "",
     total_inscripciones: Array.isArray(inscripcionesResult.rows)
       ? inscripcionesResult.rows.length
       : 0,
