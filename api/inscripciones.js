@@ -61,19 +61,18 @@ const MAIL_EVENT_EXTRAS = [
   },
   {
     eventKey: "mendoza 9/5",
-    locationAddress: "Espacio Cultural Julio Le Parc",
+    locationAddress: "Club Social Ahorrarte",
     ingresoHorarioLabel: "Horario de Entrada",
     ingresoHorario: "08:00 a 16:30 hs",
     detailRows: [
       { label: "Fecha", value: "09/05/2026" },
       { label: "Horario", value: "08:00 a 16:30 hs" },
-      { label: "Ubicacion", value: "Espacio Cultural Julio Le Parc" },
+      { label: "Ubicacion", value: "Club Social Ahorrarte" },
       {
         label: "Link lugar",
-        value: "https://maps.app.goo.gl/Y49wHh722F2bY6uJ8",
-        href: "https://maps.app.goo.gl/Y49wHh722F2bY6uJ8"
-      },
-      { label: "Direccion", value: "Mitre y Godoy Cruz, Guaymallen, Mendoza" }
+        value: "https://maps.app.goo.gl/sHd5dqsa6RnW2hws6",
+        href: "https://maps.app.goo.gl/sHd5dqsa6RnW2hws6"
+      }
     ],
     prizeHighlightTitle: "Grandes sorteos exclusivos al cierre del evento",
     prizeHighlightText:
