@@ -17,11 +17,14 @@ const COOKIE_NAME = "admin_session";
 const ROLE_ADMIN = "admin";
 const ROLE_ASISTENCIA = "asistencia";
 const STATUS_TABLE = "encuentros_estado";
+const RESEND_ENDPOINT = "https://api.resend.com/emails";
 const ATTENDANCE_KEY_PREFIX = "__attendance__::";
 const LUNCH_KEY_PREFIX = "__lunch__::";
 const RECONFIRM_KEY_PREFIX = "__reconfirm__::";
 const RAFFLE_KEY_PREFIX = "__raffle__::";
 const RAFFLE_BRAND_KEY_PREFIX = "__rafflebrand__::";
+const BULK_MAIL_CONCURRENCY = 4;
+const BULK_MAIL_MAX_MESSAGE_LENGTH = 6000;
 const INSCRIPCIONES_SELECT_BASE =
   "id,encuentro,dni,nombre_apellido,mail,provincia,localidad,asociado,profesion,origen,acepto_terminos,created_at";
 const INSCRIPCIONES_SELECT_WITH_EXPOSITOR_INFO =
@@ -826,6 +829,265 @@ async function fetchEventInscripcionesRows({ supabaseUrl, serviceRoleKey, eventN
   };
 }
 
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || ""));
+}
+
+function normalizeEmail(value) {
+  return cleanText(value, 120).toLowerCase();
+}
+
+function escapeHtml(text) {
+  return String(text ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function formatMailMessageHtml(message) {
+  const blocks = String(message || "")
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+
+  if (blocks.length === 0) {
+    return "";
+  }
+
+  return blocks
+    .map((block) => {
+      const html = escapeHtml(block).replace(/\n/g, "<br />");
+      return `<p style="margin:0 0 12px;">${html}</p>`;
+    })
+    .join("");
+}
+
+function getUniqueMailRecipients(rows) {
+  const recipients = [];
+  const seen = new Set();
+  let duplicates = 0;
+  let withoutMail = 0;
+  let invalidMail = 0;
+
+  for (const row of Array.isArray(rows) ? rows : []) {
+    const mail = normalizeEmail(row?.mail);
+    if (!mail) {
+      withoutMail += 1;
+      continue;
+    }
+
+    if (!isValidEmail(mail)) {
+      invalidMail += 1;
+      continue;
+    }
+
+    if (seen.has(mail)) {
+      duplicates += 1;
+      continue;
+    }
+
+    seen.add(mail);
+    recipients.push({
+      mail,
+      nombre: cleanText(row?.nombre_apellido, 120),
+      dni: cleanText(row?.dni, 20)
+    });
+  }
+
+  return {
+    recipients,
+    duplicates,
+    withoutMail,
+    invalidMail
+  };
+}
+
+function buildBulkEventEmailPayload({
+  recipient,
+  eventName,
+  subject,
+  message,
+  mailFrom,
+  replyTo
+}) {
+  const safeNombre = escapeHtml(recipient?.nombre || "participante");
+  const safeEventName = escapeHtml(eventName || "encuentro");
+  const messageHtml = formatMailMessageHtml(message);
+  const text = [
+    `Hola ${recipient?.nombre || "participante"}`,
+    "",
+    message,
+    "",
+    "Saludos, Equipo de Plomeros y Sanitaristas"
+  ].join("\n");
+
+  const html = `
+    <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.55;color:#10263f">
+      <h2 style="margin:0 0 12px;">${escapeHtml(subject)}</h2>
+      <p style="margin:0 0 10px;">Hola ${safeNombre}</p>
+      ${messageHtml}
+      <p style="margin:0 0 12px;color:#5b6b80;font-size:13px;">
+        Encuentro: <strong>${safeEventName}</strong>
+      </p>
+      <p style="margin:0;">Saludos, Equipo de Plomeros y Sanitaristas</p>
+    </div>
+  `;
+
+  const payload = {
+    from: mailFrom,
+    to: [recipient.mail],
+    subject,
+    html,
+    text
+  };
+
+  if (replyTo) {
+    payload.reply_to = replyTo;
+  }
+
+  return payload;
+}
+
+async function sendResendEmail({ resendApiKey, payload }) {
+  try {
+    const response = await fetch(RESEND_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${resendApiKey}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const detail = await response.text().catch(() => "");
+      return {
+        ok: false,
+        status: response.status,
+        detail: detail.slice(0, 500)
+      };
+    }
+
+    return { ok: true };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 0,
+      detail: error instanceof Error ? error.message : "Error desconocido"
+    };
+  }
+}
+
+async function sendBulkEventEmail({
+  supabaseUrl,
+  serviceRoleKey,
+  eventName,
+  subject,
+  message
+}) {
+  const resendApiKey = String(process.env.RESEND_API_KEY || "").trim();
+  const mailFrom = String(process.env.MAIL_FROM || "").trim();
+  const replyTo = String(process.env.MAIL_REPLY_TO || "").trim();
+
+  if (!resendApiKey || !mailFrom) {
+    return {
+      ok: false,
+      status: 500,
+      error: "Faltan RESEND_API_KEY o MAIL_FROM para enviar mails."
+    };
+  }
+
+  const inscripcionesResult = await fetchEventInscripcionesRows({
+    supabaseUrl,
+    serviceRoleKey,
+    eventName
+  });
+
+  if (!inscripcionesResult.ok) {
+    return {
+      ok: false,
+      status: 500,
+      error: "No se pudieron consultar las inscripciones del encuentro.",
+      detail: inscripcionesResult.detail || ""
+    };
+  }
+
+  const recipientState = getUniqueMailRecipients(inscripcionesResult.rows);
+  const recipients = recipientState.recipients;
+
+  if (recipients.length === 0) {
+    return {
+      ok: false,
+      status: 409,
+      error: "No hay mails validos para este encuentro.",
+      total_inscripciones: Array.isArray(inscripcionesResult.rows)
+        ? inscripcionesResult.rows.length
+        : 0,
+      destinatarios: 0,
+      duplicados: recipientState.duplicates,
+      sin_mail: recipientState.withoutMail,
+      mails_invalidos: recipientState.invalidMail
+    };
+  }
+
+  let nextIndex = 0;
+  let sent = 0;
+  const failed = [];
+  const workersCount = Math.min(BULK_MAIL_CONCURRENCY, recipients.length);
+
+  async function worker() {
+    while (nextIndex < recipients.length) {
+      const recipientIndex = nextIndex;
+      nextIndex += 1;
+      const recipient = recipients[recipientIndex];
+      const payload = buildBulkEventEmailPayload({
+        recipient,
+        eventName,
+        subject,
+        message,
+        mailFrom,
+        replyTo
+      });
+      const result = await sendResendEmail({ resendApiKey, payload });
+
+      if (result.ok) {
+        sent += 1;
+      } else {
+        failed.push({
+          mail: recipient.mail,
+          nombre: recipient.nombre,
+          status: result.status,
+          detail: result.detail
+        });
+      }
+    }
+  }
+
+  await Promise.all(
+    Array.from({ length: workersCount }, () => worker())
+  );
+
+  const allFailed = sent === 0 && failed.length > 0;
+
+  return {
+    ok: !allFailed,
+    status: allFailed ? 502 : 200,
+    error: allFailed ? "No se pudo enviar ningun mail." : "",
+    total_inscripciones: Array.isArray(inscripcionesResult.rows)
+      ? inscripcionesResult.rows.length
+      : 0,
+    destinatarios: recipients.length,
+    enviados: sent,
+    fallidos: failed.length,
+    fallidos_detalle: failed.slice(0, 25),
+    duplicados: recipientState.duplicates,
+    sin_mail: recipientState.withoutMail,
+    mails_invalidos: recipientState.invalidMail
+  };
+}
+
 function formatProfesion(value) {
   return String(value ?? "")
     .split(",")
@@ -1120,6 +1382,59 @@ async function handlePost(req, res, adminRole) {
     return res.status(403).json({
       ok: false,
       error: "No autorizado para modificar el estado de encuentros."
+    });
+  }
+
+  if (action === "send_event_email") {
+    const eventInput = cleanText(payload.evento, 80);
+    const canonicalEvent = getCanonicalEventName(eventInput);
+    const subject = cleanText(payload.asunto || payload.subject, 160);
+    const message = cleanText(payload.mensaje || payload.message, BULK_MAIL_MAX_MESSAGE_LENGTH);
+
+    if (!canonicalEvent || canonicalEvent === "Sin evento") {
+      return res.status(422).json({
+        ok: false,
+        error: "Tenes que indicar un encuentro valido."
+      });
+    }
+
+    if (subject.length < 4) {
+      return res.status(422).json({
+        ok: false,
+        error: "Tenes que escribir un asunto."
+      });
+    }
+
+    if (message.length < 10) {
+      return res.status(422).json({
+        ok: false,
+        error: "Tenes que escribir un mensaje."
+      });
+    }
+
+    const mailResult = await sendBulkEventEmail({
+      supabaseUrl,
+      serviceRoleKey,
+      eventName: canonicalEvent,
+      subject,
+      message
+    });
+
+    return res.status(mailResult.status || (mailResult.ok ? 200 : 500)).json({
+      ok: mailResult.ok,
+      action: "send_event_email",
+      evento: canonicalEvent,
+      error: mailResult.error || "",
+      detail: mailResult.detail || "",
+      total_inscripciones: mailResult.total_inscripciones || 0,
+      destinatarios: mailResult.destinatarios || 0,
+      enviados: mailResult.enviados || 0,
+      fallidos: mailResult.fallidos || 0,
+      fallidos_detalle: mailResult.fallidos_detalle || [],
+      duplicados: mailResult.duplicados || 0,
+      sin_mail: mailResult.sin_mail || 0,
+      mails_invalidos: mailResult.mails_invalidos || 0,
+      updated_at: new Date().toISOString()
     });
   }
 

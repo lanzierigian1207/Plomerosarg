@@ -422,6 +422,83 @@
       flex-wrap: wrap;
     }
 
+    .mail-box {
+      margin: 14px 16px 0;
+      padding: 14px;
+      border: 1px solid #dbe6f5;
+      border-radius: 10px;
+      background: #f7fbff;
+      display: grid;
+      gap: 12px;
+    }
+
+    .mail-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .mail-hint {
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .mail-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .mail-field {
+      display: grid;
+      gap: 5px;
+      color: #335173;
+      font-size: 0.84rem;
+      font-weight: 800;
+    }
+
+    .mail-input,
+    .mail-textarea {
+      width: 100%;
+      border: 1px solid #afc4e5;
+      border-radius: 8px;
+      padding: 9px 10px;
+      font: inherit;
+      font-size: 0.92rem;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .mail-textarea {
+      min-height: 150px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    .mail-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mail-result {
+      border: 1px solid #b8dec7;
+      border-radius: 10px;
+      background: #f5fff9;
+      color: var(--ok);
+      padding: 10px 12px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .mail-result.is-error {
+      border-color: #f1b5af;
+      background: #fff4f3;
+      color: var(--off);
+    }
+
     .raffle-box {
       margin: 14px 16px 16px;
       padding: 14px;
@@ -1129,6 +1206,7 @@
     const toggleInFlight = new Set();
     const certificateToggleInFlight = new Set();
     const raffleInFlight = new Set();
+    const mailInFlight = new Set();
     const expandedEventsByEvent = new Map();
     const visibleRowsByEvent = new Map();
     const attendanceLookupByEvent = new Map();
@@ -1136,6 +1214,7 @@
     const raffleCountByEvent = new Map();
     const raffleBrandByEvent = new Map();
     const raffleWinnerByEvent = new Map();
+    const mailComposerByEvent = new Map();
     const RAFFLE_BRANDS = [
       { key: "rheem", name: "Rheem", logo: "/Prueba_2/assets/empresas/36_rheem.png" },
       { key: "piazza", name: "Piazza", logo: "/Prueba_2/assets/empresas/12_piazza.png" },
@@ -1465,6 +1544,104 @@
       const totalRows = Array.isArray(item?.inscripciones) ? item.inscripciones.length : 0;
       const clamped = Math.max(0, Math.min(Number(nextValue) || 0, totalRows));
       visibleRowsByEvent.set(key, clamped);
+    }
+
+    function normalizeMailValue(value) {
+      return String(value ?? "").trim().toLowerCase();
+    }
+
+    function isValidMail(value) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeMailValue(value));
+    }
+
+    function countUniqueMailRecipients(rows) {
+      const seen = new Set();
+      for (const row of Array.isArray(rows) ? rows : []) {
+        const mail = normalizeMailValue(row?.mail);
+        if (!mail || !isValidMail(mail) || seen.has(mail)) continue;
+        seen.add(mail);
+      }
+      return seen.size;
+    }
+
+    function getDefaultMailSubject(item) {
+      return `Informacion importante - ${item?.evento || "Plomeros ARG"}`;
+    }
+
+    function getMailComposerState(item, index) {
+      const key = getEventKey(item, index);
+      if (!mailComposerByEvent.has(key)) {
+        mailComposerByEvent.set(key, {
+          open: false,
+          subject: getDefaultMailSubject(item),
+          message: "",
+          result: null
+        });
+      }
+      return mailComposerByEvent.get(key);
+    }
+
+    function setMailComposerOpen(item, index, open) {
+      const state = getMailComposerState(item, index);
+      state.open = open === true;
+      state.result = null;
+    }
+
+    function updateMailComposerField(item, index, field, value) {
+      const state = getMailComposerState(item, index);
+      if (field === "subject") {
+        state.subject = String(value ?? "").slice(0, 160);
+      }
+      if (field === "message") {
+        state.message = String(value ?? "").slice(0, 6000);
+      }
+      state.result = null;
+    }
+
+    function buildMailResultText(result) {
+      if (!result) return "";
+      const sent = Number(result.enviados || 0);
+      const recipients = Number(result.destinatarios || 0);
+      const failed = Number(result.fallidos || 0);
+      const skipped = [
+        Number(result.duplicados || 0) > 0 ? `${result.duplicados} duplicados` : "",
+        Number(result.sin_mail || 0) > 0 ? `${result.sin_mail} sin mail` : "",
+        Number(result.mails_invalidos || 0) > 0 ? `${result.mails_invalidos} invalidos` : ""
+      ].filter(Boolean).join(", ");
+      const base = result.ok
+        ? `Enviados ${sent} de ${recipients} mails.`
+        : (result.error || "No se pudo enviar el mail masivo.");
+      const failedText = failed > 0 ? ` Fallidos: ${failed}.` : "";
+      const skippedText = skipped ? ` Omitidos: ${skipped}.` : "";
+      return `${base}${failedText}${skippedText}`.trim();
+    }
+
+    async function sendEventMail(eventItem, subject, message) {
+      const response = await fetch("/api/admin-inscripciones", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          action: "send_event_email",
+          evento: eventItem?.evento || "",
+          asunto: subject,
+          mensaje: message
+        })
+      });
+
+      if (response.status === 401) {
+        window.location.href = ADMIN_LOGIN_URL;
+        return { ok: false, redirected: true };
+      }
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || "No se pudo enviar el mail masivo.");
+      }
+
+      return data;
     }
 
     function getAttendanceLookup(item, index) {
@@ -1955,6 +2132,71 @@
       return data;
     }
 
+    function buildMailSectionHtml(item, index) {
+      const rows = Array.isArray(item?.inscripciones) ? item.inscripciones : [];
+      const recipients = countUniqueMailRecipients(rows);
+      const state = getMailComposerState(item, index);
+      const isSending = mailInFlight.has(index);
+      const resultText = buildMailResultText(state.result);
+
+      if (!state.open) {
+        return "";
+      }
+
+      return `
+        <section class="mail-box">
+          <h3 class="mail-title">Envio masivo</h3>
+          <p class="mail-hint">
+            Destinatarios validos: ${recipients}. Se omiten mails vacios, invalidos o repetidos.
+          </p>
+          <div class="mail-grid">
+            <label class="mail-field">
+              Asunto
+              <input
+                class="mail-input"
+                type="text"
+                maxlength="160"
+                data-mail-subject="${index}"
+                value="${escapeHtml(state.subject || getDefaultMailSubject(item))}"
+                ${isSending ? "disabled" : ""}
+              />
+            </label>
+            <label class="mail-field">
+              Mensaje
+              <textarea
+                class="mail-textarea"
+                maxlength="6000"
+                data-mail-message="${index}"
+                placeholder="Escribi el mensaje para los inscriptos de este encuentro"
+                ${isSending ? "disabled" : ""}
+              >${escapeHtml(state.message || "")}</textarea>
+            </label>
+          </div>
+          <div class="mail-actions">
+            <button
+              class="btn-event"
+              type="button"
+              data-send-event-mail="${index}"
+              ${recipients === 0 || isSending ? "disabled" : ""}
+            >
+              ${isSending ? "Enviando..." : `Enviar a ${recipients} mails`}
+            </button>
+            <button
+              class="btn-event"
+              type="button"
+              data-close-mail-composer="${index}"
+              ${isSending ? "disabled" : ""}
+            >
+              Cerrar
+            </button>
+          </div>
+          ${resultText
+            ? `<p class="mail-result ${state.result?.ok ? "" : "is-error"}">${escapeHtml(resultText)}</p>`
+            : ""}
+        </section>
+      `;
+    }
+
     function buildRaffleSectionHtml(item, index) {
       const rows = Array.isArray(item?.inscripciones) ? item.inscripciones : [];
       const eligibleRows = getEligibleRaffleRows(item);
@@ -2431,6 +2673,9 @@
           const showCertificados = canManageEvents && currentPanelView === PANEL_VIEW_CERTIFICADOS;
           const isExpanded = isEventExpanded(item, index);
           const showExpandControl = showInscripciones && rows.length > 0;
+          const mailState = getMailComposerState(item, index);
+          const showMailComposer = showInscripciones && canManageEvents && mailState.open;
+          const mailRecipientCount = countUniqueMailRecipients(rows);
 
           const attendanceSectionHtml = `
             <section class="attendance-box">
@@ -2554,7 +2799,7 @@
           `;
 
           return `
-            <article class="event-card ${showInscripciones && !isExpanded ? "is-collapsed" : ""}">
+            <article class="event-card ${showInscripciones && !isExpanded && !showMailComposer ? "is-collapsed" : ""}">
               <header class="event-head">
                 <div class="event-heading">
                   ${
@@ -2620,6 +2865,14 @@
                               >
                                 Descargar resumen
                               </button>
+                              <button
+                                class="btn-event"
+                                type="button"
+                                data-toggle-mail-composer="${index}"
+                                ${mailRecipientCount === 0 || mailInFlight.has(index) ? "disabled" : ""}
+                              >
+                                ${showMailComposer ? "Ocultar mail" : "Enviar mail"}
+                              </button>
                             `
                             : ""
                         }
@@ -2627,6 +2880,7 @@
                     `
                 }
               </header>
+              ${showMailComposer ? buildMailSectionHtml(item, index) : ""}
               ${showAsistencia ? attendanceSectionHtml : ""}
               ${showLunch ? lunchSectionHtml : ""}
               ${showInscripciones && isExpanded ? inscripcionesSectionHtml : ""}
@@ -2786,6 +3040,27 @@
       }
     }
 
+    eventsContainer.addEventListener("input", (event) => {
+      const subjectInput = event.target.closest("[data-mail-subject]");
+      if (subjectInput) {
+        const index = Number.parseInt(subjectInput.getAttribute("data-mail-subject"), 10);
+        if (!Number.isInteger(index)) return;
+        const selected = currentEventos[index];
+        if (!selected) return;
+        updateMailComposerField(selected, index, "subject", subjectInput.value);
+        return;
+      }
+
+      const messageInput = event.target.closest("[data-mail-message]");
+      if (messageInput) {
+        const index = Number.parseInt(messageInput.getAttribute("data-mail-message"), 10);
+        if (!Number.isInteger(index)) return;
+        const selected = currentEventos[index];
+        if (!selected) return;
+        updateMailComposerField(selected, index, "message", messageInput.value);
+      }
+    });
+
     eventsContainer.addEventListener("click", async (event) => {
       const toggleButton = event.target.closest("[data-toggle-event]");
       if (toggleButton) {
@@ -2801,6 +3076,103 @@
           10
         );
         await toggleCertificate(toggleCertificateIndex);
+        return;
+      }
+
+      const mailToggleButton = event.target.closest("[data-toggle-mail-composer]");
+      if (mailToggleButton) {
+        const mailIndex = Number.parseInt(
+          mailToggleButton.getAttribute("data-toggle-mail-composer"),
+          10
+        );
+        if (!Number.isInteger(mailIndex)) return;
+        const selected = currentEventos[mailIndex];
+        if (!selected) return;
+        const state = getMailComposerState(selected, mailIndex);
+        setMailComposerOpen(selected, mailIndex, !state.open);
+        renderEvents(currentEventos);
+        return;
+      }
+
+      const mailCloseButton = event.target.closest("[data-close-mail-composer]");
+      if (mailCloseButton) {
+        const mailIndex = Number.parseInt(
+          mailCloseButton.getAttribute("data-close-mail-composer"),
+          10
+        );
+        if (!Number.isInteger(mailIndex)) return;
+        const selected = currentEventos[mailIndex];
+        if (!selected) return;
+        setMailComposerOpen(selected, mailIndex, false);
+        renderEvents(currentEventos);
+        return;
+      }
+
+      const mailSendButton = event.target.closest("[data-send-event-mail]");
+      if (mailSendButton) {
+        const mailIndex = Number.parseInt(
+          mailSendButton.getAttribute("data-send-event-mail"),
+          10
+        );
+        if (!Number.isInteger(mailIndex) || mailInFlight.has(mailIndex)) return;
+
+        const selected = currentEventos[mailIndex];
+        if (!selected) return;
+
+        const state = getMailComposerState(selected, mailIndex);
+        const subjectInput = eventsContainer.querySelector(`[data-mail-subject="${mailIndex}"]`);
+        const messageInput = eventsContainer.querySelector(`[data-mail-message="${mailIndex}"]`);
+        const subject = String(subjectInput?.value || "").trim();
+        const message = String(messageInput?.value || "").trim();
+        const recipientCount = countUniqueMailRecipients(selected.inscripciones);
+
+        updateMailComposerField(selected, mailIndex, "subject", subject);
+        updateMailComposerField(selected, mailIndex, "message", message);
+
+        if (subject.length < 4) {
+          state.result = { ok: false, error: "Tenes que escribir un asunto." };
+          renderEvents(currentEventos);
+          return;
+        }
+
+        if (message.length < 10) {
+          state.result = { ok: false, error: "Tenes que escribir un mensaje." };
+          renderEvents(currentEventos);
+          return;
+        }
+
+        if (recipientCount === 0) {
+          state.result = { ok: false, error: "No hay mails validos para este encuentro." };
+          renderEvents(currentEventos);
+          return;
+        }
+
+        const confirmed = window.confirm(
+          `Vas a enviar un mail real a ${recipientCount} destinatarios de ${selected.evento}. Continuar?`
+        );
+        if (!confirmed) return;
+
+        mailInFlight.add(mailIndex);
+        state.result = null;
+        setStatusMessage(`Enviando mail masivo de ${selected.evento}...`);
+        renderEvents(currentEventos);
+
+        try {
+          const result = await sendEventMail(selected, subject, message);
+          if (result.redirected) return;
+
+          state.result = { ...result, ok: true };
+          setStatusMessage(buildMailResultText(state.result));
+        } catch (error) {
+          state.result = {
+            ok: false,
+            error: error instanceof Error ? error.message : "No se pudo enviar el mail masivo."
+          };
+          setStatusMessage(`Error: ${state.result.error}`, "error");
+        } finally {
+          mailInFlight.delete(mailIndex);
+          renderEvents(currentEventos);
+        }
         return;
       }
 
