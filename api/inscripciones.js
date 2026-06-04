@@ -61,18 +61,19 @@ const MAIL_EVENT_EXTRAS = [
   },
   {
     eventKey: "mendoza 9/5",
-    locationAddress: "Club Social Ahorrarte",
+    locationAddress: "Espacio Cultural Julio Le Parc",
     ingresoHorarioLabel: "Horario de Entrada",
     ingresoHorario: "08:00 a 16:30 hs",
     detailRows: [
       { label: "Fecha", value: "09/05/2026" },
       { label: "Horario", value: "08:00 a 16:30 hs" },
-      { label: "Ubicacion", value: "Club Social Ahorrarte" },
+      { label: "Ubicacion", value: "Espacio Cultural Julio Le Parc" },
       {
         label: "Link lugar",
-        value: "https://maps.app.goo.gl/sHd5dqsa6RnW2hws6",
-        href: "https://maps.app.goo.gl/sHd5dqsa6RnW2hws6"
-      }
+        value: "https://maps.app.goo.gl/Y49wHh722F2bY6uJ8",
+        href: "https://maps.app.goo.gl/Y49wHh722F2bY6uJ8"
+      },
+      { label: "Direccion", value: "Mitre y Godoy Cruz, Guaymallen, Mendoza" }
     ],
     prizeHighlightTitle: "Grandes sorteos exclusivos al cierre del evento",
     prizeHighlightText:
@@ -89,12 +90,12 @@ const MAIL_EVENT_EXTRAS = [
       { label: "Horario", value: "08:30" },
       {
         label: "Lugar",
-        value: "Escuela de Educaci\u00f3n T\u00e9cnica N\u00b0 3138 \"Alberto Einstein\""
+        value: "Club Social Ahorrarte"
       },
       {
         label: "Link Lugar",
-        value: "https://share.google/Mwqcz7jmD6iIZX6HM",
-        href: "https://share.google/Mwqcz7jmD6iIZX6HM"
+        value: "https://maps.app.goo.gl/sHd5dqsa6RnW2hws6",
+        href: "https://maps.app.goo.gl/sHd5dqsa6RnW2hws6"
       }
     ],
     prizeHighlightTitle: "Grandes sorteos exclusivos al cierre del evento",
