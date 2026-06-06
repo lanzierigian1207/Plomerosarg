@@ -166,7 +166,8 @@ function isMailOptionalForEvent(encuentro) {
   return (
     normalizedEvent === "bahia blanca 11/3" ||
     normalizedEvent === "mar del plata 14/3" ||
-    normalizedEvent === "mendoza 9/5"
+    normalizedEvent === "mendoza 9/5" ||
+    normalizedEvent === "salta 6/6"
   );
 }
 
