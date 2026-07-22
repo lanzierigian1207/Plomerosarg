@@ -2471,6 +2471,7 @@
             <td>${escapeHtml(item.nombre_apellido || "-")}</td>
             <td>${escapeHtml(item.dni || "-")}</td>
             <td>${escapeHtml(item.mail || "-")}</td>
+            <td>${escapeHtml(item.celular || "-")}</td>
             <td>${escapeHtml(item.provincia || "-")}</td>
             <td>${escapeHtml(item.localidad || "-")}</td>
             <td>${escapeHtml(item.profesion_label || item.profesion || "-")}</td>
@@ -2716,6 +2717,7 @@
             <td>${escapeHtml(item.nombre_apellido || "-")}</td>
             <td style="mso-number-format:'\\@';">${escapeHtml(item.dni || "-")}</td>
             <td>${escapeHtml(item.mail || "-")}</td>
+            <td style="mso-number-format:'\\@';">${escapeHtml(item.celular || "-")}</td>
             <td>${escapeHtml(item.provincia || "-")}</td>
             <td>${escapeHtml(item.localidad || "-")}</td>
             <td>${escapeHtml(item.asociado || "-")}</td>
@@ -2745,7 +2747,7 @@
             <table border="1">
               <thead>
                 <tr>
-                  <th colspan="14">Evento ${safeEventName}</th>
+                  <th colspan="15">Evento ${safeEventName}</th>
                 </tr>
                 <tr>
                   <th>ID encuentro</th>
@@ -2753,6 +2755,7 @@
                   <th>Nombre y apellido</th>
                   <th>DNI</th>
                   <th>Mail</th>
+                  <th>Numero de Ceular</th>
                   <th>Provincia</th>
                   <th>Localidad</th>
                   <th>Asociado</th>
@@ -2918,6 +2921,7 @@
                         <th>Nombre y apellido</th>
                         <th>DNI</th>
                         <th>Mail</th>
+                        <th>Numero de Ceular</th>
                         <th>Provincia</th>
                         <th>Localidad</th>
                         <th>Profesión</th>

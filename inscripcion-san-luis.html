@@ -269,6 +269,11 @@
       </div>
 
       <div class="field">
+        <label class="required" for="celular">Numero de Ceular</label>
+        <input id="celular" name="celular" type="tel" inputmode="tel" autocomplete="tel" required>
+      </div>
+
+      <div class="field">
         <label class="required" for="provincia">&iquest;De qu&eacute; provincia sos?</label>
         <select id="provincia" name="provincia" required>
           <option value="">Seleccionar</option>
@@ -442,6 +447,7 @@
         dni: String(formData.get("dni") || "").trim(),
         nombre_apellido: String(formData.get("nombre_apellido") || "").trim(),
         mail: String(formData.get("mail") || "").trim(),
+        celular: String(formData.get("celular") || "").trim(),
         provincia: String(formData.get("provincia") || "").trim(),
         localidad: String(formData.get("localidad") || "").trim(),
         asociado: String(formData.get("asociado") || "").trim(),

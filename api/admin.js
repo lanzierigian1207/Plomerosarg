@@ -14,6 +14,7 @@ const EXPORT_COLUMNS = [
   { key: "dni", label: "DNI" },
   { key: "nombre_apellido", label: "Nombre y Apellido" },
   { key: "mail", label: "Mail" },
+  { key: "celular", label: "Numero de Ceular" },
   { key: "provincia", label: "Provincia" },
   { key: "localidad", label: "Localidad" },
   { key: "asociado", label: "Asociado" },
@@ -198,6 +199,20 @@ function formatDate(value) {
   return date.toLocaleString("es-AR");
 }
 
+function isMissingColumnError(detail, columnName) {
+  const normalized = String(detail ?? "").toLowerCase();
+  const normalizedColumnName = String(columnName || "").toLowerCase();
+  return (
+    normalizedColumnName &&
+    normalized.includes(normalizedColumnName) &&
+    (
+      normalized.includes("does not exist") ||
+      normalized.includes("schema cache") ||
+      normalized.includes("column")
+    )
+  );
+}
+
 function buildCsv(rows) {
   const headers = EXPORT_COLUMNS.map((col) => toCsvCell(col.label)).join(",");
   const lines = rows.map((row) => {
@@ -226,7 +241,7 @@ async function fetchInscripciones(env) {
   const endpoint = new URL(`${supabaseUrl.replace(/\/$/, "")}/rest/v1/inscripciones`);
   endpoint.searchParams.set(
     "select",
-    "id,created_at,encuentro,dni,nombre_apellido,mail,provincia,localidad,asociado,profesion,origen"
+    "id,created_at,encuentro,dni,nombre_apellido,mail,celular,provincia,localidad,asociado,profesion,origen"
   );
   endpoint.searchParams.set("order", "created_at.desc");
 
@@ -241,6 +256,26 @@ async function fetchInscripciones(env) {
     });
 
     if (!result.ok) {
+      if (isMissingColumnError(result.detail, "celular")) {
+        endpoint.searchParams.set(
+          "select",
+          "id,created_at,encuentro,dni,nombre_apellido,mail,provincia,localidad,asociado,profesion,origen"
+        );
+
+        const fallbackResult = await fetchSupabaseRows({
+          endpoint,
+          headers: {
+            apikey: serviceRoleKey,
+            Authorization: `Bearer ${serviceRoleKey}`,
+            Accept: "application/json"
+          }
+        });
+
+        if (fallbackResult.ok) {
+          return { rows: fallbackResult.rows, error: "" };
+        }
+      }
+
       return {
         rows: [],
         error: `No se pudo leer inscripciones (${result.status}). ${result.detail}`
@@ -461,6 +496,7 @@ function buildRowsHtml(rows) {
         <td>${escapeHtml(row.dni)}</td>
         <td>${escapeHtml(row.nombre_apellido)}</td>
         <td>${escapeHtml(row.mail)}</td>
+        <td>${escapeHtml(row.celular)}</td>
         <td>${escapeHtml(row.provincia)}</td>
         <td>${escapeHtml(row.localidad)}</td>
         <td>${escapeHtml(row.asociado)}</td>
@@ -489,6 +525,7 @@ function panelView({ rows, error }) {
               <th>DNI</th>
               <th>Nombre y Apellido</th>
               <th>Mail</th>
+              <th>Numero de Ceular</th>
               <th>Provincia</th>
               <th>Localidad</th>
               <th>Asociado</th>

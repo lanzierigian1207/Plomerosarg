@@ -29,8 +29,11 @@ const BULK_MAIL_BATCH_SIZE = 100;
 const BULK_MAIL_RETRY_ATTEMPTS = 4;
 const INSCRIPCIONES_SELECT_BASE =
   "id,encuentro,dni,nombre_apellido,mail,provincia,localidad,asociado,profesion,origen,acepto_terminos,created_at";
-const INSCRIPCIONES_SELECT_WITH_EXPOSITOR_INFO =
-  `${INSCRIPCIONES_SELECT_BASE},expositor_info`;
+const INSCRIPCIONES_OPTIONAL_COLUMNS = ["celular", "expositor_info"];
+
+function buildInscripcionesSelect(optionalColumns = INSCRIPCIONES_OPTIONAL_COLUMNS) {
+  return [INSCRIPCIONES_SELECT_BASE, ...optionalColumns].join(",");
+}
 
 const PROFESION_LABELS = {
   plomero: "Plomero",
@@ -750,10 +753,12 @@ function parseBooleanInput(value) {
   return null;
 }
 
-function isMissingExpositorInfoColumnError(detail) {
+function isMissingInscripcionesColumnError(detail, columnName) {
   const normalized = String(detail ?? "").toLowerCase();
+  const normalizedColumnName = String(columnName || "").toLowerCase();
   return (
-    normalized.includes("expositor_info") &&
+    normalizedColumnName &&
+    normalized.includes(normalizedColumnName) &&
     (
       normalized.includes("does not exist") ||
       normalized.includes("schema cache") ||
@@ -768,23 +773,29 @@ async function fetchInscripcionesRows({ endpoint, serviceRoleKey }) {
     Authorization: `Bearer ${serviceRoleKey}`
   };
 
-  const result = await fetchSupabaseRows({
-    endpoint,
-    headers,
-    select: INSCRIPCIONES_SELECT_WITH_EXPOSITOR_INFO
-  });
+  let optionalColumns = [...INSCRIPCIONES_OPTIONAL_COLUMNS];
 
-  if (!result.ok) {
-    if (isMissingExpositorInfoColumnError(result.detail)) {
-      const fallbackResult = await fetchSupabaseRows({
-        endpoint,
-        headers,
-        select: INSCRIPCIONES_SELECT_BASE
-      });
+  while (true) {
+    const result = await fetchSupabaseRows({
+      endpoint,
+      headers,
+      select: buildInscripcionesSelect(optionalColumns)
+    });
 
-      return fallbackResult.ok
-        ? { ok: true, rows: fallbackResult.rows }
-        : { ok: false, detail: fallbackResult.detail || result.detail };
+    if (result.ok) {
+      return {
+        ok: true,
+        rows: result.rows
+      };
+    }
+
+    const missingColumn = optionalColumns.find((columnName) =>
+      isMissingInscripcionesColumnError(result.detail, columnName)
+    );
+
+    if (missingColumn) {
+      optionalColumns = optionalColumns.filter((columnName) => columnName !== missingColumn);
+      continue;
     }
 
     return {
@@ -792,11 +803,6 @@ async function fetchInscripcionesRows({ endpoint, serviceRoleKey }) {
       detail: result.detail
     };
   }
-
-  return {
-    ok: true,
-    rows: result.rows
-  };
 }
 
 async function fetchEventInscripcionesRows({ supabaseUrl, serviceRoleKey, eventName }) {
@@ -1462,6 +1468,7 @@ async function handleGet(req, res, adminRole) {
         dni: cleanText(row.dni, 20),
         nombre_apellido: cleanText(row.nombre_apellido, 120),
         mail: cleanText(row.mail, 120),
+        celular: cleanText(row.celular, 40),
         provincia: cleanText(row.provincia, 40),
         localidad: cleanText(row.localidad, 120),
         asociado: cleanText(row.asociado, 5),

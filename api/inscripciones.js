@@ -176,6 +176,11 @@ function isAsociadoOptionalForEvent(encuentro) {
   return normalizedEvent === "mendoza 9/5";
 }
 
+function isCelularRequiredForEvent(encuentro) {
+  const normalizedEvent = normalizeLookupText(encuentro);
+  return normalizedEvent === "san luis 8/8";
+}
+
 function normalizeBody(body) {
   if (!body) return {};
 
@@ -632,6 +637,7 @@ const handler = async (req, res) => {
   const encuentro = getCanonicalEventName(encuentroInput);
   const nombre_apellido = cleanText(payload.nombre_apellido, 120);
   const mail = cleanText(payload.mail, 120).toLowerCase();
+  const celular = cleanText(payload.celular, 40);
   const provincia = cleanText(payload.provincia, 40);
   const localidad = cleanText(payload.localidad, 120);
   const asociado = cleanText(payload.asociado, 5);
@@ -642,6 +648,7 @@ const handler = async (req, res) => {
   const acepto_terminos = cleanText(payload.acepto_terminos, 5).toLowerCase() === "si";
   const mailRequired = !isMailOptionalForEvent(encuentro);
   const asociadoRequired = !isAsociadoOptionalForEvent(encuentro);
+  const celularRequired = isCelularRequiredForEvent(encuentro);
 
   if (
     !dni ||
@@ -649,6 +656,7 @@ const handler = async (req, res) => {
     encuentro === "Sin evento" ||
     !nombre_apellido ||
     (mailRequired && !mail) ||
+    (celularRequired && !celular) ||
     !provincia ||
     (asociadoRequired && !asociado) ||
     profesiones.length === 0 ||
@@ -694,6 +702,7 @@ const handler = async (req, res) => {
     dni,
     nombre_apellido,
     mail,
+    ...(celular ? { celular } : {}),
     provincia,
     localidad,
     asociado,
