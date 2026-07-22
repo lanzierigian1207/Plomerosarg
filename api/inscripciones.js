@@ -121,7 +121,7 @@ const MAIL_EVENT_EXTRAS = [
     donationNotice:
       "Ingreso solidario: para participar del evento, es necesario llevar 2 alimentos no perecederos.",
     reserveImageSlot: true,
-    imageUrl: "/Prueba_2/assets/San luis mail.jpeg"
+    imageUrl: "https://www.plomerosarg.com/Prueba_2/assets/San%20luis%20mail.jpeg"
   }
 ];
 
