@@ -105,6 +105,23 @@ const MAIL_EVENT_EXTRAS = [
     donationNotice:
       "Ingreso solidario: para participar del evento, es necesario llevar 2 alimentos no perecederos.",
     imageUrl: "https://plomerosarg.com/Prueba_2/assets/salta-mail-2026-05-23.jpeg"
+  },
+  {
+    eventKey: "san luis 8/8",
+    detailRows: [
+      { label: "Fecha", value: "08/08/2026" },
+      { label: "Horario", value: "", showWhenEmpty: true },
+      { label: "Lugar", value: "", showWhenEmpty: true },
+      { label: "Link Lugar", value: "", showWhenEmpty: true }
+    ],
+    prizeHighlightTitle: "Grandes sorteos exclusivos al cierre del evento",
+    prizeHighlightText:
+      "Quienes esten presentes durante toda la jornada podran participar de los sorteos.",
+    hideBuenDiaLine: true,
+    donationNotice:
+      "Ingreso solidario: para participar del evento, es necesario llevar 2 alimentos no perecederos.",
+    reserveImageSlot: true,
+    imageUrl: ""
   }
 ];
 const WHATSAPP_GROUP_MATCHERS = [
@@ -418,9 +435,10 @@ function buildConfirmationEmailPayload({
         .map((item) => ({
           label: escapeHtml(item?.label || ""),
           value: escapeHtml(item?.value || ""),
-          href: escapeHtml(item?.href || "")
+          href: escapeHtml(item?.href || ""),
+          showWhenEmpty: item?.showWhenEmpty === true
         }))
-        .filter((item) => item.label && item.value)
+        .filter((item) => item.label && (item.value || item.showWhenEmpty))
     : [];
   const hasEventIngresoHorario =
     eventExtras != null &&
@@ -522,7 +540,7 @@ function buildConfirmationEmailPayload({
       </p>
     `
     : "";
-  const eventFlyerHtml = eventExtras
+  const eventImageSlotHtml = safeEventMailImageUrl
     ? `
       <img
         src="${safeEventMailImageUrl}"
@@ -530,6 +548,13 @@ function buildConfirmationEmailPayload({
         width="520"
         style="display:block;width:100%;max-width:520px;height:auto;margin:12px auto 16px;border:0;outline:none;text-decoration:none;border-radius:12px;"
       />
+    `
+    : eventExtras?.reserveImageSlot === true
+    ? `
+      <div
+        aria-hidden="true"
+        style="display:block;width:100%;max-width:520px;height:180px;margin:18px auto 20px;font-size:0;line-height:0;"
+      >&nbsp;</div>
     `
     : "";
   const html = `
@@ -561,7 +586,7 @@ function buildConfirmationEmailPayload({
       <p style="margin:0 0 14px;color:#5b6b80;font-size:13px;">
         N&uacute;mero de registro: <strong>${escapeHtml(numeroRegistro ?? "pendiente")}</strong>
       </p>
-      ${eventFlyerHtml}
+      ${eventImageSlotHtml}
       <img
         src="${safeLogoUrl}"
         alt="Logo Plomeros ARG"
