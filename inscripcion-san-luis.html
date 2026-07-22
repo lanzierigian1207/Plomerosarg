@@ -78,6 +78,16 @@
       object-fit: contain;
     }
 
+    .form-banner {
+      width: 100%;
+      height: auto;
+      max-height: 400px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      border: 1px solid var(--line);
+    }
+
     form {
       display: grid;
       gap: 14px;
@@ -253,6 +263,10 @@
 
     <form id="inscripcionForm" action="/api/inscripciones" method="post">
       <input type="hidden" id="encuentro" name="encuentro" value="San Luis 8/8">
+
+      <!-- Imagen promocional del encuentro -->
+      <img class="form-banner" src="/Prueba_2/assets/San luis mail.jpeg" alt="Información Encuentro San Luis">
+
       <div class="field">
         <label class="required" for="dni">DNI</label>
         <input id="dni" name="dni" type="text" required>
@@ -490,6 +504,3 @@
   </script>
 </body>
 </html>
-
-
-
