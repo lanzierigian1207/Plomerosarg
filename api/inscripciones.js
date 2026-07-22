@@ -109,10 +109,10 @@ const MAIL_EVENT_EXTRAS = [
   {
     eventKey: "san luis 8/8",
     detailRows: [
-      { label: "Fecha", value: "08/08/2026" },
-      { label: "Horario", value: "", showWhenEmpty: true },
-      { label: "Lugar", value: "", showWhenEmpty: true },
-      { label: "Link Lugar", value: "", showWhenEmpty: true }
+      { label: "Fecha", value: "07 y 08/08/2026" },
+      { label: "Horario", value: "Viernes: 16:00-21:00 | Sábado: 09:00-18:00" },
+      { label: "Lugar", value: "UPrO de Villa Mercedes" },
+      { label: "Link Lugar", value: "https://share.google/7T00qtcB1UeGZJfir" }
     ],
     prizeHighlightTitle: "Grandes sorteos exclusivos al cierre del evento",
     prizeHighlightText:
@@ -124,6 +124,7 @@ const MAIL_EVENT_EXTRAS = [
     imageUrl: ""
   }
 ];
+
 const WHATSAPP_GROUP_MATCHERS = [
   {
     key: "bahia blanca",
@@ -131,15 +132,15 @@ const WHATSAPP_GROUP_MATCHERS = [
   },
   {
     key: "mar del plata",
-    url: "https://chat.whatsapp.com/JbQnGOHFcsuBEc2kgKRuBy"
+    url: "https://chat.whatsapp.com/JbQnG0HFcsuBEc2kgKRuBy"
   },
   {
     key: "mendoza",
     url: "https://chat.whatsapp.com/FORvQKFYbUY3NzgS0oS7H7"
   },
   {
-    key: "salta",
-    url: "https://chat.whatsapp.com/LVLeyRgX5Y61NYtnAhUJmX"
+    key: "san luis 8/8",
+    url: "https://chat.whatsapp.com/JzRtSGRWdXH4AhK0xKYDp8"
   }
 ];
 const DEFAULT_REGISTRO_RESET_AT = "2026-02-21T20:33:01.000Z";
