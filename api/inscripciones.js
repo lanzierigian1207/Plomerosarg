@@ -107,7 +107,7 @@ const MAIL_EVENT_EXTRAS = [
     imageUrl: "https://plomerosarg.com/Prueba_2/assets/salta-mail-2026-05-23.jpeg"
   },
   {
-    eventKey: "san luis 8/8",
+   eventKey: "san luis 8/8",
     detailRows: [
       { label: "Fecha", value: "07 y 08/08/2026" },
       { label: "Horario", value: "Viernes: 16:00-21:00 | Sábado: 09:00-18:00" },
@@ -121,7 +121,7 @@ const MAIL_EVENT_EXTRAS = [
     donationNotice:
       "Ingreso solidario: para participar del evento, es necesario llevar 2 alimentos no perecederos.",
     reserveImageSlot: true,
-    imageUrl: ""
+    imageUrl: "/Prueba_2/assets/San luis mail.jpeg"
   }
 ];
 
