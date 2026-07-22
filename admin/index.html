@@ -2,3795 +2,775 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="/Prueba_2/assets/logo-plomeros-circular.png">
-  <link rel="apple-touch-icon" href="/Prueba_2/assets/logo-plomeros-circular.png">
-  <title>Panel Admin | Inscripciones</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración</title>
   <style>
+    /* Estilos base del panel */
     :root {
-      --ink: #13233a;
-      --muted: #4d627e;
-      --bg: #eef4fb;
-      --card: #ffffff;
-      --line: #d3deec;
-      --accent: #0f4ea8;
-      --accent-soft: #e4efff;
-      --ok: #1f7a45;
-      --warn: #7f5a00;
-      --off: #8f241f;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
+      --bg-color: #f4f6f9;
+      --card-bg: #ffffff;
+      --text-color: #333333;
+      --primary-color: #0056b3;
+      --primary-hover: #004085;
+      --border-color: #e0e0e0;
+      --status-ok: #28a745;
+      --status-error: #dc3545;
     }
 
     body {
-      font-family: "Barlow", sans-serif;
-      color: var(--ink);
-      background:
-        radial-gradient(900px 500px at -10% -10%, #d9e9ff 0%, transparent 60%),
-        radial-gradient(700px 400px at 110% 0%, #ffe9d0 0%, transparent 58%),
-        var(--bg);
-      min-height: 100vh;
-      padding: 24px;
-    }
-
-    .wrap {
-      max-width: 1300px;
-      margin: 0 auto;
-      display: grid;
-      gap: 18px;
-    }
-
-    .top {
-      background: linear-gradient(135deg, #0f4ea8 0%, #1d6fd0 100%);
-      border-radius: 16px;
-      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
       padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Header y métricas */
+    .header-panel {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 14px;
-      flex-wrap: wrap;
-      box-shadow: 0 18px 30px rgba(14, 63, 134, 0.22);
+      margin-bottom: 20px;
     }
 
-    .top h1 {
-      font-size: clamp(1.5rem, 3vw, 2.1rem);
-      line-height: 1.1;
-      margin-bottom: 6px;
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
     }
 
-    .summary {
+    .metric-card {
+      background: var(--card-bg);
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+
+    /* Barra de estado y pestañas */
+    .status {
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+    .status.ok { background-color: #d4edda; color: #155724; }
+    .status.error { background-color: #f8d7da; color: #721c24; }
+
+    .nav-tabs {
       display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-      color: #d9e9ff;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .nav-btn {
+      padding: 10px 18px;
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+      cursor: pointer;
+      border-radius: 6px;
       font-weight: 600;
     }
 
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.18);
+    .nav-btn.is-active {
+      background: var(--primary-color);
       color: #fff;
-      font-weight: 700;
+      border-color: var(--primary-color);
     }
 
-    .btn {
-      border: 0;
-      border-radius: 10px;
-      background: #ffffff;
-      color: var(--accent);
-      padding: 10px 14px;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .top-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .view-switch {
-      display: inline-flex;
-      gap: 6px;
-      padding: 4px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    .btn-view {
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-      color: #ffffff;
-      padding: 7px 12px;
-      font: inherit;
-      font-size: 0.86rem;
-      font-weight: 800;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    .btn-view.is-active {
-      background: #ffffff;
-      color: var(--accent);
-      border-color: #ffffff;
-    }
-
-    .events {
-      display: grid;
-      gap: 14px;
-    }
-
+    /* Tarjeta de evento y tablas */
     .event-card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      overflow: hidden;
-    }
-
-    .event-card.is-collapsed .event-head {
-      border-bottom: 0;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      padding: 20px;
     }
 
     .event-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
-      padding: 14px 16px;
-      background: var(--accent-soft);
-      border-bottom: 1px solid var(--line);
-      flex-wrap: wrap;
     }
 
     .event-heading {
       display: flex;
       align-items: center;
       gap: 10px;
-      min-width: 0;
-    }
-
-    .event-title {
-      font-size: 1.12rem;
-      line-height: 1.2;
-      min-width: 0;
-    }
-
-    .event-expand {
-      width: 30px;
-      height: 30px;
-      border: 1px solid #95b8ea;
-      border-radius: 999px;
-      background: #ffffff;
-      color: var(--accent);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      flex: 0 0 auto;
-    }
-
-    .event-expand:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
-    .event-expand-icon {
-      width: 9px;
-      height: 9px;
-      border-right: 2px solid currentColor;
-      border-bottom: 2px solid currentColor;
-      transform: rotate(45deg) translate(-1px, -1px);
-      transition: transform 0.18s ease;
-    }
-
-    .event-expand[aria-expanded="true"] .event-expand-icon {
-      transform: rotate(225deg) translate(-1px, -1px);
-    }
-
-    .counter {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: #fff;
-      color: var(--ok);
-      border: 1px solid #b8dec7;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .counter-attendance {
-      color: #0f7a45;
-      border-color: #b7deca;
-      background: #f3fcf7;
-    }
-
-    .event-meta {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .btn-event {
-      border: 1px solid #95b8ea;
-      border-radius: 999px;
-      background: #fff;
-      color: var(--accent);
-      padding: 6px 11px;
-      font: inherit;
-      font-size: 0.86rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .btn-toggle {
-      border-color: #d6b986;
-      color: #7d4f00;
-    }
-
-    .btn-toggle.is-on {
-      border-color: #c9e2d1;
-      color: var(--ok);
-    }
-
-    .btn-toggle.is-off {
-      border-color: #f1b5af;
-      color: var(--off);
-    }
-
-    .btn-event:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
-    .event-state {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 999px;
-      font-size: 0.82rem;
-      font-weight: 800;
-      padding: 6px 10px;
-      border: 1px solid transparent;
-      white-space: nowrap;
-    }
-
-    .event-state.is-on {
-      color: var(--ok);
-      border-color: #b8dec7;
-      background: #f5fff9;
-    }
-
-    .event-state.is-off {
-      color: var(--off);
-      border-color: #f1b5af;
-      background: #fff4f3;
-    }
-
-    .empty {
-      padding: 16px;
-      color: var(--muted);
-      font-weight: 600;
     }
 
     .table-wrap {
-      overflow: auto;
-    }
-
-    .rows-controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      padding: 12px 16px 16px;
-      border-top: 1px solid #edf2f8;
-      background: #fbfdff;
-    }
-
-    .rows-info {
-      color: var(--muted);
-      font-size: 0.88rem;
-      font-weight: 700;
-      margin-right: 6px;
-    }
-
-    .attendance-box {
-      margin: 14px 16px 0;
-      padding: 12px;
-      border: 1px solid #dbe6f5;
-      border-radius: 10px;
-      background: #f7fbff;
-    }
-
-    .attendance-title {
-      font-size: 0.95rem;
-      font-weight: 800;
-      color: var(--ink);
-      margin-bottom: 8px;
-    }
-
-    .attendance-form {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .attendance-input {
-      width: 190px;
-      max-width: 100%;
-      border: 1px solid #afc4e5;
-      border-radius: 8px;
-      padding: 8px 10px;
-      font: inherit;
-      font-size: 0.9rem;
-      color: var(--ink);
-      background: #fff;
-    }
-
-    .attendance-hint {
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: 0.86rem;
-      font-weight: 600;
-    }
-
-    .attendance-error {
-      margin-top: 8px;
-      color: #8f241f;
-      font-size: 0.86rem;
-      font-weight: 700;
-    }
-
-    .attendance-result {
-      margin-top: 10px;
-      border: 1px solid #dbe6f5;
-      border-radius: 10px;
-      background: #ffffff;
-      padding: 10px;
-      display: grid;
-      gap: 6px;
-    }
-
-    .attendance-row {
-      font-size: 0.9rem;
-      color: #213750;
-    }
-
-    .attendance-check-wrap {
-      margin-top: 4px;
-    }
-
-    .btn-attendance-check {
-      border: 0;
-      border-radius: 999px;
-      background: #188645;
-      color: #fff;
-      padding: 7px 13px;
-      font: inherit;
-      font-size: 0.85rem;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    .btn-attendance-check.is-done {
-      background: #0f6f38;
-    }
-
-    .certificate-box {
-      margin: 14px 16px 0;
-      padding: 12px;
-      border: 1px solid #dbe6f5;
-      border-radius: 10px;
-      background: #f7fbff;
-      display: grid;
-      gap: 10px;
-    }
-
-    .certificate-title {
-      font-size: 0.95rem;
-      font-weight: 800;
-      color: var(--ink);
-    }
-
-    .certificate-hint {
-      color: var(--muted);
-      font-size: 0.88rem;
-      font-weight: 600;
-    }
-
-    .certificate-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .mail-box {
-      margin: 14px 16px 0;
-      padding: 14px;
-      border: 1px solid #dbe6f5;
-      border-radius: 10px;
-      background: #f7fbff;
-      display: grid;
-      gap: 12px;
-    }
-
-    .mail-title {
-      font-size: 0.95rem;
-      font-weight: 800;
-      color: var(--ink);
-    }
-
-    .mail-hint {
-      color: var(--muted);
-      font-size: 0.88rem;
-      font-weight: 600;
-    }
-
-    .mail-recipient-tools {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .mail-recipient-list {
-      max-height: 230px;
-      overflow: auto;
-      border: 1px solid #dbe6f5;
-      border-radius: 10px;
-      background: #ffffff;
-    }
-
-    .mail-recipient-option {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 10px;
-      align-items: start;
-      padding: 9px 10px;
-      border-bottom: 1px solid #edf3fb;
-      cursor: pointer;
-    }
-
-    .mail-recipient-option:last-child {
-      border-bottom: 0;
-    }
-
-    .mail-recipient-option input {
-      width: 16px;
-      height: 16px;
-      margin-top: 2px;
-      accent-color: var(--accent);
-    }
-
-    .mail-recipient-name {
-      display: block;
-      color: var(--ink);
-      font-size: 0.9rem;
-      font-weight: 800;
-      line-height: 1.25;
-    }
-
-    .mail-recipient-mail {
-      display: block;
-      color: var(--muted);
-      font-size: 0.84rem;
-      font-weight: 600;
-      line-height: 1.35;
-      word-break: break-word;
-    }
-
-    .mail-grid {
-      display: grid;
-      gap: 10px;
-    }
-
-    .mail-field {
-      display: grid;
-      gap: 5px;
-      color: #335173;
-      font-size: 0.84rem;
-      font-weight: 800;
-    }
-
-    .mail-input,
-    .mail-textarea {
-      width: 100%;
-      border: 1px solid #afc4e5;
-      border-radius: 8px;
-      padding: 9px 10px;
-      font: inherit;
-      font-size: 0.92rem;
-      color: var(--ink);
-      background: #fff;
-    }
-
-    .mail-textarea {
-      min-height: 150px;
-      resize: vertical;
-      line-height: 1.45;
-    }
-
-    .mail-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .mail-result {
-      border: 1px solid #b8dec7;
-      border-radius: 10px;
-      background: #f5fff9;
-      color: var(--ok);
-      padding: 10px 12px;
-      font-size: 0.88rem;
-      font-weight: 700;
-      line-height: 1.45;
-    }
-
-    .mail-result.is-error {
-      border-color: #f1b5af;
-      background: #fff4f3;
-      color: var(--off);
-    }
-
-    .raffle-box {
-      margin: 14px 16px 16px;
-      padding: 14px;
-      border: 1px solid #dbe6f5;
-      border-radius: 10px;
-      background: #f7fbff;
-      display: grid;
-      gap: 12px;
-    }
-
-    .raffle-title {
-      font-size: 0.95rem;
-      font-weight: 800;
-      color: var(--ink);
-    }
-
-    .raffle-hint {
-      color: var(--muted);
-      font-size: 0.88rem;
-      font-weight: 600;
-    }
-
-    .raffle-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .raffle-count-wrap {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border: 1px solid #d7e4f5;
-      border-radius: 999px;
-      background: #ffffff;
-      padding: 7px 12px;
-    }
-
-    .raffle-count-label {
-      color: #335173;
-      font-size: 0.84rem;
-      font-weight: 700;
-    }
-
-    .raffle-count-input {
-      width: 74px;
-      border: 1px solid #c7d8ee;
-      border-radius: 999px;
-      padding: 6px 10px;
-      font: inherit;
-      font-size: 0.88rem;
-      font-weight: 700;
-      color: var(--ink);
-      background: #fff;
-    }
-
-    .raffle-brand-wrap {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border: 1px solid #d7e4f5;
-      border-radius: 999px;
-      background: #ffffff;
-      padding: 7px 12px;
-    }
-
-    .raffle-brand-label {
-      color: #335173;
-      font-size: 0.84rem;
-      font-weight: 700;
-    }
-
-    .raffle-brand-select {
-      min-width: 170px;
-      border: 1px solid #c7d8ee;
-      border-radius: 999px;
-      padding: 6px 12px;
-      font: inherit;
-      font-size: 0.86rem;
-      font-weight: 700;
-      color: var(--ink);
-      background: #fff;
-    }
-
-    .raffle-brand-group {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 8px 0;
-      border-top: 1px solid #edf3fb;
-    }
-
-    .raffle-brand-group:first-of-type {
-      border-top: 0;
-      padding-top: 0;
-    }
-
-    .raffle-brand-logo {
-      width: 88px;
-      height: 52px;
-      border: 1px solid #dbe6f5;
-      border-radius: 10px;
-      background: #fff;
-      object-fit: contain;
-      padding: 6px;
-      flex: 0 0 auto;
-    }
-
-    .raffle-brand-info {
-      min-width: 0;
-      display: grid;
-      gap: 4px;
-    }
-
-    .raffle-brand-name {
-      font-size: 0.84rem;
-      font-weight: 800;
-      color: var(--accent);
-    }
-
-    .raffle-brand-names {
-      margin: 0;
-      padding-left: 16px;
-      display: grid;
-      gap: 4px;
-    }
-
-    .raffle-screen {
-      position: fixed;
-      inset: 0;
-      z-index: 1200;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 28px;
-      background: rgba(7, 20, 40, 0.78);
-      backdrop-filter: blur(6px);
-    }
-
-    .raffle-screen.is-open {
-      display: flex;
-    }
-
-    .raffle-screen-panel {
-      width: min(1200px, 100%);
-      min-height: min(82vh, 820px);
-      border-radius: 26px;
-      border: 1px solid rgba(255, 255, 255, 0.24);
-      background:
-        radial-gradient(circle at top left, rgba(122, 173, 255, 0.28), transparent 38%),
-        radial-gradient(circle at bottom right, rgba(255, 214, 150, 0.24), transparent 34%),
-        linear-gradient(135deg, #07214a 0%, #0f4ea8 56%, #1d6fd0 100%);
-      color: #fff;
-      box-shadow: 0 28px 90px rgba(4, 17, 36, 0.4);
-      display: grid;
-      grid-template-rows: auto 1fr;
-      overflow: hidden;
-    }
-
-    .raffle-screen-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 18px;
-      padding: 22px 26px 0;
-    }
-
-    .raffle-screen-kicker {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.14);
-      color: #d8e8ff;
-      font-size: 0.92rem;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .raffle-screen-event {
-      margin-top: 12px;
-      font-size: clamp(1.6rem, 4vw, 3rem);
-      line-height: 1.05;
-      font-weight: 900;
-      max-width: 760px;
-    }
-
-    .raffle-screen-close {
-      border: 1px solid rgba(255, 255, 255, 0.36);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.12);
-      color: #ffffff;
-      padding: 10px 16px;
-      font: inherit;
-      font-size: 0.92rem;
-      font-weight: 800;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    .raffle-screen-body {
-      display: grid;
-      grid-template-columns: minmax(320px, 420px) 1fr;
-      gap: 26px;
-      padding: 24px 26px 26px;
-      align-items: stretch;
-      min-height: 0;
-    }
-
-    .raffle-screen-brand {
-      border-radius: 22px;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.1));
-      border: 1px solid rgba(255, 255, 255, 0.24);
-      display: grid;
-      align-content: center;
-      justify-items: center;
-      gap: 20px;
-      padding: 30px 24px;
-      text-align: center;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
-    }
-
-    .raffle-screen-brand-media {
-      position: relative;
-      width: 100%;
-      min-height: 250px;
-      border-radius: 24px;
-      background:
-        radial-gradient(circle at top, rgba(15, 78, 168, 0.08), transparent 54%),
-        linear-gradient(180deg, #ffffff 0%, #f3f8ff 100%);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.7),
-        0 18px 36px rgba(5, 19, 40, 0.18);
-    }
-
-    .raffle-screen-logo-expand {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      width: 40px;
-      height: 40px;
-      border: 1px solid rgba(13, 99, 199, 0.24);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.92);
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-      box-shadow: 0 8px 18px rgba(5, 19, 40, 0.14);
-    }
-
-    .raffle-screen-logo-expand:hover {
-      background: #ffffff;
-      border-color: rgba(13, 99, 199, 0.42);
-    }
-
-    .raffle-screen-logo-expand[hidden] {
-      display: none;
-    }
-
-    .fullscreen-corners {
-      width: 18px;
-      height: 18px;
-      display: block;
-      background:
-        linear-gradient(#0d63c7, #0d63c7) left top / 8px 2px no-repeat,
-        linear-gradient(#0d63c7, #0d63c7) left top / 2px 8px no-repeat,
-        linear-gradient(#0d63c7, #0d63c7) right top / 8px 2px no-repeat,
-        linear-gradient(#0d63c7, #0d63c7) right top / 2px 8px no-repeat,
-        linear-gradient(#0d63c7, #0d63c7) left bottom / 8px 2px no-repeat,
-        linear-gradient(#0d63c7, #0d63c7) left bottom / 2px 8px no-repeat,
-        linear-gradient(#0d63c7, #0d63c7) right bottom / 8px 2px no-repeat,
-        linear-gradient(#0d63c7, #0d63c7) right bottom / 2px 8px no-repeat;
-    }
-
-    .raffle-screen-brand-logo {
-      width: min(300px, 100%);
-      max-height: 210px;
-      object-fit: contain;
-      filter: drop-shadow(0 16px 24px rgba(4, 17, 36, 0.18));
-      cursor: zoom-in;
-    }
-
-    .raffle-screen-brand-name {
-      font-size: clamp(1.5rem, 2.6vw, 2.35rem);
-      line-height: 1.1;
-      font-weight: 900;
-      letter-spacing: 0.03em;
-      text-shadow: 0 2px 10px rgba(5, 17, 36, 0.2);
-    }
-
-    .raffle-screen-brand-copy {
-      color: #d6e6ff;
-      font-size: 1.06rem;
-      line-height: 1.45;
-      font-weight: 700;
-      max-width: 300px;
-    }
-
-    .brand-logo-viewer {
-      position: fixed;
-      inset: 0;
-      z-index: 1300;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: clamp(20px, 5vw, 62px);
-      background: rgba(3, 13, 28, 0.92);
-      backdrop-filter: blur(8px);
-    }
-
-    .brand-logo-viewer.is-open {
-      display: flex;
-    }
-
-    .brand-logo-viewer-close {
-      position: fixed;
-      top: 18px;
-      left: 18px;
-      width: 42px;
-      height: 42px;
-      border: 1px solid rgba(255, 255, 255, 0.36);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.12);
-      color: #ffffff;
-      font: inherit;
-      font-size: 1.15rem;
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    .brand-logo-viewer-image-wrap {
-      width: fit-content;
-      max-width: min(92vw, 1120px);
-      max-height: 82vh;
-      border-radius: 24px;
-      background: #ffffff;
-      display: grid;
-      place-items: center;
-      padding: clamp(22px, 6vw, 70px);
-      box-shadow: 0 28px 90px rgba(0, 0, 0, 0.42);
-    }
-
-    .brand-logo-viewer-image {
-      display: block;
-      width: auto;
-      height: auto;
-      max-width: min(78vw, var(--brand-logo-max-width, 820px));
-      max-height: min(68vh, var(--brand-logo-max-height, 70vh));
-      object-fit: contain;
-    }
-
-    .brand-logo-viewer-image.is-vector {
-      width: min(78vw, 920px);
-      max-width: min(78vw, 920px);
-      max-height: 68vh;
-    }
-
-    .raffle-screen-winners {
-      --raffle-screen-item-gap: 14px;
-      --raffle-screen-item-height: 76px;
-      border-radius: 22px;
-      background: rgba(255, 255, 255, 0.14);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      padding: 28px 28px 22px;
-      display: grid;
-      align-content: start;
-      gap: 18px;
-      min-height: 0;
-    }
-
-    .raffle-screen-title {
-      font-size: clamp(1.4rem, 2.8vw, 2.4rem);
-      line-height: 1.05;
-      font-weight: 900;
-    }
-
-    .raffle-screen-subtitle {
-      color: #d6e6ff;
-      font-size: 1rem;
-      font-weight: 600;
-    }
-
-    .raffle-screen-list {
-      display: grid;
-      gap: var(--raffle-screen-item-gap);
-      align-content: start;
-      max-height: calc((var(--raffle-screen-item-height) * 6) + (var(--raffle-screen-item-gap) * 5));
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      padding-right: 8px;
-      scrollbar-gutter: stable;
-    }
-
-    .raffle-screen-item {
-      display: grid;
-      gap: 4px;
-      min-height: var(--raffle-screen-item-height);
-      padding: 12px 18px;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-    }
-
-    .raffle-screen-item-name {
-      font-size: clamp(1.2rem, 2.6vw, 2rem);
-      line-height: 1.06;
-      font-weight: 900;
-    }
-
-    .raffle-screen-item-dni {
-      color: #d6e6ff;
-      font-size: clamp(1rem, 1.8vw, 1.26rem);
-      font-weight: 700;
-      letter-spacing: 0.02em;
-    }
-
-    .raffle-winner {
-      border: 1px solid #cfe0f4;
-      border-radius: 10px;
-      background: #ffffff;
-      padding: 10px;
-      display: grid;
-      gap: 4px;
-    }
-
-    .raffle-winner h4,
-    .raffle-list h4 {
-      font-size: 0.88rem;
-      color: var(--accent);
-      margin-bottom: 2px;
-    }
-
-    .raffle-row {
-      font-size: 0.82rem;
-      line-height: 1.2;
-      color: #213750;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    .raffle-row-name {
-      min-width: 0;
-      overflow-wrap: anywhere;
-    }
-
-    .raffle-remove-btn {
-      border: 1px solid #f3b4b4;
-      border-radius: 6px;
-      background: #fff4f4;
-      color: #9f1d1d;
-      cursor: pointer;
-      flex: 0 0 auto;
-      font: inherit;
-      font-size: 0.74rem;
-      font-weight: 800;
-      padding: 4px 7px;
-    }
-
-    .raffle-remove-btn:disabled {
-      cursor: not-allowed;
-      opacity: 0.55;
-    }
-
-    .raffle-list {
-      border: 1px solid #dbe6f5;
-      border-radius: 10px;
-      background: #ffffff;
-      padding: 10px;
-      display: grid;
-      gap: 6px;
-    }
-
-    .raffle-list ul {
-      max-height: 220px;
-      overflow-y: auto;
-      padding-left: 16px;
-      margin: 0;
-      display: grid;
-      gap: 4px;
-    }
-
-    .raffle-list li {
-      color: #213750;
-      font-size: 0.82rem;
-      line-height: 1.15;
+      overflow-x: auto;
+      margin-top: 15px;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 860px;
-    }
-
-    th,
-    td {
       text-align: left;
+    }
+
+    th, td {
       padding: 10px 12px;
-      border-bottom: 1px solid #edf2f8;
-      vertical-align: top;
-      font-size: 0.94rem;
+      border-bottom: 1px solid var(--border-color);
     }
 
-    th {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #4e6482;
-      background: #f8fbff;
+    /* Sorteo y Certificados */
+    .raffle-box, .certificate-box {
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      margin-top: 15px;
     }
 
-    td {
-      color: #213750;
+    .raffle-actions {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      margin-top: 10px;
     }
 
-    .attendance-col {
-      text-align: center;
-      width: 88px;
-      white-space: nowrap;
-    }
-
-    .reconfirm-col {
-      text-align: center;
-      width: 128px;
-      white-space: nowrap;
-    }
-
-    .attendance-checkbox {
-      width: 16px;
-      height: 16px;
-      accent-color: #188645;
+    .btn-event {
+      padding: 8px 14px;
+      border: none;
+      background: var(--primary-color);
+      color: #fff;
+      border-radius: 4px;
       cursor: pointer;
-      vertical-align: middle;
     }
 
-    .status {
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 12px 14px;
-      color: var(--muted);
-      font-weight: 600;
+    /* Modales */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
     }
 
-    .status.error {
-      border-color: #f1b5af;
-      background: #fdeceb;
-      color: #8f241f;
+    .modal.is-open {
+      display: flex;
     }
 
-    .status.warning {
-      border-color: #ebd7ac;
-      background: #fff6df;
-      color: var(--warn);
+    .modal-content {
+      background: var(--card-bg);
+      padding: 30px;
+      border-radius: 8px;
+      max-width: 500px;
+      width: 90%;
+      position: relative;
     }
 
-    @media (max-width: 760px) {
-      body {
-        padding: 16px;
-      }
-
-      .raffle-screen {
-        padding: 14px;
-      }
-
-      .raffle-screen-panel {
-        min-height: 0;
-      }
-
-      .raffle-screen-head {
-        padding: 18px 18px 0;
-      }
-
-      .raffle-screen-body {
-        grid-template-columns: 1fr;
-        padding: 18px;
-      }
-
-      .raffle-screen-brand {
-        padding: 20px 18px;
-      }
-
-      .raffle-screen-brand-media {
-        min-height: 200px;
-        padding: 18px;
-      }
-
-      .raffle-screen-winners {
-        padding: 20px 18px;
-      }
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: transparent;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    
+    .brand-logo-viewer img {
+      max-width: 100%;
+      height: auto;
     }
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <header class="top">
+
+  <div class="container">
+    <header class="header-panel">
+      <h1>Panel de Control</h1>
       <div>
-        <h1>Panel de inscripciones</h1>
-        <div class="summary">
-          <span class="pill">Total: <strong id="totalValue">0</strong></span>
-          <span class="pill">Asistencias: <strong id="attendanceTotalValue">0</strong></span>
-          <span class="pill">Almuerzos: <strong id="lunchTotalValue">0</strong></span>
-          <span class="pill">Reconfirmados: <strong id="reconfirmTotalValue">0</strong></span>
-          <span id="updatedAt">Sin actualización</span>
-        </div>
-      </div>
-      <div class="top-actions">
-        <div class="view-switch" role="tablist" aria-label="Vista del panel">
-          <button class="btn-view is-active" id="viewInscripcionesBtn" type="button">Inscripciones</button>
-          <button class="btn-view" id="viewAsistenciaBtn" type="button">Asistencia Encuentros</button>
-          <button class="btn-view" id="viewLunchBtn" type="button">Almuerzo</button>
-          <button class="btn-view" id="viewSorteosBtn" type="button">Sorteos</button>
-          <button class="btn-view" id="viewCertificadosBtn" type="button">Certificado asistencias</button>
-        </div>
-        <button class="btn" id="refreshBtn" type="button">Actualizar</button>
-        <form method="post" action="/api/admin">
-          <input type="hidden" name="action" value="logout">
-          <button class="btn" type="submit">Cerrar sesión</button>
-        </form>
+        <span id="updatedAt"></span>
+        <button id="refreshBtn" class="btn-event">Actualizar Datos</button>
       </div>
     </header>
 
-    <div class="status" id="status">Cargando datos...</div>
-    <section class="events" id="eventsContainer"></section>
-  </main>
+    <!-- Indicador de Estado -->
+    <div id="statusBox" class="status"></div>
 
-  <section class="raffle-screen" id="raffleScreen" aria-hidden="true">
-    <div class="raffle-screen-panel" role="dialog" aria-modal="true" aria-labelledby="raffleScreenEvent">
-      <div class="raffle-screen-head">
-        <div>
-          <div class="raffle-screen-kicker">Resultado del sorteo</div>
-          <h2 class="raffle-screen-event" id="raffleScreenEvent">Ganadores</h2>
-        </div>
-        <button class="raffle-screen-close" id="raffleScreenClose" type="button">Cerrar</button>
+    <!-- Métricas Generales -->
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div>Total Inscriptos</div>
+        <div id="totalValue" class="metric-value">0</div>
       </div>
-      <div class="raffle-screen-body">
-        <aside class="raffle-screen-brand">
-          <div class="raffle-screen-brand-media">
-            <button
-              class="raffle-screen-logo-expand"
-              id="raffleScreenLogoExpand"
-              type="button"
-              aria-label="Ver logo en pantalla completa"
-              title="Ver logo en pantalla completa"
-              hidden
-            >
-              <span class="fullscreen-corners" aria-hidden="true"></span>
-            </button>
-            <img class="raffle-screen-brand-logo" id="raffleScreenBrandLogo" alt="">
-          </div>
-          <div class="raffle-screen-brand-name" id="raffleScreenBrandName">Marca</div>
-          <p class="raffle-screen-brand-copy">Premio asignado a esta marca.</p>
-        </aside>
-        <section class="raffle-screen-winners">
-          <h3 class="raffle-screen-title">Ganadores</h3>
-          <p class="raffle-screen-subtitle" id="raffleScreenSubtitle">Personas sorteadas</p>
-          <div class="raffle-screen-list" id="raffleScreenList"></div>
-        </section>
+      <div class="metric-card">
+        <div>Total Asistencias</div>
+        <div id="attendanceTotalValue" class="metric-value">0</div>
       </div>
-    </div>
-  </section>
+      <div class="metric-card">
+        <div>Total Almuerzos</div>
+        <div id="lunchTotalValue" class="metric-value">0</div>
+      </div>
+      <div class="metric-card">
+        <div>Total Reconfirmados</div>
+        <div id="reconfirmTotalValue" class="metric-value">0</div>
+      </div>
+    </section>
 
-  <section class="brand-logo-viewer" id="brandLogoViewer" aria-hidden="true">
-    <button class="brand-logo-viewer-close" id="brandLogoViewerClose" type="button" aria-label="Cerrar logo">X</button>
-    <div class="brand-logo-viewer-image-wrap" role="dialog" aria-modal="true" aria-label="Logo de la marca">
-      <img class="brand-logo-viewer-image" id="brandLogoViewerImage" alt="">
+    <!-- Pestañas de Navegación del Panel -->
+    <nav class="nav-tabs">
+      <button id="viewInscripcionesBtn" class="nav-btn is-active">Inscripciones</button>
+      <button id="viewAsistenciaBtn" class="nav-btn">Asistencia</button>
+      <button id="viewLunchBtn" class="nav-btn">Almuerzo</button>
+      <button id="viewSorteosBtn" class="nav-btn">Sorteos</button>
+      <button id="viewCertificadosBtn" class="nav-btn">Certificados</button>
+    </nav>
+
+    <!-- Contenedor Principal de Eventos -->
+    <main id="eventsContainer"></main>
+  </div>
+
+  <!-- Pantalla / Modal de Sorteo de Ganadores -->
+  <div id="raffleScreen" class="modal" aria-hidden="true">
+    <div class="modal-content">
+      <button id="raffleScreenClose" class="modal-close">&times;</button>
+      <h2 id="raffleScreenEvent">Evento</h2>
+      <div style="text-align: center; margin: 15px 0;">
+        <img id="raffleScreenBrandLogo" src="" alt="Logo" style="max-height: 80px; cursor: pointer;">
+        <br>
+        <button id="raffleScreenLogoExpand" class="btn-event" style="margin-top: 5px;" hidden>Ampliar Logo</button>
+        <h3 id="raffleScreenBrandName">Marca</h3>
+      </div>
+      <p id="raffleScreenSubtitle"></p>
+      <div id="raffleScreenList" style="max-height: 300px; overflow-y: auto; margin-top: 15px;"></div>
     </div>
-  </section>
+  </div>
+
+  <!-- Visor de Logo de Marca -->
+  <div id="brandLogoViewer" class="modal" aria-hidden="true">
+    <div class="modal-content brand-logo-viewer" style="text-align: center;">
+      <button id="brandLogoViewerClose" class="modal-close">&times;</button>
+      <img id="brandLogoViewerImage" src="" alt="Vista Previa del Logo">
+    </div>
+  </div>
 
   <script>
-    const statusBox = document.getElementById("status");
-    const eventsContainer = document.getElementById("eventsContainer");
+    // Variables de Estado y Configuración
+    const ADMIN_LOGIN_URL = "/login";
+    const PANEL_VIEW_INSCRIPCIONES = "inscripciones";
+    const PANEL_VIEW_ASISTENCIA = "asistencia";
+    const PANEL_VIEW_ALMUERZO = "almuerzo";
+    const PANEL_VIEW_SORTEOS = "sorteos";
+    const PANEL_VIEW_CERTIFICADOS = "certificados";
+    const DEFAULT_VISIBLE_ROWS = 10;
+
+    let currentPanelView = PANEL_VIEW_INSCRIPCIONES;
+    let currentAdminRole = "admin";
+    let currentEventos = [];
+
+    const expandedEventsByEvent = new Map();
+    const visibleRowsByEvent = new Map();
+    const raffleBrandByEvent = new Map();
+    const raffleCountByEvent = new Map();
+    const raffleWinnerByEvent = new Map();
+
+    const toggleInFlight = new Set();
+    const raffleInFlight = new Set();
+    const certificateToggleInFlight = new Set();
+
+    // Elementos DOM
+    const statusBox = document.getElementById("statusBox");
     const totalValue = document.getElementById("totalValue");
     const attendanceTotalValue = document.getElementById("attendanceTotalValue");
     const lunchTotalValue = document.getElementById("lunchTotalValue");
     const reconfirmTotalValue = document.getElementById("reconfirmTotalValue");
     const updatedAt = document.getElementById("updatedAt");
     const refreshBtn = document.getElementById("refreshBtn");
+    const eventsContainer = document.getElementById("eventsContainer");
+
     const viewInscripcionesBtn = document.getElementById("viewInscripcionesBtn");
     const viewAsistenciaBtn = document.getElementById("viewAsistenciaBtn");
     const viewLunchBtn = document.getElementById("viewLunchBtn");
     const viewSorteosBtn = document.getElementById("viewSorteosBtn");
     const viewCertificadosBtn = document.getElementById("viewCertificadosBtn");
+
     const raffleScreen = document.getElementById("raffleScreen");
     const raffleScreenClose = document.getElementById("raffleScreenClose");
     const raffleScreenEvent = document.getElementById("raffleScreenEvent");
+    const raffleScreenBrandName = document.getElementById("raffleScreenBrandName");
     const raffleScreenBrandLogo = document.getElementById("raffleScreenBrandLogo");
     const raffleScreenLogoExpand = document.getElementById("raffleScreenLogoExpand");
-    const raffleScreenBrandName = document.getElementById("raffleScreenBrandName");
     const raffleScreenSubtitle = document.getElementById("raffleScreenSubtitle");
     const raffleScreenList = document.getElementById("raffleScreenList");
+
     const brandLogoViewer = document.getElementById("brandLogoViewer");
     const brandLogoViewerClose = document.getElementById("brandLogoViewerClose");
     const brandLogoViewerImage = document.getElementById("brandLogoViewerImage");
-    const DEFAULT_VISIBLE_ROWS = 25;
-    const ADMIN_LOGIN_URL = "/api/admin";
-    const PANEL_VIEW_INSCRIPCIONES = "inscripciones";
-    const PANEL_VIEW_ASISTENCIA = "asistencia";
-    const PANEL_VIEW_ALMUERZO = "almuerzo";
-    const PANEL_VIEW_SORTEOS = "sorteos";
-    const PANEL_VIEW_CERTIFICADOS = "certificados";
-    let currentPanelView = PANEL_VIEW_INSCRIPCIONES;
-    let currentAdminRole = "admin";
-    let currentEventos = [];
-    const toggleInFlight = new Set();
-    const certificateToggleInFlight = new Set();
-    const raffleInFlight = new Set();
-    const mailInFlight = new Set();
-    const expandedEventsByEvent = new Map();
-    const visibleRowsByEvent = new Map();
-    const attendanceLookupByEvent = new Map();
-    const lunchLookupByEvent = new Map();
-    const raffleCountByEvent = new Map();
-    const raffleBrandByEvent = new Map();
-    const raffleWinnerByEvent = new Map();
-    const mailComposerByEvent = new Map();
-    const RAFFLE_BRANDS = [
-      { key: "rheem", name: "Rheem", logo: "/Prueba_2/assets/empresas/36_rheem.png" },
-      { key: "piazza", name: "Piazza", logo: "/Prueba_2/assets/empresas/12_piazza.png" },
-      { key: "pluvius", name: "Pluvius", logo: "/Prueba_2/assets/empresas/logo-pluvius-sorteos.svg" },
-      { key: "parsecs", name: "Parsecs", logo: "/Prueba_2/assets/empresas/logo-parsecs.svg" },
-      { key: "vasser", name: "Vasser", logo: "/Prueba_2/assets/empresas/logo-vasser.svg" },
-      { key: "msb", name: "MSB", logo: "/Prueba_2/assets/empresas/39_msb_industria_argentina.png" },
-      { key: "saladillo", name: "Saladillo", logo: "/Prueba_2/assets/empresas/logo-saladillo-sorteos.svg" },
-      { key: "mygas", name: "MyGas", logo: "/Prueba_2/assets/empresas/logo-mygas-sorteos.svg" },
-      { key: "reed", name: "Reed", logo: "/Prueba_2/assets/empresas/43_reed.png" },
-      { key: "deckert", name: "Deckert", logo: "/Prueba_2/assets/empresas/44_deckert.png" },
-      { key: "bahco", name: "Bahco", logo: "/Prueba_2/assets/empresas/42_bahco.png" },
-      { key: "redeco_termofusion", name: "Redeco", logo: "/Prueba_2/assets/empresas/38_redeco_termofusion.png", logoLarge: "/Prueba_2/assets/empresas/logo-redeco.png" },
-      { key: "duke", name: "Duke", logo: "/Prueba_2/assets/empresas/21_duke.png", logoLarge: "/Prueba_2/assets/empresas/logo-duke.png" },
-      { key: "egeo", name: "Egeo", logo: "/Prueba_2/assets/empresas/32_egeo.png", logoLarge: "/Prueba_2/assets/empresas/logo-egeo.png" },
-      { key: "fusio_gas", name: "Fusiogas", logo: "/Prueba_2/assets/empresas/20_fusio_gas.png" },
-      { key: "latyn", name: "Latyn", logo: "/Prueba_2/assets/empresas/07_grupo_latyn.png" },
-      { key: "politivo", name: "Politivo", logo: "" },
-      { key: "chicote", name: "Chicote", logo: "/Prueba_2/assets/empresas/08_chicote.png" },
-      { key: "krewen", name: "Krewen", logo: "/Prueba_2/assets/empresas/image_2026-05-09_113057454.png" },
-      { key: "waterplast", name: "Waterplast", logo: "/Prueba_2/assets/empresas/logo-waterplast-sorteos.svg" },
-      { key: "rao", name: "RAO", logo: "/Prueba_2/assets/empresas/26_rao.png", logoLarge: "/Prueba_2/assets/empresas/logo-rao.jpg" },
-      { key: "dinatecnica", name: "Dinatecnica", logo: "/Prueba_2/assets/empresas/27_dinatecnica.png", logoLarge: "/Prueba_2/assets/empresas/logo-dinatecnica.png" },
-      { key: "btm_bombas", name: "BTM", logo: "/Prueba_2/assets/empresas/05_btm_bombas.png" }
-    ];
-    const RAFFLE_BRAND_BY_KEY = new Map(
-      RAFFLE_BRANDS.map((brand) => [brand.key, brand])
-    );
 
-    function escapeHtml(value) {
-      return String(value ?? "")
+    const RAFFLE_BRANDS = [
+      { key: "ips", name: "IPS", logo: "/Prueba_2/assets/empresas/01_ips.png" },
+      { key: "generic", name: "Institucional", logo: "/Prueba_2/assets/logo-plomeros-circular.png" }
+    ];
+
+    function setStatus(text, type = "") {
+      statusBox.textContent = text;
+      statusBox.className = "status " + type;
+    }
+
+    function formatDateTime(isoString) {
+      if (!isoString) return "-";
+      const date = new Date(isoString);
+      return isNaN(date.getTime()) ? isoString : date.toLocaleString("es-AR");
+    }
+
+    function sanitizeText(str) {
+      if (!str) return "";
+      return String(str)
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
+        .replace(/'/g, "&#039;");
     }
 
-    function normalizeBrandKey(value) {
-      return String(value ?? "")
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "_")
-        .replace(/^_+|_+$/g, "");
+    function updatePanelViewButtons() {
+      const buttons = [
+        { btn: viewInscripcionesBtn, view: PANEL_VIEW_INSCRIPCIONES },
+        { btn: viewAsistenciaBtn, view: PANEL_VIEW_ASISTENCIA },
+        { btn: viewLunchBtn, view: PANEL_VIEW_ALMUERZO },
+        { btn: viewSorteosBtn, view: PANEL_VIEW_SORTEOS },
+        { btn: viewCertificadosBtn, view: PANEL_VIEW_CERTIFICADOS }
+      ];
+
+      buttons.forEach(({ btn, view }) => {
+        if (!btn) return;
+        if (currentPanelView === view) {
+          btn.classList.add("is-active");
+          btn.setAttribute("aria-selected", "true");
+        } else {
+          btn.classList.remove("is-active");
+          btn.setAttribute("aria-selected", "false");
+        }
+      });
     }
 
-    function getBrandInfo(value) {
-      const key = normalizeBrandKey(value);
-      return RAFFLE_BRAND_BY_KEY.get(key) || null;
+    function switchPanelView(view) {
+      currentPanelView = view;
+      updatePanelViewButtons();
+      renderEvents(currentEventos);
     }
 
-    function getBrandLabel(value) {
-      const brand = getBrandInfo(value);
-      return brand?.name || "Sin marca";
+    [
+      { btn: viewInscripcionesBtn, view: PANEL_VIEW_INSCRIPCIONES },
+      { btn: viewAsistenciaBtn, view: PANEL_VIEW_ASISTENCIA },
+      { btn: viewLunchBtn, view: PANEL_VIEW_ALMUERZO },
+      { btn: viewSorteosBtn, view: PANEL_VIEW_SORTEOS },
+      { btn: viewCertificadosBtn, view: PANEL_VIEW_CERTIFICADOS }
+    ].forEach(({ btn, view }) => {
+      if (btn) {
+        btn.addEventListener("click", () => switchPanelView(view));
+      }
+    });
+
+    function getBrandConfig(brandKey) {
+      return RAFFLE_BRANDS.find(b => b.key === brandKey) || RAFFLE_BRANDS[RAFFLE_BRANDS.length - 1];
     }
 
-    function getBrandLogo(value) {
-      const brand = getBrandInfo(value);
-      return brand?.logo || "";
-    }
+    function openRaffleScreen(eventoTitle, brandKey, winners = []) {
+      const brand = getBrandConfig(brandKey);
+      raffleScreenEvent.textContent = eventoTitle;
+      raffleScreenBrandName.textContent = brand.name;
+      raffleScreenBrandLogo.src = brand.logo;
+      raffleScreenBrandLogo.alt = `Logo de ${brand.name}`;
 
-    function getBrandLogoLarge(value) {
-      const brand = getBrandInfo(value);
-      return brand?.logoLarge || brand?.logo || "";
-    }
+      if (brand.logo.endsWith('.svg')) {
+        raffleScreenLogoExpand.hidden = false;
+        raffleScreenBrandLogo.onclick = () => openBrandLogoViewer(brand.logo, brand.name, true);
+      } else {
+        raffleScreenLogoExpand.hidden = false;
+        raffleScreenBrandLogo.onclick = () => openBrandLogoViewer(brand.logo, brand.name, false);
+      }
 
-    function isVectorLogo(src) {
-      return /\.svg(?:[?#].*)?$/i.test(String(src || ""));
+      raffleScreenSubtitle.textContent = `${winners.length} ganador(es) seleccionado(s)`;
+      raffleScreenList.innerHTML = winners.length === 0 
+        ? `<div class="raffle-screen-item"><div class="raffle-screen-item-name">Sin ganadores</div></div>`
+        : winners.map(w => `
+            <div class="raffle-screen-item">
+              <div class="raffle-screen-item-name">${sanitizeText(w.nombre)} ${sanitizeText(w.apellido)}</div>
+              <div class="raffle-screen-item-dni">DNI: ${sanitizeText(w.dni || "-")} | Mail: ${sanitizeText(w.email || "-")}</div>
+            </div>
+          `).join("");
+
+      raffleScreen.classList.add("is-open");
+      raffleScreen.setAttribute("aria-hidden", "false");
     }
 
     function closeRaffleScreen() {
-      if (brandLogoViewer.classList.contains("is-open")) {
-        closeBrandLogoViewer();
-      }
       raffleScreen.classList.remove("is-open");
       raffleScreen.setAttribute("aria-hidden", "true");
-      document.body.style.overflow = "";
+    }
+
+    raffleScreenClose.addEventListener("click", closeRaffleScreen);
+
+    function openBrandLogoViewer(src, alt, isVector) {
+      brandLogoViewerImage.src = src;
+      brandLogoViewerImage.alt = alt;
+      if (isVector) {
+        brandLogoViewerImage.classList.add("is-vector");
+      } else {
+        brandLogoViewerImage.classList.remove("is-vector");
+      }
+      brandLogoViewer.classList.add("is-open");
+      brandLogoViewer.setAttribute("aria-hidden", "false");
     }
 
     function closeBrandLogoViewer() {
       brandLogoViewer.classList.remove("is-open");
       brandLogoViewer.setAttribute("aria-hidden", "true");
-      brandLogoViewerImage.removeAttribute("src");
-      brandLogoViewerImage.alt = "";
-      brandLogoViewerImage.classList.remove("is-vector");
-      brandLogoViewerImage.style.removeProperty("--brand-logo-max-width");
-      brandLogoViewerImage.style.removeProperty("--brand-logo-max-height");
-      if (!raffleScreen.classList.contains("is-open")) {
-        document.body.style.overflow = "";
-      }
     }
 
-    function openBrandLogoViewer() {
-      const logoSrc =
-        raffleScreenBrandLogo.dataset.largeLogo ||
-        raffleScreenBrandLogo.getAttribute("src");
-      const logoAlt = raffleScreenBrandLogo.getAttribute("alt") || "Logo de la marca";
-      if (!logoSrc || raffleScreenBrandLogo.style.display === "none") {
-        return;
-      }
+    brandLogoViewerClose.addEventListener("click", closeBrandLogoViewer);
+    raffleScreenLogoExpand.addEventListener("click", () => {
+      openBrandLogoViewer(raffleScreenBrandLogo.src, raffleScreenBrandName.textContent, raffleScreenBrandLogo.src.endsWith('.svg'));
+    });
 
-      brandLogoViewerImage.onload = () => {
-        const vector = isVectorLogo(logoSrc);
-        brandLogoViewerImage.classList.toggle("is-vector", vector);
-        if (!vector && brandLogoViewerImage.naturalWidth && brandLogoViewerImage.naturalHeight) {
-          brandLogoViewerImage.style.setProperty(
-            "--brand-logo-max-width",
-            `${brandLogoViewerImage.naturalWidth}px`
-          );
-          brandLogoViewerImage.style.setProperty(
-            "--brand-logo-max-height",
-            `${brandLogoViewerImage.naturalHeight}px`
-          );
+    async function fetchData() {
+      setStatus("Cargando datos...");
+      try {
+        const response = await fetch("/api/admin?action=get_data");
+        if (response.status === 401 || response.redirected) {
+          window.location.href = ADMIN_LOGIN_URL;
+          return;
         }
-      };
-      brandLogoViewerImage.onerror = () => {
-        closeBrandLogoViewer();
-      };
-      brandLogoViewerImage.src = logoSrc;
-      brandLogoViewerImage.alt = logoAlt;
-      brandLogoViewer.classList.add("is-open");
-      brandLogoViewer.setAttribute("aria-hidden", "false");
-      document.body.style.overflow = "hidden";
-    }
+        if (!response.ok) throw new Error("Error en la respuesta del servidor");
+        
+        const data = await response.json();
+        currentAdminRole = data.role || "admin";
+        currentEventos = data.eventos || [];
 
-    function openRaffleScreen({ eventName, brandKey, winners }) {
-      const brandLabel = getBrandLabel(brandKey);
-      const brandLogo = getBrandLogo(brandKey);
-      const brandLogoLarge = getBrandLogoLarge(brandKey);
-      const safeWinners = Array.isArray(winners) ? winners : [];
+        let grandTotal = 0;
+        let attendanceTotal = 0;
+        let lunchTotal = 0;
+        let reconfirmTotal = 0;
 
-      raffleScreenEvent.textContent = eventName || "Ganadores";
-      raffleScreenBrandName.textContent = brandLabel;
-      raffleScreenSubtitle.textContent =
-        safeWinners.length === 1
-          ? "Persona ganadora del sorteo"
-          : `${safeWinners.length} personas ganadoras del sorteo`;
-
-      if (brandLogo) {
-        raffleScreenBrandLogo.onload = () => {
-          raffleScreenBrandLogo.style.display = "";
-          raffleScreenLogoExpand.hidden = false;
-        };
-        raffleScreenBrandLogo.onerror = () => {
-          raffleScreenBrandLogo.style.display = "none";
-          raffleScreenLogoExpand.hidden = true;
-        };
-        raffleScreenBrandLogo.src = brandLogo;
-        raffleScreenBrandLogo.alt = `Logo ${brandLabel}`;
-        raffleScreenBrandLogo.dataset.largeLogo = brandLogoLarge || brandLogo;
-      } else {
-        raffleScreenBrandLogo.onload = null;
-        raffleScreenBrandLogo.onerror = null;
-        raffleScreenBrandLogo.removeAttribute("src");
-        raffleScreenBrandLogo.alt = "";
-        raffleScreenBrandLogo.style.display = "none";
-        raffleScreenLogoExpand.hidden = true;
-        delete raffleScreenBrandLogo.dataset.largeLogo;
-      }
-
-      raffleScreenList.innerHTML = safeWinners
-        .map((winner) => `
-          <article class="raffle-screen-item">
-            <div class="raffle-screen-item-name">${escapeHtml(winner?.nombre_apellido || "-")}</div>
-            <div class="raffle-screen-item-dni">DNI ${escapeHtml(winner?.dni || "-")}</div>
-          </article>
-        `)
-        .join("");
-
-      raffleScreen.classList.add("is-open");
-      raffleScreen.setAttribute("aria-hidden", "false");
-      document.body.style.overflow = "hidden";
-    }
-
-    function formatDate(value) {
-      if (!value) return "-";
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return "-";
-      return new Intl.DateTimeFormat("es-AR", {
-        dateStyle: "short",
-        timeStyle: "short"
-      }).format(date);
-    }
-
-    function setStatusMessage(message, mode = "ok") {
-      statusBox.classList.remove("error", "warning");
-      if (mode === "error") {
-        statusBox.classList.add("error");
-      } else if (mode === "warning") {
-        statusBox.classList.add("warning");
-      }
-      statusBox.textContent = message;
-    }
-
-    function countAttendance(eventos) {
-      if (!Array.isArray(eventos)) return 0;
-      return eventos.reduce((total, eventItem) => {
-        const rows = Array.isArray(eventItem?.inscripciones) ? eventItem.inscripciones : [];
-        const eventAttendance = rows.reduce(
-          (sum, row) => sum + (row?.asistio === true ? 1 : 0),
-          0
-        );
-        return total + eventAttendance;
-      }, 0);
-    }
-
-    function countLunch(eventos) {
-      if (!Array.isArray(eventos)) return 0;
-      return eventos.reduce((total, eventItem) => {
-        const rows = Array.isArray(eventItem?.inscripciones) ? eventItem.inscripciones : [];
-        const eventLunch = rows.reduce(
-          (sum, row) => sum + (row?.almuerzo === true ? 1 : 0),
-          0
-        );
-        return total + eventLunch;
-      }, 0);
-    }
-
-    function countReconfirm(eventos) {
-      if (!Array.isArray(eventos)) return 0;
-      return eventos.reduce((total, eventItem) => {
-        const rows = Array.isArray(eventItem?.inscripciones) ? eventItem.inscripciones : [];
-        const eventReconfirm = rows.reduce(
-          (sum, row) => sum + (row?.reconfirmado === true ? 1 : 0),
-          0
-        );
-        return total + eventReconfirm;
-      }, 0);
-    }
-
-    function renderViewButtons() {
-      const asistenciaOnly = currentAdminRole === "asistencia";
-      viewInscripcionesBtn.style.display = asistenciaOnly ? "none" : "inline-flex";
-      viewLunchBtn.style.display = "inline-flex";
-      viewSorteosBtn.style.display = asistenciaOnly ? "none" : "inline-flex";
-      viewCertificadosBtn.style.display = asistenciaOnly ? "none" : "inline-flex";
-      if (
-        asistenciaOnly &&
-        currentPanelView !== PANEL_VIEW_ASISTENCIA &&
-        currentPanelView !== PANEL_VIEW_ALMUERZO
-      ) {
-        currentPanelView = PANEL_VIEW_ASISTENCIA;
-      }
-      viewInscripcionesBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_INSCRIPCIONES);
-      viewAsistenciaBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_ASISTENCIA);
-      viewLunchBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_ALMUERZO);
-      viewSorteosBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_SORTEOS);
-      viewCertificadosBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_CERTIFICADOS);
-      viewInscripcionesBtn.setAttribute(
-        "aria-pressed",
-        currentPanelView === PANEL_VIEW_INSCRIPCIONES ? "true" : "false"
-      );
-      viewAsistenciaBtn.setAttribute(
-        "aria-pressed",
-        currentPanelView === PANEL_VIEW_ASISTENCIA ? "true" : "false"
-      );
-      viewLunchBtn.setAttribute(
-        "aria-pressed",
-        currentPanelView === PANEL_VIEW_ALMUERZO ? "true" : "false"
-      );
-      viewSorteosBtn.setAttribute(
-        "aria-pressed",
-        currentPanelView === PANEL_VIEW_SORTEOS ? "true" : "false"
-      );
-      viewCertificadosBtn.setAttribute(
-        "aria-pressed",
-        currentPanelView === PANEL_VIEW_CERTIFICADOS ? "true" : "false"
-      );
-    }
-
-    function setPanelView(nextView) {
-      if (
-        currentAdminRole === "asistencia" &&
-        nextView !== PANEL_VIEW_ASISTENCIA &&
-        nextView !== PANEL_VIEW_ALMUERZO
-      ) {
-        nextView = PANEL_VIEW_ASISTENCIA;
-      }
-      if (
-        nextView !== PANEL_VIEW_INSCRIPCIONES &&
-        nextView !== PANEL_VIEW_ASISTENCIA &&
-        nextView !== PANEL_VIEW_ALMUERZO &&
-        nextView !== PANEL_VIEW_SORTEOS &&
-        nextView !== PANEL_VIEW_CERTIFICADOS
-      ) {
-        return;
-      }
-      if (currentPanelView === nextView) return;
-      currentPanelView = nextView;
-      renderViewButtons();
-      renderEvents(currentEventos);
-    }
-
-    function isEventActive(item) {
-      return item?.activo !== false;
-    }
-
-    function isCertificateVisible(item) {
-      return item?.certificado_activo !== false;
-    }
-
-    function getEventKey(item, index) {
-      return `${String(item?.evento || "evento").toLowerCase()}::${index}`;
-    }
-
-    function isEventExpanded(item, index) {
-      const key = getEventKey(item, index);
-      return expandedEventsByEvent.get(key) === true;
-    }
-
-    function setEventExpanded(item, index, nextValue) {
-      const key = getEventKey(item, index);
-      expandedEventsByEvent.set(key, nextValue === true);
-    }
-
-    function getVisibleRows(item, index, totalRows) {
-      const key = getEventKey(item, index);
-      const savedValue = Number.parseInt(String(visibleRowsByEvent.get(key) ?? ""), 10);
-      const baseValue = Number.isFinite(savedValue) ? savedValue : DEFAULT_VISIBLE_ROWS;
-      const nextValue = Math.max(0, Math.min(baseValue, totalRows));
-      visibleRowsByEvent.set(key, nextValue);
-      return nextValue;
-    }
-
-    function setVisibleRows(item, index, nextValue) {
-      const key = getEventKey(item, index);
-      const totalRows = Array.isArray(item?.inscripciones) ? item.inscripciones.length : 0;
-      const clamped = Math.max(0, Math.min(Number(nextValue) || 0, totalRows));
-      visibleRowsByEvent.set(key, clamped);
-    }
-
-    function normalizeMailValue(value) {
-      return String(value ?? "").trim().toLowerCase();
-    }
-
-    function isValidMail(value) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeMailValue(value));
-    }
-
-    function countUniqueMailRecipients(rows) {
-      const seen = new Set();
-      for (const row of Array.isArray(rows) ? rows : []) {
-        const mail = normalizeMailValue(row?.mail);
-        if (!mail || !isValidMail(mail) || seen.has(mail)) continue;
-        seen.add(mail);
-      }
-      return seen.size;
-    }
-
-    function getUniqueMailRecipientRows(rows) {
-      const seen = new Set();
-      const recipients = [];
-      for (const row of Array.isArray(rows) ? rows : []) {
-        const mail = normalizeMailValue(row?.mail);
-        if (!mail || !isValidMail(mail) || seen.has(mail)) continue;
-        seen.add(mail);
-        recipients.push({
-          mail,
-          nombre: String(row?.nombre_apellido || "").trim(),
-          dni: normalizeDniValue(row?.dni),
-          id_evento: row?.id_evento ?? ""
+        currentEventos.forEach(ev => {
+          const list = ev.inscripciones || [];
+          grandTotal += list.length;
+          attendanceTotal += list.filter(i => i.asistio).length;
+          lunchTotal += list.filter(i => i.almuerzo).length;
+          reconfirmTotal += list.filter(i => i.reconfirmo).length;
         });
+
+        totalValue.textContent = grandTotal;
+        attendanceTotalValue.textContent = attendanceTotal;
+        lunchTotalValue.textContent = lunchTotal;
+        reconfirmTotalValue.textContent = reconfirmTotal;
+        updatedAt.textContent = `Actualizado: ${new Date().toLocaleTimeString("es-AR")}`;
+
+        setStatus("");
+        renderEvents(currentEventos);
+      } catch (err) {
+        setStatus("Error al cargar los datos. Reintente.", "error");
       }
-      return recipients;
-    }
-
-    function getDefaultMailSubject(item) {
-      return `Informacion importante - ${item?.evento || "Plomeros ARG"}`;
-    }
-
-    function getMailComposerState(item, index) {
-      const key = getEventKey(item, index);
-      if (!mailComposerByEvent.has(key)) {
-        mailComposerByEvent.set(key, {
-          open: false,
-          subject: getDefaultMailSubject(item),
-          message: "",
-          selectedMails: null,
-          result: null
-        });
-      }
-      return mailComposerByEvent.get(key);
-    }
-
-    function syncMailSelectionState(item, index) {
-      const state = getMailComposerState(item, index);
-      const recipients = getUniqueMailRecipientRows(item?.inscripciones);
-      const validMails = new Set(recipients.map((recipient) => recipient.mail));
-
-      if (!Array.isArray(state.selectedMails)) {
-        state.selectedMails = recipients.map((recipient) => recipient.mail);
-        return state.selectedMails;
-      }
-
-      state.selectedMails = state.selectedMails.filter((mail) => validMails.has(mail));
-      return state.selectedMails;
-    }
-
-    function getSelectedMailSet(item, index) {
-      return new Set(syncMailSelectionState(item, index));
-    }
-
-    function setAllMailRecipients(item, index, checked) {
-      const state = getMailComposerState(item, index);
-      state.selectedMails = checked === true
-        ? getUniqueMailRecipientRows(item?.inscripciones).map((recipient) => recipient.mail)
-        : [];
-      state.result = null;
-    }
-
-    function toggleMailRecipient(item, index, mail, checked) {
-      const normalizedMail = normalizeMailValue(mail);
-      if (!normalizedMail || !isValidMail(normalizedMail)) return;
-      const state = getMailComposerState(item, index);
-      const selected = getSelectedMailSet(item, index);
-
-      if (checked) {
-        selected.add(normalizedMail);
-      } else {
-        selected.delete(normalizedMail);
-      }
-
-      state.selectedMails = [...selected];
-      state.result = null;
-    }
-
-    function setMailComposerOpen(item, index, open) {
-      const state = getMailComposerState(item, index);
-      state.open = open === true;
-      if (state.open && !Array.isArray(state.selectedMails)) {
-        syncMailSelectionState(item, index);
-      }
-      state.result = null;
-    }
-
-    function updateMailComposerField(item, index, field, value) {
-      const state = getMailComposerState(item, index);
-      if (field === "subject") {
-        state.subject = String(value ?? "").slice(0, 160);
-      }
-      if (field === "message") {
-        state.message = String(value ?? "").slice(0, 6000);
-      }
-      state.result = null;
-    }
-
-    function buildMailResultText(result) {
-      if (!result) return "";
-      const sent = Number(result.enviados || 0);
-      const recipients = Number(result.destinatarios || 0);
-      const failed = Number(result.fallidos || 0);
-      const skipped = [
-        Number(result.duplicados || 0) > 0 ? `${result.duplicados} duplicados` : "",
-        Number(result.sin_mail || 0) > 0 ? `${result.sin_mail} sin mail` : "",
-        Number(result.mails_invalidos || 0) > 0 ? `${result.mails_invalidos} invalidos` : ""
-      ].filter(Boolean).join(", ");
-      const base = result.ok
-        ? `Enviados ${sent} de ${recipients} mails.`
-        : (result.error || "No se pudo enviar el mail masivo.");
-      const failedText = failed > 0 ? ` Fallidos: ${failed}.` : "";
-      const skippedText = skipped ? ` Omitidos: ${skipped}.` : "";
-      const failedDetail = Array.isArray(result.fallidos_detalle) && result.fallidos_detalle[0]
-        ? String(result.fallidos_detalle[0].detail || result.fallidos_detalle[0].type || "").trim()
-        : "";
-      const detailText = failedDetail ? ` Motivo: ${failedDetail}` : "";
-      return `${base}${failedText}${skippedText}${detailText}`.trim();
-    }
-
-    async function sendEventMail(eventItem, subject, message, selectedMails) {
-      const response = await fetch("/api/admin-inscripciones", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({
-          action: "send_event_email",
-          evento: eventItem?.evento || "",
-          asunto: subject,
-          mensaje: message,
-          destinatarios: Array.isArray(selectedMails) ? selectedMails : []
-        })
-      });
-
-      if (response.status === 401) {
-        window.location.href = ADMIN_LOGIN_URL;
-        return { ok: false, redirected: true };
-      }
-
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || !data.ok) {
-        const error = new Error(data.error || "No se pudo enviar el mail masivo.");
-        error.data = data;
-        throw error;
-      }
-
-      return data;
-    }
-
-    function getAttendanceLookup(item, index) {
-      const key = getEventKey(item, index);
-      if (!attendanceLookupByEvent.has(key)) {
-        attendanceLookupByEvent.set(key, {
-          searched: false,
-          numero: "",
-          row: null,
-          error: ""
-        });
-      }
-      return attendanceLookupByEvent.get(key);
-    }
-
-    function getLunchLookup(item, index) {
-      const key = getEventKey(item, index);
-      if (!lunchLookupByEvent.has(key)) {
-        lunchLookupByEvent.set(key, {
-          searched: false,
-          numero: "",
-          row: null,
-          error: ""
-        });
-      }
-      return lunchLookupByEvent.get(key);
-    }
-
-    function getRaffleDrawCount(item, index, eligibleCount) {
-      const key = getEventKey(item, index);
-      const fallback = 1;
-      const maxValue = Math.max(eligibleCount || 0, 1);
-      const savedValue = Number.parseInt(String(raffleCountByEvent.get(key) ?? ""), 10);
-      const nextValue = Number.isFinite(savedValue)
-        ? Math.max(1, Math.min(savedValue, maxValue))
-        : Math.min(fallback, maxValue);
-      raffleCountByEvent.set(key, nextValue);
-      return nextValue;
-    }
-
-    function setRaffleDrawCount(item, index, nextValue, eligibleCount) {
-      const key = getEventKey(item, index);
-      const maxValue = Math.max(eligibleCount || 0, 1);
-      const parsedValue = Number.parseInt(String(nextValue ?? ""), 10);
-      const normalizedValue = Number.isFinite(parsedValue)
-        ? Math.max(1, Math.min(parsedValue, maxValue))
-        : 1;
-      raffleCountByEvent.set(key, normalizedValue);
-      return normalizedValue;
-    }
-
-    function getRaffleBrandState(item, index) {
-      const key = getEventKey(item, index);
-      return normalizeBrandKey(raffleBrandByEvent.get(key));
-    }
-
-    function setRaffleBrandState(item, index, brandKey) {
-      const key = getEventKey(item, index);
-      const normalizedBrandKey = normalizeBrandKey(brandKey);
-      if (!normalizedBrandKey) {
-        raffleBrandByEvent.delete(key);
-        return "";
-      }
-      raffleBrandByEvent.set(key, normalizedBrandKey);
-      return normalizedBrandKey;
-    }
-
-    function normalizeDniValue(value) {
-      return String(value ?? "").replace(/\D+/g, "").trim();
-    }
-
-    function findInscriptoByDni(eventItem, dni) {
-      const normalizedDni = normalizeDniValue(dni);
-      if (!normalizedDni) return null;
-      const rows = Array.isArray(eventItem?.inscripciones) ? eventItem.inscripciones : [];
-      return rows.find((entry) => normalizeDniValue(entry.dni) === normalizedDni) || null;
-    }
-
-    function searchAttendanceByDni(item, index, rawDni) {
-      const state = getAttendanceLookup(item, index);
-      const cleaned = normalizeDniValue(rawDni);
-
-      state.searched = true;
-      state.numero = cleaned;
-      state.row = null;
-      state.error = "";
-
-      if (!cleaned) {
-        state.error = "Ingresa un DNI valido.";
-        return;
-      }
-
-      const rows = Array.isArray(item?.inscripciones) ? item.inscripciones : [];
-      const found = rows.find((entry) => {
-        const rowDni = normalizeDniValue(entry.dni);
-        return rowDni === cleaned;
-      }) || null;
-
-      if (!found) {
-        state.error = "No se encontro una persona con ese DNI en este encuentro.";
-        return;
-      }
-
-      state.row = found;
-      state.numero = cleaned;
-    }
-
-    function searchLunchByDni(item, index, rawDni) {
-      const state = getLunchLookup(item, index);
-      const cleaned = normalizeDniValue(rawDni);
-
-      state.searched = true;
-      state.numero = cleaned;
-      state.row = null;
-      state.error = "";
-
-      if (!cleaned) {
-        state.error = "Ingresa un DNI valido.";
-        return;
-      }
-
-      const rows = Array.isArray(item?.inscripciones) ? item.inscripciones : [];
-      const found = rows.find((entry) => {
-        const rowDni = normalizeDniValue(entry.dni);
-        return rowDni === cleaned;
-      }) || null;
-
-      if (!found) {
-        state.error = "No se encontro una persona con ese DNI en este encuentro.";
-        return;
-      }
-
-      state.row = found;
-      state.numero = cleaned;
-    }
-
-    function updateAttendanceStateLocally(eventItem, dni, asistio) {
-      const normalizedDni = normalizeDniValue(dni);
-      const rows = Array.isArray(eventItem?.inscripciones) ? eventItem.inscripciones : [];
-      for (const row of rows) {
-        if (normalizeDniValue(row?.dni) === normalizedDni) {
-          row.asistio = asistio === true;
-        }
-      }
-    }
-
-    function updateLunchStateLocally(eventItem, dni, almuerzo) {
-      const normalizedDni = normalizeDniValue(dni);
-      const rows = Array.isArray(eventItem?.inscripciones) ? eventItem.inscripciones : [];
-      for (const row of rows) {
-        if (normalizeDniValue(row?.dni) === normalizedDni) {
-          row.almuerzo = almuerzo === true;
-        }
-      }
-    }
-
-    function getUniqueRowsByDni(rows) {
-      const list = Array.isArray(rows) ? rows : [];
-      const uniqueRows = [];
-      const seen = new Set();
-
-      for (const row of list) {
-        const normalizedDni = normalizeDniValue(row?.dni);
-        if (!normalizedDni || seen.has(normalizedDni)) continue;
-        seen.add(normalizedDni);
-        uniqueRows.push(row);
-      }
-
-      return uniqueRows;
-    }
-
-    async function persistAttendanceState(eventItem, dni, asistio) {
-      const response = await fetch("/api/admin-inscripciones", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({
-          action: "set_attendance",
-          evento: eventItem?.evento || "",
-          dni,
-          asistio
-        })
-      });
-
-      if (response.status === 401) {
-        window.location.href = ADMIN_LOGIN_URL;
-        return { ok: false, redirected: true };
-      }
-
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || !data.ok) {
-        throw new Error(data.error || "No se pudo guardar la asistencia.");
-      }
-
-      return {
-        ok: true,
-        asistio: data.asistio === true
-      };
-    }
-
-    async function persistLunchState(eventItem, dni, almuerzo) {
-      const response = await fetch("/api/admin-inscripciones", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({
-          action: "set_lunch",
-          evento: eventItem?.evento || "",
-          dni,
-          almuerzo
-        })
-      });
-
-      if (response.status === 401) {
-        window.location.href = ADMIN_LOGIN_URL;
-        return { ok: false, redirected: true };
-      }
-
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || !data.ok) {
-        throw new Error(data.error || "No se pudo guardar el almuerzo.");
-      }
-
-      return {
-        ok: true,
-        almuerzo: data.almuerzo === true
-      };
-    }
-
-    function buildAttendanceResultHtml(item, index) {
-      const rows = Array.isArray(item?.inscripciones) ? item.inscripciones : [];
-      if (rows.length === 0) {
-        return `<p class="attendance-hint">No hay inscriptos para buscar en este encuentro.</p>`;
-      }
-
-      const state = getAttendanceLookup(item, index);
-
-      if (!state.searched) {
-        return `<p class="attendance-hint">Ingresa un DNI para ver los datos.</p>`;
-      }
-
-      if (state.error) {
-        return `<p class="attendance-error">${escapeHtml(state.error)}</p>`;
-      }
-
-      if (!state.row) {
-        return `<p class="attendance-hint">No se encontro informacion del DNI buscado.</p>`;
-      }
-
-      const latestRow = findInscriptoByDni(item, state.row?.dni);
-      const row = latestRow || state.row;
-      const confirmed = row?.asistio === true;
-
-      return `
-        <div class="attendance-result">
-          <p class="attendance-row"><strong>DNI:</strong> ${escapeHtml(row.dni || "-")}</p>
-          <p class="attendance-row"><strong>Nombre y apellido:</strong> ${escapeHtml(row.nombre_apellido || "-")}</p>
-          <p class="attendance-row"><strong>Mail:</strong> ${escapeHtml(row.mail || "-")}</p>
-          <p class="attendance-row"><strong>Localidad:</strong> ${escapeHtml(row.localidad || "-")}</p>
-          <p class="attendance-row"><strong>Empresa:</strong> ${escapeHtml(row.expositor_info || "-")}</p>
-          <p class="attendance-row"><strong>Reconfirmacion:</strong> ${row?.reconfirmado === true ? "Si" : "No"}</p>
-          <div class="attendance-check-wrap">
-            <button
-              class="btn-attendance-check ${confirmed ? "is-done" : ""}"
-              type="button"
-              data-attendance-confirm="${index}"
-              data-attendance-dni="${escapeHtml(row.dni ?? "")}"
-            >
-              ${confirmed ? "&#10003; Asistencia marcada" : "&#10003;"}
-            </button>
-          </div>
-        </div>
-      `;
-    }
-
-    function buildLunchResultHtml(item, index) {
-      const rows = Array.isArray(item?.inscripciones) ? item.inscripciones : [];
-      if (rows.length === 0) {
-        return `<p class="attendance-hint">No hay inscriptos para buscar en este encuentro.</p>`;
-      }
-
-      const state = getLunchLookup(item, index);
-
-      if (!state.searched) {
-        return `<p class="attendance-hint">Ingresa un DNI para ver los datos.</p>`;
-      }
-
-      if (state.error) {
-        return `<p class="attendance-error">${escapeHtml(state.error)}</p>`;
-      }
-
-      if (!state.row) {
-        return `<p class="attendance-hint">No se encontro informacion del DNI buscado.</p>`;
-      }
-
-      const latestRow = findInscriptoByDni(item, state.row?.dni);
-      const row = latestRow || state.row;
-      const confirmed = row?.almuerzo === true;
-
-      return `
-        <div class="attendance-result">
-          <p class="attendance-row"><strong>DNI:</strong> ${escapeHtml(row.dni || "-")}</p>
-          <p class="attendance-row"><strong>Nombre y apellido:</strong> ${escapeHtml(row.nombre_apellido || "-")}</p>
-          <p class="attendance-row"><strong>Mail:</strong> ${escapeHtml(row.mail || "-")}</p>
-          <p class="attendance-row"><strong>Localidad:</strong> ${escapeHtml(row.localidad || "-")}</p>
-          <p class="attendance-row"><strong>Empresa:</strong> ${escapeHtml(row.expositor_info || "-")}</p>
-          <p class="attendance-row"><strong>Asistencia:</strong> ${row?.asistio === true ? "Si" : "No"}</p>
-          <div class="attendance-check-wrap">
-            <button
-              class="btn-attendance-check ${confirmed ? "is-done" : ""}"
-              type="button"
-              data-lunch-confirm="${index}"
-              data-lunch-dni="${escapeHtml(row.dni ?? "")}"
-            >
-              ${confirmed ? "&#10003; Almuerzo marcado" : "&#10003;"}
-            </button>
-          </div>
-        </div>
-      `;
-    }
-
-    function getEligibleRaffleRows(eventItem) {
-      const rows = getUniqueRowsByDni(eventItem?.inscripciones);
-      return rows.filter(
-        (row) => row?.asistio === true && row?.sorteado !== true && normalizeDniValue(row?.dni)
-      );
-    }
-
-    function getRaffleWinners(eventItem) {
-      const rows = getUniqueRowsByDni(eventItem?.inscripciones);
-      return rows.filter(
-        (row) => row?.sorteado === true && normalizeDniValue(row?.dni)
-      );
-    }
-
-    function getRaffleState(item, index) {
-      const key = getEventKey(item, index);
-      const saved = raffleWinnerByEvent.get(key);
-      return Array.isArray(saved) ? saved : [];
-    }
-
-    function setRaffleState(item, index, rows) {
-      const key = getEventKey(item, index);
-      if (!Array.isArray(rows) || rows.length === 0) {
-        raffleWinnerByEvent.delete(key);
-        return;
-      }
-      raffleWinnerByEvent.set(key, rows);
-    }
-
-    function updateRaffleStateLocally(eventItem, dni, sorteado, brandKey) {
-      const normalizedDni = normalizeDniValue(dni);
-      const normalizedBrandKey = normalizeBrandKey(brandKey);
-      const rows = Array.isArray(eventItem?.inscripciones) ? eventItem.inscripciones : [];
-      let matchedRow = null;
-
-      for (const row of rows) {
-        if (normalizeDniValue(row?.dni) !== normalizedDni) continue;
-        row.sorteado = sorteado === true;
-        if (row.sorteado !== true) {
-          row.marca_sorteo = "";
-        } else if (normalizedBrandKey) {
-          row.marca_sorteo = normalizedBrandKey;
-        }
-        if (!matchedRow) {
-          matchedRow = row;
-        }
-      }
-
-      return matchedRow;
-    }
-
-    function groupRaffleWinnersByBrand(rows) {
-      const groups = new Map();
-      for (const row of Array.isArray(rows) ? rows : []) {
-        const brandKey = normalizeBrandKey(row?.marca_sorteo) || "sin_marca";
-        if (!groups.has(brandKey)) {
-          groups.set(brandKey, []);
-        }
-        groups.get(brandKey).push(row);
-      }
-      return [...groups.entries()].map(([brandKey, winners]) => ({
-        brandKey,
-        brandLabel: getBrandLabel(brandKey),
-        brandLogo: getBrandLogo(brandKey),
-        winners
-      }));
-    }
-
-    function buildRaffleBrandGroupsHtml(rows, options = {}) {
-      const groups = groupRaffleWinnersByBrand(rows);
-      const canRemove = options.canRemove === true;
-      const eventIndex = Number.isInteger(options.eventIndex) ? options.eventIndex : -1;
-      return groups.map((group) => `
-        <div class="raffle-brand-group">
-          ${
-            group.brandLogo
-              ? `<img class="raffle-brand-logo" src="${escapeHtml(group.brandLogo)}" alt="Logo ${escapeHtml(group.brandLabel)}" onerror="this.style.display='none'">`
-              : ""
-          }
-          <div class="raffle-brand-info">
-            <div class="raffle-brand-name">${escapeHtml(group.brandLabel)}</div>
-            <ul class="raffle-brand-names">
-              ${group.winners.map((winner) => `
-                <li class="raffle-row">
-                  <span class="raffle-row-name">
-                    ${escapeHtml(winner.nombre_apellido || "-")} - DNI ${escapeHtml(winner.dni || "-")}
-                  </span>
-                  ${
-                    canRemove && eventIndex >= 0
-                      ? `
-                        <button
-                          class="raffle-remove-btn"
-                          type="button"
-                          data-reset-raffle="${eventIndex}"
-                          data-raffle-dni="${escapeHtml(winner.dni || "")}"
-                          data-raffle-name="${escapeHtml(winner.nombre_apellido || "")}"
-                        >
-                          Eliminar
-                        </button>
-                      `
-                      : ""
-                  }
-                </li>
-              `).join("")}
-            </ul>
-          </div>
-        </div>
-      `).join("");
-    }
-
-    async function drawRaffleWinner(eventItem, cantidad, marca) {
-      const response = await fetch("/api/admin-inscripciones", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({
-          action: "draw_raffle",
-          evento: eventItem?.evento || "",
-          cantidad,
-          marca
-        })
-      });
-
-      if (response.status === 401) {
-        window.location.href = ADMIN_LOGIN_URL;
-        return { ok: false, redirected: true };
-      }
-
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || !data.ok) {
-        throw new Error(data.error || "No se pudo realizar el sorteo.");
-      }
-
-      return data;
-    }
-
-    async function resetRaffleWinner(eventItem, dni) {
-      const response = await fetch("/api/admin-inscripciones", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({
-          action: "reset_raffle_winner",
-          evento: eventItem?.evento || "",
-          dni
-        })
-      });
-
-      if (response.status === 401) {
-        window.location.href = ADMIN_LOGIN_URL;
-        return { ok: false, redirected: true };
-      }
-
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || !data.ok) {
-        throw new Error(data.error || "No se pudo eliminar el ganador del sorteo.");
-      }
-
-      return data;
-    }
-
-    function buildMailSectionHtml(item, index) {
-      const rows = Array.isArray(item?.inscripciones) ? item.inscripciones : [];
-      const recipients = getUniqueMailRecipientRows(rows);
-      const state = getMailComposerState(item, index);
-      const selectedMailSet = getSelectedMailSet(item, index);
-      const selectedCount = selectedMailSet.size;
-      const isSending = mailInFlight.has(index);
-      const resultText = buildMailResultText(state.result);
-
-      if (!state.open) {
-        return "";
-      }
-
-      return `
-        <section class="mail-box">
-          <h3 class="mail-title">Envio masivo</h3>
-          <p class="mail-hint">
-            Marcados: ${selectedCount} de ${recipients.length}. Se omiten mails vacios, invalidos o repetidos.
-          </p>
-          <div class="mail-recipient-tools">
-            <button
-              class="btn-event"
-              type="button"
-              data-mail-select-all="${index}"
-              ${recipients.length === 0 || isSending ? "disabled" : ""}
-            >
-              Todos
-            </button>
-            <button
-              class="btn-event"
-              type="button"
-              data-mail-clear-all="${index}"
-              ${recipients.length === 0 || isSending ? "disabled" : ""}
-            >
-              Ninguno
-            </button>
-          </div>
-          <div class="mail-recipient-list">
-            ${recipients.length > 0
-              ? recipients.map((recipient) => `
-                <label class="mail-recipient-option">
-                  <input
-                    type="checkbox"
-                    data-mail-recipient="${index}"
-                    value="${escapeHtml(recipient.mail)}"
-                    ${selectedMailSet.has(recipient.mail) ? "checked" : ""}
-                    ${isSending ? "disabled" : ""}
-                  />
-                  <span>
-                    <span class="mail-recipient-name">
-                      ${escapeHtml(recipient.nombre || "Sin nombre")}
-                      ${recipient.dni ? ` - DNI ${escapeHtml(recipient.dni)}` : ""}
-                    </span>
-                    <span class="mail-recipient-mail">${escapeHtml(recipient.mail)}</span>
-                  </span>
-                </label>
-              `).join("")
-              : `<p class="empty">No hay mails validos para este encuentro.</p>`
-            }
-          </div>
-          <div class="mail-grid">
-            <label class="mail-field">
-              Asunto
-              <input
-                class="mail-input"
-                type="text"
-                maxlength="160"
-                data-mail-subject="${index}"
-                value="${escapeHtml(state.subject || getDefaultMailSubject(item))}"
-                ${isSending ? "disabled" : ""}
-              />
-            </label>
-            <label class="mail-field">
-              Mensaje
-              <textarea
-                class="mail-textarea"
-                maxlength="6000"
-                data-mail-message="${index}"
-                placeholder="Escribi el mensaje para los inscriptos de este encuentro"
-                ${isSending ? "disabled" : ""}
-              >${escapeHtml(state.message || "")}</textarea>
-            </label>
-          </div>
-          <div class="mail-actions">
-            <button
-              class="btn-event"
-              type="button"
-              data-send-event-mail="${index}"
-              ${selectedCount === 0 || isSending ? "disabled" : ""}
-            >
-              ${isSending ? "Enviando..." : `Enviar a ${selectedCount} mails`}
-            </button>
-            <button
-              class="btn-event"
-              type="button"
-              data-close-mail-composer="${index}"
-              ${isSending ? "disabled" : ""}
-            >
-              Cerrar
-            </button>
-          </div>
-          ${resultText
-            ? `<p class="mail-result ${state.result?.ok ? "" : "is-error"}">${escapeHtml(resultText)}</p>`
-            : ""}
-        </section>
-      `;
-    }
-
-    function buildRaffleSectionHtml(item, index) {
-      const rows = Array.isArray(item?.inscripciones) ? item.inscripciones : [];
-      const eligibleRows = getEligibleRaffleRows(item);
-      const winnerRows = getRaffleWinners(item);
-      const lastWinners = getRaffleState(item, index);
-      const isDrawing = raffleInFlight.has(index);
-      const drawCount = getRaffleDrawCount(item, index, eligibleRows.length);
-      const selectedBrand = getRaffleBrandState(item, index);
-
-      if (rows.length === 0) {
-        return `
-          <section class="raffle-box">
-            <h3 class="raffle-title">Sorteos</h3>
-            <p class="raffle-hint">No hay inscriptos en este encuentro para participar del sorteo.</p>
-          </section>
-        `;
-      }
-
-      return `
-        <section class="raffle-box">
-          <h3 class="raffle-title">Sorteos</h3>
-          <p class="raffle-hint">
-            Participan solo los inscriptos con asistencia confirmada. Cada DNI puede salir una sola vez por encuentro.
-          </p>
-          <div class="raffle-actions">
-            <span class="counter counter-attendance">${eligibleRows.length} disponibles</span>
-            <span class="counter counter-attendance">${winnerRows.length} sorteados</span>
-            <label class="raffle-brand-wrap">
-              <span class="raffle-brand-label">Marca</span>
-              <select
-                class="raffle-brand-select"
-                data-raffle-brand-select="${index}"
-                ${isDrawing ? "disabled" : ""}
-              >
-                <option value="">Elegir marca</option>
-                ${RAFFLE_BRANDS.map((brand) => `
-                  <option value="${escapeHtml(brand.key)}" ${brand.key === selectedBrand ? "selected" : ""}>
-                    ${escapeHtml(brand.name)}
-                  </option>
-                `).join("")}
-              </select>
-            </label>
-            <label class="raffle-count-wrap">
-              <span class="raffle-count-label">Cantidad a sortear</span>
-              <input
-                class="raffle-count-input"
-                type="number"
-                min="1"
-                max="${Math.max(eligibleRows.length, 1)}"
-                step="1"
-                value="${drawCount}"
-                data-raffle-count-input="${index}"
-                ${eligibleRows.length === 0 || isDrawing ? "disabled" : ""}
-              />
-            </label>
-            <button
-              class="btn-event"
-              type="button"
-              data-draw-raffle="${index}"
-              ${eligibleRows.length === 0 || isDrawing ? "disabled" : ""}
-            >
-              ${isDrawing ? "Sorteando..." : "Sortear"}
-            </button>
-          </div>
-          ${
-            lastWinners.length > 0
-              ? `
-                <div class="raffle-winner">
-                  <h4>${lastWinners.length === 1 ? "Ultimo ganador sorteado" : "Ultimos ganadores sorteados"}</h4>
-                  ${buildRaffleBrandGroupsHtml(lastWinners)}
-                </div>
-              `
-              : ""
-          }
-          <div class="raffle-list">
-            <h4>Ganadores ya sorteados</h4>
-            ${
-              winnerRows.length > 0
-                ? buildRaffleBrandGroupsHtml(winnerRows, {
-                    canRemove: !isDrawing,
-                    eventIndex: index
-                  })
-                : `<p class="raffle-hint">Todavia no se sorteo ningun ganador en este encuentro.</p>`
-            }
-          </div>
-        </section>
-      `;
-    }
-
-    function buildRows(rows, eventItem, eventIndex) {
-      return rows
-        .map((item) => `
-          <tr>
-            <td>${escapeHtml(item.id_evento ?? "-")}</td>
-            <td>${escapeHtml(formatDate(item.created_at))}</td>
-            <td>${escapeHtml(item.nombre_apellido || "-")}</td>
-            <td>${escapeHtml(item.dni || "-")}</td>
-            <td>${escapeHtml(item.mail || "-")}</td>
-            <td>${escapeHtml(item.celular || "-")}</td>
-            <td>${escapeHtml(item.provincia || "-")}</td>
-            <td>${escapeHtml(item.localidad || "-")}</td>
-            <td>${escapeHtml(item.profesion_label || item.profesion || "-")}</td>
-            <td>${escapeHtml(item.expositor_info || "-")}</td>
-            <td class="attendance-col">
-              <input
-                class="attendance-checkbox"
-                type="checkbox"
-                data-attendance-row-toggle="${eventIndex}"
-                data-attendance-dni="${escapeHtml(item.dni ?? "")}"
-                ${item.asistio === true ? "checked" : ""}
-              />
-            </td>
-            <td class="reconfirm-col">${item.reconfirmado === true ? "Si" : "No"}</td>
-          </tr>
-        `)
-        .join("");
-    }
-
-    function sanitizeFileName(value) {
-      return String(value ?? "")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "") || "evento";
-    }
-
-    const ORIGEN_LABELS = {
-      facebook: "Grupo de Facebook",
-      grupo_whatsapp: "Grupo de WhatsApp",
-      instagram: "Instagram de Plomeros",
-      casa_sanitarios: "Casa de Sanitarios",
-      centro_formacion: "Centro de Formacion"
-    };
-
-    function normalizeSummaryLabel(value, fallback = "Sin dato") {
-      const text = String(value ?? "").trim();
-      return text || fallback;
-    }
-
-    function titleizeKey(value) {
-      const raw = String(value ?? "").trim().toLowerCase();
-      if (!raw) return "Sin dato";
-      if (raw === "caba") return "CABA";
-      return raw
-        .split("_")
-        .map((part) => part ? part.charAt(0).toUpperCase() + part.slice(1) : "")
-        .join(" ");
-    }
-
-    function normalizeAsociadoLabel(value) {
-      const normalized = String(value ?? "").trim().toLowerCase();
-      if (normalized === "si") return "Si";
-      if (normalized === "no") return "No";
-      return "Sin dato";
-    }
-
-    function normalizeOrigenLabel(value) {
-      const normalized = String(value ?? "").trim().toLowerCase();
-      return ORIGEN_LABELS[normalized] || normalizeSummaryLabel(value);
-    }
-
-    function getProfesionSummaryValues(row) {
-      const source = String(row?.profesion_label || row?.profesion || "");
-      const values = source
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean);
-
-      return values.length > 0 ? values : ["Sin dato"];
-    }
-
-    function buildSummaryEntries(rows, getValues) {
-      const map = new Map();
-
-      for (const row of Array.isArray(rows) ? rows : []) {
-        const nextValues = getValues(row);
-        const values = Array.isArray(nextValues) ? nextValues : [nextValues];
-
-        for (const value of values) {
-          const label = normalizeSummaryLabel(value);
-          map.set(label, (map.get(label) || 0) + 1);
-        }
-      }
-
-      return [...map.entries()].sort((a, b) =>
-        b[1] - a[1] || a[0].localeCompare(b[0], "es")
-      );
-    }
-
-    function formatSummaryPercent(count, total) {
-      if (!Number.isFinite(count) || !Number.isFinite(total) || total <= 0) {
-        return "0%";
-      }
-
-      const percent = (count / total) * 100;
-      const rounded = Number.isInteger(percent) ? percent.toFixed(0) : percent.toFixed(1);
-      return `${rounded.replace(".", ",")}%`;
-    }
-
-    function buildSummaryBar(count, total, color) {
-      const percent = total > 0 ? Math.max(0, Math.min(100, Math.round((count / total) * 100))) : 0;
-
-      return `
-        <table cellpadding="0" cellspacing="0" style="width:180px;border-collapse:collapse;">
-          <tr>
-            <td style="width:${percent}%;height:12px;background:${color};"></td>
-            <td style="width:${100 - percent}%;height:12px;background:#edf3fb;"></td>
-          </tr>
-        </table>
-      `;
-    }
-
-    function buildSummaryNarrative(entries, total) {
-      if (!Array.isArray(entries) || entries.length === 0 || total <= 0) {
-        return "Sin datos para analizar en esta categoria.";
-      }
-
-      const [first, second] = entries;
-      const [firstLabel, firstCount] = first;
-      const firstPercent = formatSummaryPercent(firstCount, total);
-
-      if (firstCount === total) {
-        return `Todos los registros corresponden a ${firstLabel} (${firstCount} - ${firstPercent}).`;
-      }
-
-      let text = `Predomina ${firstLabel} con ${firstCount} registros (${firstPercent}).`;
-
-      if (second) {
-        const [secondLabel, secondCount] = second;
-        const secondPercent = formatSummaryPercent(secondCount, total);
-        text += ` Le sigue ${secondLabel} con ${secondCount} registros (${secondPercent}).`;
-      }
-
-      return text;
-    }
-
-    function buildSummarySection(title, entries, total, color) {
-      const safeTitle = escapeHtml(title);
-      const narrative = escapeHtml(buildSummaryNarrative(entries, total));
-
-      return `
-        <table border="1" style="margin:0 0 18px;border-collapse:collapse;">
-          <thead>
-            <tr>
-              <th colspan="4" style="background:${color};color:#ffffff;">${safeTitle}</th>
-            </tr>
-            <tr>
-              <th colspan="4" style="background:#f8fbff;color:#243b5a;text-align:left;font-weight:600;">${narrative}</th>
-            </tr>
-            <tr>
-              <th>Categoria</th>
-              <th>Cantidad</th>
-              <th>Porcentaje</th>
-              <th>Grafico</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${
-              entries.length > 0
-                ? entries
-                  .map(([label, count]) => `
-                    <tr>
-                      <td>${escapeHtml(label)}</td>
-                      <td>${count}</td>
-                      <td>${formatSummaryPercent(count, total)}</td>
-                      <td>${buildSummaryBar(count, total, color)}</td>
-                    </tr>
-                  `)
-                  .join("")
-                : `
-                  <tr>
-                    <td colspan="4">Sin datos.</td>
-                  </tr>
-                `
-            }
-          </tbody>
-        </table>
-      `;
-    }
-
-    function buildSummaryExcelHtml(eventName, rows) {
-      const list = Array.isArray(rows) ? rows : [];
-      const total = list.length;
-      const totalAsistencias = list.reduce((sum, row) => sum + (row?.asistio === true ? 1 : 0), 0);
-      const totalAlmuerzos = list.reduce((sum, row) => sum + (row?.almuerzo === true ? 1 : 0), 0);
-      const totalReconfirmados = list.reduce((sum, row) => sum + (row?.reconfirmado === true ? 1 : 0), 0);
-      const totalAsociados = list.reduce(
-        (sum, row) => sum + (normalizeAsociadoLabel(row?.asociado) === "Si" ? 1 : 0),
-        0
-      );
-
-      const profesiones = buildSummaryEntries(list, (row) => getProfesionSummaryValues(row));
-      const asociados = buildSummaryEntries(list, (row) => normalizeAsociadoLabel(row?.asociado));
-      const provincias = buildSummaryEntries(list, (row) => titleizeKey(row?.provincia));
-      const origenes = buildSummaryEntries(list, (row) => normalizeOrigenLabel(row?.origen));
-      const asistencias = buildSummaryEntries(list, (row) => row?.asistio === true ? "Si" : "No");
-      const almuerzos = buildSummaryEntries(list, (row) => row?.almuerzo === true ? "Si" : "No");
-      const reconfirmaciones = buildSummaryEntries(list, (row) => row?.reconfirmado === true ? "Si" : "No");
-      const safeEventName = escapeHtml(eventName || "Evento");
-      const generatedAt = escapeHtml(formatDate(new Date().toISOString()));
-
-      return `
-        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-          <head>
-            <meta charset="UTF-8">
-          </head>
-          <body>
-            <table border="1" style="margin:0 0 18px;border-collapse:collapse;">
-              <thead>
-                <tr>
-                  <th colspan="2">Resumen con graficos - Evento ${safeEventName}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td>Total inscriptos</td><td>${total}</td></tr>
-                <tr><td>Total asistencias</td><td>${totalAsistencias}</td></tr>
-                <tr><td>Total almuerzos</td><td>${totalAlmuerzos}</td></tr>
-                <tr><td>Total reconfirmados</td><td>${totalReconfirmados}</td></tr>
-                <tr><td>Total asociados</td><td>${totalAsociados}</td></tr>
-                <tr><td>Generado</td><td>${generatedAt}</td></tr>
-              </tbody>
-            </table>
-            ${buildSummarySection("Profesiones", profesiones, total, "#0f4ea8")}
-            ${buildSummarySection("Asociados", asociados, total, "#1f7a45")}
-            ${buildSummarySection("Provincias", provincias, total, "#7d4f00")}
-            ${buildSummarySection("Origen", origenes, total, "#6b49a6")}
-            ${buildSummarySection("Asistencia", asistencias, total, "#0f7a45")}
-            ${buildSummarySection("Almuerzo", almuerzos, total, "#2f6f73")}
-            ${buildSummarySection("Reconfirmacion", reconfirmaciones, total, "#b05c00")}
-          </body>
-        </html>
-      `;
-    }
-
-    function buildExcelRows(rows) {
-      return rows
-        .map((item) => `
-          <tr>
-            <td>${escapeHtml(item.id_evento ?? "-")}</td>
-            <td>${escapeHtml(formatDate(item.created_at))}</td>
-            <td>${escapeHtml(item.nombre_apellido || "-")}</td>
-            <td style="mso-number-format:'\\@';">${escapeHtml(item.dni || "-")}</td>
-            <td>${escapeHtml(item.mail || "-")}</td>
-            <td style="mso-number-format:'\\@';">${escapeHtml(item.celular || "-")}</td>
-            <td>${escapeHtml(item.provincia || "-")}</td>
-            <td>${escapeHtml(item.localidad || "-")}</td>
-            <td>${escapeHtml(item.asociado || "-")}</td>
-            <td>${escapeHtml(item.profesion_label || item.profesion || "-")}</td>
-            <td>${escapeHtml(item.expositor_info || "-")}</td>
-            <td>${escapeHtml(item.origen || "-")}</td>
-            <td>${item.asistio === true ? "Si" : "No"}</td>
-            <td>${item.almuerzo === true ? "Si" : "No"}</td>
-            <td>${item.reconfirmado === true ? "Si" : "No"}</td>
-          </tr>
-        `)
-        .join("");
-    }
-
-    function downloadEventExcel(eventName, rows) {
-      if (!Array.isArray(rows) || rows.length === 0) {
-        return;
-      }
-
-      const safeEventName = escapeHtml(eventName || "Evento");
-      const html = `
-        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-          <head>
-            <meta charset="UTF-8">
-          </head>
-          <body>
-            <table border="1">
-              <thead>
-                <tr>
-                  <th colspan="15">Evento ${safeEventName}</th>
-                </tr>
-                <tr>
-                  <th>ID encuentro</th>
-                  <th>Fecha</th>
-                  <th>Nombre y apellido</th>
-                  <th>DNI</th>
-                  <th>Mail</th>
-                  <th>Numero de Ceular</th>
-                  <th>Provincia</th>
-                  <th>Localidad</th>
-                  <th>Asociado</th>
-                  <th>Profesión</th>
-                  <th>Empresa</th>
-                  <th>Origen</th>
-                  <th>Asistio</th>
-                  <th>Almuerzo</th>
-                  <th>Reconfirmacion</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${buildExcelRows(rows)}
-              </tbody>
-            </table>
-          </body>
-        </html>
-      `;
-
-      const blob = new Blob(["\ufeff", html], {
-        type: "application/vnd.ms-excel;charset=utf-8;"
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `inscripciones-${sanitizeFileName(eventName)}.xls`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
-    }
-
-    function downloadEventSummaryExcel(eventName, rows) {
-      if (!Array.isArray(rows) || rows.length === 0) {
-        return;
-      }
-
-      const html = buildSummaryExcelHtml(eventName, rows);
-      const blob = new Blob(["\ufeff", html], {
-        type: "application/vnd.ms-excel;charset=utf-8;"
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `resumen-inscripciones-${sanitizeFileName(eventName)}.xls`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
     }
 
     function renderEvents(eventos) {
-      currentEventos = Array.isArray(eventos) ? eventos : [];
-      attendanceTotalValue.textContent = String(countAttendance(currentEventos));
-      lunchTotalValue.textContent = String(countLunch(currentEventos));
-      reconfirmTotalValue.textContent = String(countReconfirm(currentEventos));
+      eventsContainer.innerHTML = "";
+      if (!eventos || eventos.length === 0) {
+        eventsContainer.innerHTML = `<div class="empty">No hay eventos para mostrar.</div>`;
+        return;
+      }
 
-      if (!Array.isArray(eventos) || eventos.length === 0) {
-        eventsContainer.innerHTML = `
-          <article class="event-card">
-            <p class="empty">No hay eventos para mostrar.</p>
-          </article>
+      eventos.forEach(evento => {
+        const eventId = evento.id;
+        const isCollapsed = expandedEventsByEvent.get(eventId) === false;
+        const inscripciones = evento.inscripciones || [];
+        const visibleCount = visibleRowsByEvent.get(eventId) || DEFAULT_VISIBLE_ROWS;
+
+        const card = document.createElement("article");
+        card.className = `event-card ${isCollapsed ? "is-collapsed" : ""}`;
+
+        let counterLabel = `Inscriptos: ${inscripciones.length}`;
+        if (currentPanelView === PANEL_VIEW_ASISTENCIA) {
+          counterLabel = `Asistencias: ${inscripciones.filter(i => i.asistio).length} / ${inscripciones.length}`;
+        } else if (currentPanelView === PANEL_VIEW_ALMUERZO) {
+          counterLabel = `Almuerzos: ${inscripciones.filter(i => i.almuerzo).length} / ${inscripciones.length}`;
+        }
+
+        const headHTML = `
+          <div class="event-head">
+            <div class="event-heading">
+              <button class="event-expand" aria-expanded="${!isCollapsed}" data-event="${eventId}">
+                <span class="event-expand-icon"></span>
+              </button>
+              <h2 class="event-title">${sanitizeText(evento.titulo)}</h2>
+            </div>
+            <div class="event-meta">
+              <span class="counter ${currentPanelView === PANEL_VIEW_ASISTENCIA ? 'counter-attendance' : ''}">${counterLabel}</span>
+              <span class="event-state ${evento.activo ? 'is-on' : 'is-off'}">${evento.activo ? 'Inscripción Abierta' : 'Cerrada'}</span>
+              <button class="btn-event btn-toggle ${evento.activo ? 'is-on' : 'is-off'}" data-toggle-event="${eventId}">
+                ${evento.activo ? 'Cerrar inscripciones' : 'Abrir inscripciones'}
+              </button>
+            </div>
+          </div>
         `;
-        return;
-      }
 
-      eventsContainer.innerHTML = eventos
-        .map((item, index) => {
-          const rows = Array.isArray(item.inscripciones) ? item.inscripciones : [];
-          const attendanceCount = rows.reduce(
-            (sum, row) => sum + (row?.asistio === true ? 1 : 0),
-            0
-          );
-          const lunchCount = rows.reduce(
-            (sum, row) => sum + (row?.almuerzo === true ? 1 : 0),
-            0
-          );
-          const reconfirmCount = rows.reduce(
-            (sum, row) => sum + (row?.reconfirmado === true ? 1 : 0),
-            0
-          );
-          const visibleRows = getVisibleRows(item, index, rows.length);
-          const rowsToRender = rows.slice(0, visibleRows);
-          const canShowMore = visibleRows < rows.length;
-          const canShowLess = visibleRows > Math.min(DEFAULT_VISIBLE_ROWS, rows.length);
-          const attendanceLookup = getAttendanceLookup(item, index);
-          const lunchLookup = getLunchLookup(item, index);
-          const canViewInscripciones = currentAdminRole !== "asistencia";
-          const canManageEvents = currentAdminRole === "admin";
-          const showInscripciones = canViewInscripciones && currentPanelView === PANEL_VIEW_INSCRIPCIONES;
-          const showAsistencia = currentPanelView === PANEL_VIEW_ASISTENCIA;
-          const showLunch = currentPanelView === PANEL_VIEW_ALMUERZO;
-          const showSorteos = canManageEvents && currentPanelView === PANEL_VIEW_SORTEOS;
-          const showCertificados = canManageEvents && currentPanelView === PANEL_VIEW_CERTIFICADOS;
-          const isExpanded = isEventExpanded(item, index);
-          const showExpandControl = showInscripciones && rows.length > 0;
-          const mailState = getMailComposerState(item, index);
-          const showMailComposer = showInscripciones && canManageEvents && mailState.open;
-          const mailRecipientCount = countUniqueMailRecipients(rows);
+        let bodyHTML = "";
+        if (!isCollapsed) {
+          if (currentPanelView === PANEL_VIEW_INSCRIPCIONES || currentPanelView === PANEL_VIEW_ASISTENCIA || currentPanelView === PANEL_VIEW_ALMUERZO) {
+            const rowsToDisplay = inscripciones.slice(0, visibleCount);
+            
+            let tableHeaders = `
+              <th>Nombre</th>
+              <th>DNI</th>
+              <th>Email</th>
+              <th>Teléfono</th>
+              <th>Localidad</th>
+            `;
 
-          const attendanceSectionHtml = `
-            <section class="attendance-box">
-              <h3 class="attendance-title">Asistencia encuentro</h3>
-              <div class="attendance-form">
-                <input
-                  class="attendance-input"
-                  type="text"
-                  inputmode="numeric"
-                  data-attendance-input="${index}"
-                  placeholder="DNI"
-                  value="${escapeHtml(attendanceLookup.numero || "")}"
-                  ${rows.length === 0 ? "disabled" : ""}
-                />
-                <button
-                  class="btn-event"
-                  type="button"
-                  data-attendance-search="${index}"
-                  ${rows.length === 0 ? "disabled" : ""}
-                >
-                  Buscar
-                </button>
-              </div>
-              ${buildAttendanceResultHtml(item, index)}
-            </section>
-          `;
+            if (currentPanelView === PANEL_VIEW_ASISTENCIA) {
+              tableHeaders += `<th class="attendance-col">Asistió</th>`;
+            } else if (currentPanelView === PANEL_VIEW_ALMUERZO) {
+              tableHeaders += `<th class="attendance-col">Almuerzo</th>`;
+            } else {
+              tableHeaders += `<th class="reconfirm-col">Reconfirmó</th>`;
+            }
 
-          const lunchSectionHtml = `
-            <section class="attendance-box">
-              <h3 class="attendance-title">Almuerzo</h3>
-              <div class="attendance-form">
-                <input
-                  class="attendance-input"
-                  type="text"
-                  inputmode="numeric"
-                  data-lunch-input="${index}"
-                  placeholder="DNI"
-                  value="${escapeHtml(lunchLookup.numero || "")}"
-                  ${rows.length === 0 ? "disabled" : ""}
-                />
-                <button
-                  class="btn-event"
-                  type="button"
-                  data-lunch-search="${index}"
-                  ${rows.length === 0 ? "disabled" : ""}
-                >
-                  Buscar
-                </button>
-              </div>
-              ${buildLunchResultHtml(item, index)}
-            </section>
-          `;
+            const rowsHTML = rowsToDisplay.map(item => {
+              let actionCell = "";
+              if (currentPanelView === PANEL_VIEW_ASISTENCIA) {
+                actionCell = `<td class="attendance-col"><input type="checkbox" class="attendance-checkbox" ${item.asistio ? "checked" : ""} data-id="${item.id}" data-type="asistio"></td>`;
+              } else if (currentPanelView === PANEL_VIEW_ALMUERZO) {
+                actionCell = `<td class="attendance-col"><input type="checkbox" class="attendance-checkbox" ${item.almuerzo ? "checked" : ""} data-id="${item.id}" data-type="almuerzo"></td>`;
+              } else {
+                actionCell = `<td class="reconfirm-col">${item.reconfirmo ? "Sí" : "No"}</td>`;
+              }
 
-          const inscripcionesSectionHtml =
-            rows.length === 0
-              ? `<p class="empty">No hay inscripciones en este evento.</p>`
-              : `
-                <div class="table-wrap">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>ID encuentro</th>
-                        <th>Fecha</th>
-                        <th>Nombre y apellido</th>
-                        <th>DNI</th>
-                        <th>Mail</th>
-                        <th>Numero de Ceular</th>
-                        <th>Provincia</th>
-                        <th>Localidad</th>
-                        <th>Profesión</th>
-                        <th>Empresa</th>
-                        <th class="attendance-col">Asistio</th>
-                        <th class="reconfirm-col">Reconfirmacion</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      ${buildRows(rowsToRender, item, index)}
-                    </tbody>
-                  </table>
-                </div>
-                <div class="rows-controls">
-                  <span class="rows-info">Mostrando ${visibleRows} de ${rows.length}</span>
-                  <button
-                    class="btn-event"
-                    type="button"
-                    data-show-more="${index}"
-                    ${canShowMore ? "" : "disabled"}
-                  >
-                    Ver m&aacute;s
-                  </button>
-                  <button
-                    class="btn-event"
-                    type="button"
-                    data-show-less="${index}"
-                    ${canShowLess ? "" : "disabled"}
-                  >
-                    Ver menos
-                  </button>
-                </div>
+              return `
+                <tr>
+                  <td><strong>${sanitizeText(item.nombre)} ${sanitizeText(item.apellido)}</strong></td>
+                  <td>${sanitizeText(item.dni || "-")}</td>
+                  <td>${sanitizeText(item.email || "-")}</td>
+                  <td>${sanitizeText(item.telefono || "-")}</td>
+                  <td>${sanitizeText(item.localidad || "-")}</td>
+                  ${actionCell}
+                </tr>
               `;
+            }).join("");
 
-          const certificateSectionHtml = `
-            <section class="certificate-box">
-              <h3 class="certificate-title">Certificado asistencias</h3>
-              <p class="certificate-hint">
-                Define si este encuentro aparece en la pagina de certificados para los usuarios.
-              </p>
-              <div class="certificate-actions">
-                <span class="event-state ${isCertificateVisible(item) ? "is-on" : "is-off"}">
-                  ${isCertificateVisible(item) ? "Visible" : "Oculto"}
-                </span>
-                <button
-                  class="btn-event btn-toggle ${isCertificateVisible(item) ? "is-on" : "is-off"}"
-                  type="button"
-                  data-toggle-certificate="${index}"
-                  ${certificateToggleInFlight.has(index) ? "disabled" : ""}
-                >
-                  ${isCertificateVisible(item) ? "Ocultar certificado" : "Mostrar certificado"}
-                </button>
+            bodyHTML = `
+              <div class="table-wrap">
+                <table>
+                  <thead><tr>${tableHeaders}</tr></thead>
+                  <tbody>${rowsHTML.length ? rowsHTML : '<tr><td colspan="6">Sin registros.</td></tr>'}</tbody>
+                </table>
               </div>
-            </section>
-          `;
-
-          return `
-            <article class="event-card ${showInscripciones && !isExpanded && !showMailComposer ? "is-collapsed" : ""}">
-              <header class="event-head">
-                <div class="event-heading">
-                  ${
-                    showExpandControl
-                      ? `
-                        <button
-                          class="event-expand"
-                          type="button"
-                          data-toggle-rows="${index}"
-                          aria-label="${isExpanded ? "Ocultar inscripciones" : "Mostrar inscripciones"}"
-                          aria-expanded="${isExpanded ? "true" : "false"}"
-                          title="${isExpanded ? "Ocultar inscripciones" : "Mostrar inscripciones"}"
-                        >
-                          <span class="event-expand-icon" aria-hidden="true"></span>
-                        </button>
-                      `
-                      : ""
-                  }
-                  <h2 class="event-title">Evento ${escapeHtml(item.evento || "Sin evento")}</h2>
+              ${inscripciones.length > visibleCount ? `
+                <div class="rows-controls">
+                  <span class="rows-info">Mostrando ${visibleCount} de ${inscripciones.length}</span>
+                  <button class="btn-event" data-more-event="${eventId}">Ver más</button>
                 </div>
-                ${
-                  showCertificados
-                    ? ""
-                    : `
-                      <div class="event-meta">
-                        <span class="counter">${rows.length} inscriptos</span>
-                        <span class="counter counter-attendance">${attendanceCount} asistencias</span>
-                        <span class="counter counter-attendance">${lunchCount} almuerzos</span>
-                        <span class="counter counter-attendance">${reconfirmCount} reconfirmados</span>
-                        <span class="event-state ${isEventActive(item) ? "is-on" : "is-off"}">
-                          ${isEventActive(item) ? "Activo" : "Inactivo"}
-                        </span>
-                        ${
-                          canManageEvents
-                            ? `
-                              <button
-                                class="btn-event btn-toggle ${isEventActive(item) ? "is-on" : "is-off"}"
-                                type="button"
-                                data-toggle-event="${index}"
-                                ${toggleInFlight.has(index) ? "disabled" : ""}
-                              >
-                                ${isEventActive(item) ? "Desactivar" : "Activar"}
-                              </button>
-                            `
-                            : ""
-                        }
-                        ${
-                          showInscripciones && canManageEvents
-                            ? `
-                              <button
-                                class="btn-event"
-                                type="button"
-                                data-download-event="${index}"
-                                ${rows.length === 0 ? "disabled" : ""}
-                              >
-                                Descargar Excel
-                              </button>
-                              <button
-                                class="btn-event"
-                                type="button"
-                                data-download-summary-event="${index}"
-                                ${rows.length === 0 ? "disabled" : ""}
-                              >
-                                Descargar resumen
-                              </button>
-                              <button
-                                class="btn-event"
-                                type="button"
-                                data-toggle-mail-composer="${index}"
-                                ${mailRecipientCount === 0 || mailInFlight.has(index) ? "disabled" : ""}
-                              >
-                                ${showMailComposer ? "Ocultar mail" : "Enviar mail"}
-                              </button>
-                            `
-                            : ""
-                        }
-                      </div>
-                    `
-                }
-              </header>
-              ${showMailComposer ? buildMailSectionHtml(item, index) : ""}
-              ${showAsistencia ? attendanceSectionHtml : ""}
-              ${showLunch ? lunchSectionHtml : ""}
-              ${showInscripciones && isExpanded ? inscripcionesSectionHtml : ""}
-              ${showSorteos ? buildRaffleSectionHtml(item, index) : ""}
-              ${showCertificados ? certificateSectionHtml : ""}
-            </article>
-          `;
-        })
-        .join("");
+              ` : ''}
+            `;
+          } else if (currentPanelView === PANEL_VIEW_SORTEOS) {
+            const selectedBrand = raffleBrandByEvent.get(eventId) || RAFFLE_BRANDS[0].key;
+            const count = raffleCountByEvent.get(eventId) || 1;
+            const winners = raffleWinnerByEvent.get(eventId) || [];
+
+            const brandOptions = RAFFLE_BRANDS.map(b => `<option value="${b.key}" ${b.key === selectedBrand ? "selected" : ""}>${b.name}</option>`).join("");
+
+            bodyHTML = `
+              <div class="raffle-box">
+                <div class="raffle-title">Sorteo de premios</div>
+                <div class="raffle-hint">Seleccione la marca y la cantidad de ganadores a sortear entre los asistentes reconfirmados/presentes.</div>
+                <div class="raffle-actions">
+                  <div class="raffle-brand-wrap">
+                    <span class="raffle-brand-label">Marca:</span>
+                    <select class="raffle-brand-select" data-raffle-brand="${eventId}">${brandOptions}</select>
+                  </div>
+                  <div class="raffle-count-wrap">
+                    <span class="raffle-count-label">Cantidad:</span>
+                    <input type="number" class="raffle-count-input" value="${count}" min="1" max="50" data-raffle-count="${eventId}">
+                  </div>
+                  <button class="btn-event" data-run-raffle="${eventId}">Realizar Sorteo</button>
+                  ${winners.length > 0 ? `<button class="btn-event" data-show-raffle="${eventId}">Ver Pantalla Ganadores</button>` : ''}
+                </div>
+              </div>
+            `;
+          } else if (currentPanelView === PANEL_VIEW_CERTIFICADOS) {
+            bodyHTML = `
+              <div class="certificate-box">
+                <div class="certificate-title">Certificados de Asistencia</div>
+                <div class="certificate-hint">Envíe los certificados digitales por correo a los asistentes confirmados de este encuentro.</div>
+                <div class="certificate-actions">
+                  <button class="btn-event" data-send-certificates="${eventId}">Enviar Certificados a Asistentes</button>
+                </div>
+              </div>
+            `;
+          }
+        }
+
+        card.innerHTML = headHTML + bodyHTML;
+        eventsContainer.appendChild(card);
+      });
+
+      bindEvents();
     }
 
-    async function loadData() {
-      setStatusMessage("Actualizando datos...");
-      refreshBtn.disabled = true;
+    function bindEvents() {
+      document.querySelectorAll(".event-expand").forEach(btn => {
+        btn.onclick = (e) => {
+          const id = e.currentTarget.getAttribute("data-event");
+          const current = expandedEventsByEvent.get(id);
+          expandedEventsByEvent.set(id, current === false ? true : false);
+          renderEvents(currentEventos);
+        };
+      });
 
-      try {
-        const response = await fetch("/api/admin-inscripciones", {
-          method: "GET",
-          headers: { "Accept": "application/json" }
-        });
+      document.querySelectorAll(".btn-toggle").forEach(btn => {
+        btn.onclick = async (e) => {
+          const id = e.currentTarget.getAttribute("data-toggle-event");
+          if (toggleInFlight.has(id)) return;
+          toggleInFlight.add(id);
 
-        if (response.status === 401) {
-          window.location.href = ADMIN_LOGIN_URL;
-          return;
-        }
+          try {
+            const res = await fetch("/api/admin", {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({ action: "toggle_event", event_id: id })
+            });
+            if (res.ok) await fetchData();
+          } catch (err) {
+            setStatus("Error al cambiar estado del evento", "error");
+          } finally {
+            toggleInFlight.delete(id);
+          }
+        };
+      });
 
-        const data = await response.json().catch(() => ({}));
+      document.querySelectorAll("[data-more-event]").forEach(btn => {
+        btn.onclick = (e) => {
+          const id = e.currentTarget.getAttribute("data-more-event");
+          const current = visibleRowsByEvent.get(id) || DEFAULT_VISIBLE_ROWS;
+          visibleRowsByEvent.set(id, current + DEFAULT_VISIBLE_ROWS);
+          renderEvents(currentEventos);
+        };
+      });
 
-        if (!response.ok || !data.ok) {
-          throw new Error(data.error || "No se pudo cargar el panel.");
-        }
+      document.querySelectorAll(".attendance-checkbox").forEach(chk => {
+        chk.onchange = async (e) => {
+          const id = e.target.getAttribute("data-id");
+          const type = e.target.getAttribute("data-type");
+          const value = e.target.checked;
 
-        currentAdminRole = String(data.role || "admin").toLowerCase() === "asistencia"
-          ? "asistencia"
-          : "admin";
-        if (currentAdminRole === "asistencia") {
-          currentPanelView = PANEL_VIEW_ASISTENCIA;
-        }
-        renderViewButtons();
+          try {
+            await fetch("/api/admin", {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({ action: "update_attendance", id, field: type, value })
+            });
+          } catch (err) {
+            e.target.checked = !value;
+            setStatus("Error al actualizar la asistencia", "error");
+          }
+        };
+      });
 
-        totalValue.textContent = String(data.total ?? 0);
-        updatedAt.textContent = data.generated_at
-          ? `Actualizado: ${formatDate(data.generated_at)}`
-          : "Actualizado";
+      document.querySelectorAll("[data-raffle-brand]").forEach(sel => {
+        sel.onchange = (e) => {
+          const id = e.target.getAttribute("data-raffle-brand");
+          raffleBrandByEvent.set(id, e.target.value);
+        };
+      });
 
-        renderEvents(data.eventos || []);
-        const warnings = [
-          String(data.status_warning || "").trim(),
-          String(data.certificate_status_warning || "").trim()
-        ].filter(Boolean);
+      document.querySelectorAll("[data-raffle-count]").forEach(inp => {
+        inp.onchange = (e) => {
+          const id = e.target.getAttribute("data-raffle-count");
+          raffleCountByEvent.set(id, parseInt(e.target.value, 10) || 1);
+        };
+      });
 
-        if (warnings.length > 0) {
-          setStatusMessage(warnings.join(" | "), "warning");
-        } else {
-          setStatusMessage("Datos cargados correctamente.");
-        }
-      } catch (error) {
-        setStatusMessage(`Error: ${error.message}`, "error");
-      } finally {
-        refreshBtn.disabled = false;
-      }
+      document.querySelectorAll("[data-run-raffle]").forEach(btn => {
+        btn.onclick = async (e) => {
+          const id = e.currentTarget.getAttribute("data-run-raffle");
+          const count = raffleCountByEvent.get(id) || 1;
+          const brandKey = raffleBrandByEvent.get(id) || RAFFLE_BRANDS[0].key;
+
+          if (raffleInFlight.has(id)) return;
+          raffleInFlight.add(id);
+
+          try {
+            const res = await fetch("/api/admin", {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({ action: "run_raffle", event_id: id, count, brand: brandKey })
+            });
+            const data = await res.json();
+            if (res.ok && data.winners) {
+              raffleWinnerByEvent.set(id, data.winners);
+              const eventObj = currentEventos.find(ev => ev.id == id);
+              openRaffleScreen(eventObj ? eventObj.titulo : "Sorteo", brandKey, data.winners);
+              renderEvents(currentEventos);
+            } else {
+              setStatus(data.error || "Error al realizar el sorteo", "error");
+            }
+          } catch (err) {
+            setStatus("Error de conexión al ejecutar el sorteo", "error");
+          } finally {
+            raffleInFlight.delete(id);
+          }
+        };
+      });
+
+      document.querySelectorAll("[data-show-raffle]").forEach(btn => {
+        btn.onclick = (e) => {
+          const id = e.currentTarget.getAttribute("data-show-raffle");
+          const winners = raffleWinnerByEvent.get(id) || [];
+          const brandKey = raffleBrandByEvent.get(id) || RAFFLE_BRANDS[0].key;
+          const eventObj = currentEventos.find(ev => ev.id == id);
+          openRaffleScreen(eventObj ? eventObj.titulo : "Sorteo", brandKey, winners);
+        };
+      });
+
+      document.querySelectorAll("[data-send-certificates]").forEach(btn => {
+        btn.onclick = async (e) => {
+          const id = e.currentTarget.getAttribute("data-send-certificates");
+          if (!confirm("¿Confirma el envío de certificados masivos a todos los asistentes?")) return;
+
+          if (certificateToggleInFlight.has(id)) return;
+          certificateToggleInFlight.add(id);
+
+          try {
+            const res = await fetch("/api/admin", {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({ action: "send_certificates", event_id: id })
+            });
+            if (res.ok) {
+              setStatus("Certificados enviados exitosamente", "ok");
+            } else {
+              setStatus("Error al enviar los certificados", "error");
+            }
+          } catch (err) {
+            setStatus("Error al procesar el envío de certificados", "error");
+          } finally {
+            certificateToggleInFlight.delete(id);
+          }
+        };
+      });
     }
 
-    async function toggleEvent(index) {
-      if (!Number.isInteger(index) || toggleInFlight.has(index)) return;
+    refreshBtn.addEventListener("click", fetchData);
 
-      const selected = currentEventos[index];
-      if (!selected || !selected.evento) return;
-
-      const nextActive = !isEventActive(selected);
-      toggleInFlight.add(index);
-      renderEvents(currentEventos);
-
-      try {
-        const response = await fetch("/api/admin-inscripciones", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-          },
-          body: JSON.stringify({
-            evento: selected.evento,
-            activo: nextActive
-          })
-        });
-
-        if (response.status === 401) {
-          window.location.href = ADMIN_LOGIN_URL;
-          return;
-        }
-
-        const data = await response.json().catch(() => ({}));
-
-        if (!response.ok || !data.ok) {
-          const sqlHint = typeof data.sql === "string" && data.sql ? ` SQL: ${data.sql}` : "";
-          throw new Error((data.error || "No se pudo actualizar el estado.") + sqlHint);
-        }
-
-        selected.activo = data.activo !== false;
-        renderEvents(currentEventos);
-        setStatusMessage(
-          `Evento ${selected.evento}: ${selected.activo ? "activo" : "inactivo"}.`
-        );
-      } catch (error) {
-        setStatusMessage(`Error: ${error.message}`, "error");
-      } finally {
-        toggleInFlight.delete(index);
-        renderEvents(currentEventos);
-      }
-    }
-
-    async function toggleCertificate(index) {
-      if (!Number.isInteger(index) || certificateToggleInFlight.has(index)) return;
-
-      const selected = currentEventos[index];
-      if (!selected || !selected.evento) return;
-
-      const nextVisible = !isCertificateVisible(selected);
-      certificateToggleInFlight.add(index);
-      renderEvents(currentEventos);
-
-      try {
-        const response = await fetch("/api/admin-inscripciones", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-          },
-          body: JSON.stringify({
-            action: "set_certificado_visible",
-            evento: selected.evento,
-            certificado_activo: nextVisible
-          })
-        });
-
-        if (response.status === 401) {
-          window.location.href = ADMIN_LOGIN_URL;
-          return;
-        }
-
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok || !data.ok) {
-          const sqlHint = typeof data.sql === "string" && data.sql ? ` SQL: ${data.sql}` : "";
-          throw new Error((data.error || "No se pudo actualizar certificados.") + sqlHint);
-        }
-
-        selected.certificado_activo = data.certificado_activo !== false;
-        renderEvents(currentEventos);
-        setStatusMessage(
-          `Certificados de ${selected.evento}: ${selected.certificado_activo ? "visibles" : "ocultos"}.`
-        );
-      } catch (error) {
-        setStatusMessage(`Error: ${error.message}`, "error");
-      } finally {
-        certificateToggleInFlight.delete(index);
-        renderEvents(currentEventos);
-      }
-    }
-
-    eventsContainer.addEventListener("input", (event) => {
-      const subjectInput = event.target.closest("[data-mail-subject]");
-      if (subjectInput) {
-        const index = Number.parseInt(subjectInput.getAttribute("data-mail-subject"), 10);
-        if (!Number.isInteger(index)) return;
-        const selected = currentEventos[index];
-        if (!selected) return;
-        updateMailComposerField(selected, index, "subject", subjectInput.value);
-        return;
-      }
-
-      const messageInput = event.target.closest("[data-mail-message]");
-      if (messageInput) {
-        const index = Number.parseInt(messageInput.getAttribute("data-mail-message"), 10);
-        if (!Number.isInteger(index)) return;
-        const selected = currentEventos[index];
-        if (!selected) return;
-        updateMailComposerField(selected, index, "message", messageInput.value);
-      }
-    });
-
-    eventsContainer.addEventListener("click", async (event) => {
-      const toggleButton = event.target.closest("[data-toggle-event]");
-      if (toggleButton) {
-        const toggleIndex = Number.parseInt(toggleButton.getAttribute("data-toggle-event"), 10);
-        await toggleEvent(toggleIndex);
-        return;
-      }
-
-      const toggleCertificateButton = event.target.closest("[data-toggle-certificate]");
-      if (toggleCertificateButton) {
-        const toggleCertificateIndex = Number.parseInt(
-          toggleCertificateButton.getAttribute("data-toggle-certificate"),
-          10
-        );
-        await toggleCertificate(toggleCertificateIndex);
-        return;
-      }
-
-      const mailToggleButton = event.target.closest("[data-toggle-mail-composer]");
-      if (mailToggleButton) {
-        const mailIndex = Number.parseInt(
-          mailToggleButton.getAttribute("data-toggle-mail-composer"),
-          10
-        );
-        if (!Number.isInteger(mailIndex)) return;
-        const selected = currentEventos[mailIndex];
-        if (!selected) return;
-        const state = getMailComposerState(selected, mailIndex);
-        setMailComposerOpen(selected, mailIndex, !state.open);
-        renderEvents(currentEventos);
-        return;
-      }
-
-      const mailCloseButton = event.target.closest("[data-close-mail-composer]");
-      if (mailCloseButton) {
-        const mailIndex = Number.parseInt(
-          mailCloseButton.getAttribute("data-close-mail-composer"),
-          10
-        );
-        if (!Number.isInteger(mailIndex)) return;
-        const selected = currentEventos[mailIndex];
-        if (!selected) return;
-        setMailComposerOpen(selected, mailIndex, false);
-        renderEvents(currentEventos);
-        return;
-      }
-
-      const mailSelectAllButton = event.target.closest("[data-mail-select-all]");
-      if (mailSelectAllButton) {
-        const mailIndex = Number.parseInt(
-          mailSelectAllButton.getAttribute("data-mail-select-all"),
-          10
-        );
-        if (!Number.isInteger(mailIndex)) return;
-        const selected = currentEventos[mailIndex];
-        if (!selected) return;
-        setAllMailRecipients(selected, mailIndex, true);
-        renderEvents(currentEventos);
-        return;
-      }
-
-      const mailClearAllButton = event.target.closest("[data-mail-clear-all]");
-      if (mailClearAllButton) {
-        const mailIndex = Number.parseInt(
-          mailClearAllButton.getAttribute("data-mail-clear-all"),
-          10
-        );
-        if (!Number.isInteger(mailIndex)) return;
-        const selected = currentEventos[mailIndex];
-        if (!selected) return;
-        setAllMailRecipients(selected, mailIndex, false);
-        renderEvents(currentEventos);
-        return;
-      }
-
-      const mailSendButton = event.target.closest("[data-send-event-mail]");
-      if (mailSendButton) {
-        const mailIndex = Number.parseInt(
-          mailSendButton.getAttribute("data-send-event-mail"),
-          10
-        );
-        if (!Number.isInteger(mailIndex) || mailInFlight.has(mailIndex)) return;
-
-        const selected = currentEventos[mailIndex];
-        if (!selected) return;
-
-        const state = getMailComposerState(selected, mailIndex);
-        const subjectInput = eventsContainer.querySelector(`[data-mail-subject="${mailIndex}"]`);
-        const messageInput = eventsContainer.querySelector(`[data-mail-message="${mailIndex}"]`);
-        const subject = String(subjectInput?.value || "").trim();
-        const message = String(messageInput?.value || "").trim();
-        const selectedMails = syncMailSelectionState(selected, mailIndex);
-        const recipientCount = selectedMails.length;
-
-        updateMailComposerField(selected, mailIndex, "subject", subject);
-        updateMailComposerField(selected, mailIndex, "message", message);
-
-        if (subject.length < 4) {
-          state.result = { ok: false, error: "Tenes que escribir un asunto." };
-          renderEvents(currentEventos);
-          return;
-        }
-
-        if (message.length < 10) {
-          state.result = { ok: false, error: "Tenes que escribir un mensaje." };
-          renderEvents(currentEventos);
-          return;
-        }
-
-        if (recipientCount === 0) {
-          state.result = { ok: false, error: "No hay mails validos para este encuentro." };
-          renderEvents(currentEventos);
-          return;
-        }
-
-        const confirmed = window.confirm(
-          `Vas a enviar un mail real a ${recipientCount} destinatarios de ${selected.evento}. Continuar?`
-        );
-        if (!confirmed) return;
-
-        mailInFlight.add(mailIndex);
-        state.result = null;
-        setStatusMessage(`Enviando mail masivo de ${selected.evento}...`);
-        renderEvents(currentEventos);
-
-        try {
-          const result = await sendEventMail(selected, subject, message, selectedMails);
-          if (result.redirected) return;
-
-          state.result = { ...result, ok: true };
-          setStatusMessage(buildMailResultText(state.result));
-        } catch (error) {
-          state.result = {
-            ...(error?.data && typeof error.data === "object" ? error.data : {}),
-            ok: false,
-            error: error instanceof Error ? error.message : "No se pudo enviar el mail masivo."
-          };
-          setStatusMessage(`Error: ${state.result.error}`, "error");
-        } finally {
-          mailInFlight.delete(mailIndex);
-          renderEvents(currentEventos);
-        }
-        return;
-      }
-
-      const attendanceSearchButton = event.target.closest("[data-attendance-search]");
-      if (attendanceSearchButton) {
-        const searchIndex = Number.parseInt(
-          attendanceSearchButton.getAttribute("data-attendance-search"),
-          10
-        );
-        if (!Number.isInteger(searchIndex)) return;
-        const selected = currentEventos[searchIndex];
-        if (!selected) return;
-
-        const input = eventsContainer.querySelector(`[data-attendance-input="${searchIndex}"]`);
-        const inputValue = input ? input.value : "";
-        searchAttendanceByDni(selected, searchIndex, inputValue);
-        renderEvents(currentEventos);
-        return;
-      }
-
-      const attendanceConfirmButton = event.target.closest("[data-attendance-confirm]");
-      if (attendanceConfirmButton) {
-        const confirmIndex = Number.parseInt(
-          attendanceConfirmButton.getAttribute("data-attendance-confirm"),
-          10
-        );
-        if (!Number.isInteger(confirmIndex)) return;
-        const selected = currentEventos[confirmIndex];
-        if (!selected) return;
-        const dniValue = attendanceConfirmButton.getAttribute("data-attendance-dni");
-        const normalizedDni = normalizeDniValue(dniValue);
-        if (!normalizedDni) return;
-
-        try {
-          attendanceConfirmButton.disabled = true;
-          const saveResult = await persistAttendanceState(selected, normalizedDni, true);
-          if (saveResult.redirected) return;
-          updateAttendanceStateLocally(selected, normalizedDni, saveResult.asistio);
-          setStatusMessage("Asistencia guardada correctamente.");
-        } catch (error) {
-          setStatusMessage(`Error: ${error.message}`, "error");
-        } finally {
-          renderEvents(currentEventos);
-        }
-        return;
-      }
-
-      const lunchSearchButton = event.target.closest("[data-lunch-search]");
-      if (lunchSearchButton) {
-        const searchIndex = Number.parseInt(
-          lunchSearchButton.getAttribute("data-lunch-search"),
-          10
-        );
-        if (!Number.isInteger(searchIndex)) return;
-        const selected = currentEventos[searchIndex];
-        if (!selected) return;
-
-        const input = eventsContainer.querySelector(`[data-lunch-input="${searchIndex}"]`);
-        const inputValue = input ? input.value : "";
-        searchLunchByDni(selected, searchIndex, inputValue);
-        renderEvents(currentEventos);
-        return;
-      }
-
-      const lunchConfirmButton = event.target.closest("[data-lunch-confirm]");
-      if (lunchConfirmButton) {
-        const confirmIndex = Number.parseInt(
-          lunchConfirmButton.getAttribute("data-lunch-confirm"),
-          10
-        );
-        if (!Number.isInteger(confirmIndex)) return;
-        const selected = currentEventos[confirmIndex];
-        if (!selected) return;
-        const dniValue = lunchConfirmButton.getAttribute("data-lunch-dni");
-        const normalizedDni = normalizeDniValue(dniValue);
-        if (!normalizedDni) return;
-
-        try {
-          lunchConfirmButton.disabled = true;
-          const saveResult = await persistLunchState(selected, normalizedDni, true);
-          if (saveResult.redirected) return;
-          updateLunchStateLocally(selected, normalizedDni, saveResult.almuerzo);
-          setStatusMessage("Almuerzo guardado correctamente.");
-        } catch (error) {
-          setStatusMessage(`Error: ${error.message}`, "error");
-        } finally {
-          renderEvents(currentEventos);
-        }
-        return;
-      }
-
-      const rowToggleButton = event.target.closest("[data-toggle-rows]");
-      if (rowToggleButton) {
-        const toggleRowsIndex = Number.parseInt(rowToggleButton.getAttribute("data-toggle-rows"), 10);
-        if (!Number.isInteger(toggleRowsIndex)) return;
-        const selected = currentEventos[toggleRowsIndex];
-        if (!selected) return;
-        const totalRows = Array.isArray(selected.inscripciones) ? selected.inscripciones.length : 0;
-        if (totalRows === 0) return;
-        const nextExpanded = !isEventExpanded(selected, toggleRowsIndex);
-        setEventExpanded(selected, toggleRowsIndex, nextExpanded);
-        if (nextExpanded) {
-          setVisibleRows(selected, toggleRowsIndex, DEFAULT_VISIBLE_ROWS);
-        }
-        renderEvents(currentEventos);
-        return;
-      }
-
-      const showMoreButton = event.target.closest("[data-show-more]");
-      if (showMoreButton) {
-        const showMoreIndex = Number.parseInt(showMoreButton.getAttribute("data-show-more"), 10);
-        if (!Number.isInteger(showMoreIndex)) return;
-        const selected = currentEventos[showMoreIndex];
-        if (!selected) return;
-        const totalRows = Array.isArray(selected.inscripciones) ? selected.inscripciones.length : 0;
-        setVisibleRows(selected, showMoreIndex, totalRows);
-        renderEvents(currentEventos);
-        return;
-      }
-
-      const showLessButton = event.target.closest("[data-show-less]");
-      if (showLessButton) {
-        const showLessIndex = Number.parseInt(showLessButton.getAttribute("data-show-less"), 10);
-        if (!Number.isInteger(showLessIndex)) return;
-        const selected = currentEventos[showLessIndex];
-        if (!selected) return;
-        setVisibleRows(selected, showLessIndex, DEFAULT_VISIBLE_ROWS);
-        renderEvents(currentEventos);
-        return;
-      }
-
-      const downloadButton = event.target.closest("[data-download-event]");
-      if (downloadButton) {
-        const index = Number.parseInt(downloadButton.getAttribute("data-download-event"), 10);
-        if (!Number.isInteger(index)) return;
-
-        const selected = currentEventos[index];
-        if (!selected) return;
-
-        downloadEventExcel(selected.evento || "evento", selected.inscripciones || []);
-        return;
-      }
-
-      const resetRaffleButton = event.target.closest("[data-reset-raffle]");
-      if (resetRaffleButton) {
-        const resetIndex = Number.parseInt(resetRaffleButton.getAttribute("data-reset-raffle"), 10);
-        if (!Number.isInteger(resetIndex) || raffleInFlight.has(resetIndex)) return;
-
-        const selected = currentEventos[resetIndex];
-        if (!selected) return;
-
-        const dni = normalizeDniValue(resetRaffleButton.getAttribute("data-raffle-dni"));
-        if (!dni) return;
-
-        const participantName = resetRaffleButton.getAttribute("data-raffle-name") || "este ganador";
-        const confirmed = window.confirm(
-          `Eliminar a ${participantName} del listado de ganadores y permitir que vuelva a participar?`
-        );
-        if (!confirmed) return;
-
-        raffleInFlight.add(resetIndex);
-        renderEvents(currentEventos);
-
-        try {
-          const result = await resetRaffleWinner(selected, dni);
-          if (result.redirected) return;
-
-          updateRaffleStateLocally(selected, dni, false, "");
-          const remainingLastWinners = getRaffleState(selected, resetIndex).filter(
-            (winner) => normalizeDniValue(winner?.dni) !== dni
-          );
-          setRaffleState(selected, resetIndex, remainingLastWinners);
-
-          setStatusMessage(
-            `${participantName} fue eliminado de ganadores y ya puede volver a participar en los sorteos.`
-          );
-        } catch (error) {
-          setStatusMessage(`Error: ${error.message}`, "error");
-        } finally {
-          raffleInFlight.delete(resetIndex);
-          renderEvents(currentEventos);
-        }
-        return;
-      }
-
-      const drawRaffleButton = event.target.closest("[data-draw-raffle]");
-      if (drawRaffleButton) {
-        const drawIndex = Number.parseInt(drawRaffleButton.getAttribute("data-draw-raffle"), 10);
-        if (!Number.isInteger(drawIndex) || raffleInFlight.has(drawIndex)) return;
-
-        const selected = currentEventos[drawIndex];
-        if (!selected) return;
-        const eligibleRows = getEligibleRaffleRows(selected);
-        const drawCount = getRaffleDrawCount(selected, drawIndex, eligibleRows.length);
-        const selectedBrand = getRaffleBrandState(selected, drawIndex);
-
-        if (!selectedBrand) {
-          setStatusMessage("Selecciona una marca antes de hacer el sorteo.", "error");
-          return;
-        }
-
-        raffleInFlight.add(drawIndex);
-        renderEvents(currentEventos);
-
-        try {
-          const result = await drawRaffleWinner(selected, drawCount, selectedBrand);
-          if (result.redirected) return;
-
-          const responseWinners = Array.isArray(result?.ganadores)
-            ? result.ganadores
-            : (result?.ganador ? [result.ganador] : []);
-
-          const localWinners = responseWinners
-            .map((winner) =>
-              updateRaffleStateLocally(
-                selected,
-                winner?.dni,
-                true,
-                winner?.marca_sorteo || selectedBrand
-              ) || winner
-            )
-            .filter(Boolean);
-
-          setRaffleState(selected, drawIndex, localWinners);
-
-          const winnerNames = localWinners
-            .map((winner) => winner?.nombre_apellido || "Ganador sin nombre")
-            .filter(Boolean);
-          const namesPreview = winnerNames.slice(0, 3).join(", ");
-          const extraCount = Math.max(winnerNames.length - 3, 0);
-          const namesText = extraCount > 0
-            ? `${namesPreview} y ${extraCount} mas`
-            : namesPreview;
-          const brandLabel = getBrandLabel(selectedBrand);
-
-          openRaffleScreen({
-            eventName: selected.evento,
-            brandKey: selectedBrand,
-            winners: localWinners
-          });
-
-          setStatusMessage(
-            `Sorteo realizado en ${selected.evento} para ${brandLabel}: ${winnerNames.length} ganador${winnerNames.length === 1 ? "" : "es"}${namesText ? ` (${namesText})` : ""}.`
-          );
-        } catch (error) {
-          setStatusMessage(`Error: ${error.message}`, "error");
-        } finally {
-          raffleInFlight.delete(drawIndex);
-          renderEvents(currentEventos);
-        }
-        return;
-      }
-
-      const downloadSummaryButton = event.target.closest("[data-download-summary-event]");
-      if (!downloadSummaryButton) return;
-
-      const summaryIndex = Number.parseInt(
-        downloadSummaryButton.getAttribute("data-download-summary-event"),
-        10
-      );
-      if (!Number.isInteger(summaryIndex)) return;
-
-      const selected = currentEventos[summaryIndex];
-      if (!selected) return;
-
-      downloadEventSummaryExcel(selected.evento || "evento", selected.inscripciones || []);
-    });
-
-    eventsContainer.addEventListener("change", async (event) => {
-      const mailRecipientInput = event.target.closest("[data-mail-recipient]");
-      if (mailRecipientInput) {
-        const mailIndex = Number.parseInt(
-          mailRecipientInput.getAttribute("data-mail-recipient"),
-          10
-        );
-        if (!Number.isInteger(mailIndex)) return;
-        const selected = currentEventos[mailIndex];
-        if (!selected) return;
-        toggleMailRecipient(
-          selected,
-          mailIndex,
-          mailRecipientInput.value,
-          mailRecipientInput.checked === true
-        );
-        renderEvents(currentEventos);
-        return;
-      }
-
-      const raffleBrandSelect = event.target.closest("[data-raffle-brand-select]");
-      if (raffleBrandSelect) {
-        const raffleIndex = Number.parseInt(
-          raffleBrandSelect.getAttribute("data-raffle-brand-select"),
-          10
-        );
-        if (!Number.isInteger(raffleIndex)) return;
-
-        const selected = currentEventos[raffleIndex];
-        if (!selected) return;
-
-        setRaffleBrandState(selected, raffleIndex, raffleBrandSelect.value);
-        return;
-      }
-
-      const raffleCountInput = event.target.closest("[data-raffle-count-input]");
-      if (raffleCountInput) {
-        const raffleIndex = Number.parseInt(
-          raffleCountInput.getAttribute("data-raffle-count-input"),
-          10
-        );
-        if (!Number.isInteger(raffleIndex)) return;
-
-        const selected = currentEventos[raffleIndex];
-        if (!selected) return;
-
-        const eligibleRows = getEligibleRaffleRows(selected);
-        const nextValue = setRaffleDrawCount(
-          selected,
-          raffleIndex,
-          raffleCountInput.value,
-          eligibleRows.length
-        );
-        raffleCountInput.value = String(nextValue);
-        return;
-      }
-
-      const attendanceRowCheckbox = event.target.closest("[data-attendance-row-toggle]");
-      if (!attendanceRowCheckbox) return;
-
-      const rowIndex = Number.parseInt(
-        attendanceRowCheckbox.getAttribute("data-attendance-row-toggle"),
-        10
-      );
-      if (!Number.isInteger(rowIndex)) return;
-
-      const selected = currentEventos[rowIndex];
-      if (!selected) return;
-
-      const dniValue = attendanceRowCheckbox.getAttribute("data-attendance-dni");
-      const normalizedDni = normalizeDniValue(dniValue);
-      if (!normalizedDni) return;
-
-      try {
-        attendanceRowCheckbox.disabled = true;
-        const nextAsistio = Boolean(attendanceRowCheckbox.checked);
-        const saveResult = await persistAttendanceState(selected, normalizedDni, nextAsistio);
-        if (saveResult.redirected) return;
-        updateAttendanceStateLocally(selected, normalizedDni, saveResult.asistio);
-        setStatusMessage("Asistencia guardada correctamente.");
-      } catch (error) {
-        setStatusMessage(`Error: ${error.message}`, "error");
-      } finally {
-        renderEvents(currentEventos);
-      }
-    });
-
-    viewInscripcionesBtn.addEventListener("click", () => {
-      setPanelView(PANEL_VIEW_INSCRIPCIONES);
-    });
-
-    viewAsistenciaBtn.addEventListener("click", () => {
-      setPanelView(PANEL_VIEW_ASISTENCIA);
-    });
-
-    viewLunchBtn.addEventListener("click", () => {
-      setPanelView(PANEL_VIEW_ALMUERZO);
-    });
-
-    viewCertificadosBtn.addEventListener("click", () => {
-      setPanelView(PANEL_VIEW_CERTIFICADOS);
-    });
-
-    viewSorteosBtn.addEventListener("click", () => {
-      setPanelView(PANEL_VIEW_SORTEOS);
-    });
-
-    raffleScreenClose.addEventListener("click", closeRaffleScreen);
-    raffleScreenLogoExpand.addEventListener("click", (event) => {
-      event.stopPropagation();
-      openBrandLogoViewer();
-    });
-    raffleScreenBrandLogo.addEventListener("click", openBrandLogoViewer);
-    raffleScreen.addEventListener("click", (event) => {
-      if (event.target === raffleScreen) {
-        closeRaffleScreen();
-      }
-    });
-    brandLogoViewerClose.addEventListener("click", closeBrandLogoViewer);
-    brandLogoViewer.addEventListener("click", (event) => {
-      if (event.target === brandLogoViewer) {
-        closeBrandLogoViewer();
-      }
-    });
-    document.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape") {
-        return;
-      }
-      if (brandLogoViewer.classList.contains("is-open")) {
-        closeBrandLogoViewer();
-        return;
-      }
-      if (raffleScreen.classList.contains("is-open")) {
-        closeRaffleScreen();
-      }
-    });
-
-    renderViewButtons();
-    refreshBtn.addEventListener("click", loadData);
-    loadData();
+    // Carga inicial
+    fetchData();
   </script>
 </body>
 </html>
