@@ -278,9 +278,9 @@
         <span>Mendoza 9/5</span>
         <span class="event-number">Encuentro 29</span>
       </h2>
-      <p class="event-status">Inscripci&oacute;n abierta para el encuentro en Mendoza.</p>
+      <p class="event-status">Inscripci&oacute;n cerrada temporalmente por administraci&oacute;n.</p>
       <div class="actions">
-        <a class="btn btn-primary btn-disabled" href="inscripcion-mendoza.html">Pr&oacute;ximamente</a>
+        <a class="btn btn-primary btn-disabled" href="inscripcion-mendoza.html">Localidades Agotadas</a>
       </div>
     </div>
 
@@ -293,9 +293,9 @@
         <span>Salta 6/6</span>
         <span class="event-number">Encuentro 30</span>
       </h2>
-      <p class="event-status">Inscripci&oacute;n abierta para el encuentro en Salta.</p>
+      <p class="event-status">Inscripci&oacute;n cerrada temporalmente por administraci&oacute;n.</p>
       <div class="actions">
-        <a class="btn btn-primary btn-disabled" href="inscripcion-salta.html">Pr&oacute;ximamente</a>
+        <a class="btn btn-primary btn-disabled" href="inscripcion-salta.html">Localidades Agotadas</a>
       </div>
     </div>
 
@@ -333,7 +333,12 @@
     const getInactiveButtonLabel = (card) => {
       const eventKey = normalizeEventKey(card?.getAttribute("data-encuentro") || "");
 
-      if (eventKey.includes("bahia blanca") || eventKey.includes("mar del plata")) {
+      if (
+        eventKey.includes("bahia blanca") ||
+        eventKey.includes("mar del plata") ||
+        eventKey.includes("mendoza") ||
+        eventKey.includes("salta")
+      ) {
         return "Localidades Agotadas";
       }
 

@@ -957,8 +957,8 @@
               data-inscripcion="/inscripcion-mendoza.html"
             >
               <h4>Mendoza 9/5</h4>
-              <p class="hero-event-status">Inscripci&oacute;n abierta.</p>
-              <a class="hero-event-btn is-disabled" href="/inscripcion-mendoza.html">Pr&oacute;ximamente</a>
+              <p class="hero-event-status">Inscripci&oacute;n cerrada temporalmente.</p>
+              <a class="hero-event-btn is-disabled" href="/inscripcion-mendoza.html">Localidades Agotadas</a>
             </article>
             <article
               class="hero-event hero-event-salta"
@@ -966,8 +966,8 @@
               data-inscripcion="/inscripcion-salta.html"
             >
               <h4>Salta 6/6</h4>
-              <p class="hero-event-status">Inscripci&oacute;n abierta.</p>
-              <a class="hero-event-btn is-disabled" href="/inscripcion-salta.html">Pr&oacute;ximamente</a>
+              <p class="hero-event-status">Inscripci&oacute;n cerrada temporalmente.</p>
+              <a class="hero-event-btn is-disabled" href="/inscripcion-salta.html">Localidades Agotadas</a>
             </article>
             <article
               class="hero-event hero-event-san-luis"
@@ -1173,7 +1173,12 @@
     const getInactiveButtonLabel = (card) => {
       const eventKey = normalizeEventKey(card?.getAttribute("data-encuentro") || "");
 
-      if (eventKey.includes("bahia blanca") || eventKey.includes("mar del plata")) {
+      if (
+        eventKey.includes("bahia blanca") ||
+        eventKey.includes("mar del plata") ||
+        eventKey.includes("mendoza") ||
+        eventKey.includes("salta")
+      ) {
         return "Localidades Agotadas";
       }
 
