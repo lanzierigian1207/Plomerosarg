@@ -474,20 +474,6 @@
       filter: saturate(1.05);
     }
 
-    .cert-logos img.cert-logo-crop-wide {
-      width: 122px;
-      height: 34px;
-      max-width: 122px;
-      max-height: 34px;
-      object-fit: cover;
-      object-position: center;
-    }
-
-    .cert-logos img.cert-logo-total {
-      width: 118px;
-      max-width: 118px;
-    }
-
     .cert-event {
       color: #103f75;
       font-size: clamp(0.82rem, 1.03vw, 1.08rem);
@@ -932,8 +918,8 @@
         { src: "/Prueba_2/assets/empresas/39_msb_industria_argentina.png", alt: "MSB Industria Argentina" },
         { src: "/Prueba_2/assets/empresas/34_vasser.png", alt: "Vasser" },
         { src: "/Prueba_2/assets/empresas/21_duke.png", alt: "Duke" },
-        { src: "/Prueba_2/assets/motoarg.png", alt: "MotorArg", className: "cert-logo-crop-wide" },
-        { src: "/Prueba_2/assets/Total.jpeg", alt: "Total", className: "cert-logo-crop-wide cert-logo-total" },
+        { src: "/Prueba_2/assets/motoarg-cert.png", alt: "MotorArg" },
+        { src: "/Prueba_2/assets/total-cert.png", alt: "Total" },
         { src: "/Prueba_2/assets/empresas/38_redeco_termofusion.png", alt: "RedEco Termofusion" }
       ],
       [
@@ -1040,11 +1026,9 @@
           const logos = Array.isArray(row) ? row : [row];
           const logoMarkup = logos
             .filter((logo) => logo?.src)
-            .map((logo) => {
-              const className = String(logo.className || "").trim();
-              const classAttribute = className ? ` class="${escapeHtml(className)}"` : "";
-              return `<img${classAttribute} src="${escapeHtml(logo.src)}" alt="${escapeHtml(logo.alt || "")}">`;
-            })
+            .map((logo) => (
+              `<img src="${escapeHtml(logo.src)}" alt="${escapeHtml(logo.alt || "")}">`
+            ))
             .join("");
 
           return logoMarkup
