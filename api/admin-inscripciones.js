@@ -24,6 +24,11 @@ const LUNCH_KEY_PREFIX = "__lunch__::";
 const RECONFIRM_KEY_PREFIX = "__reconfirm__::";
 const RAFFLE_KEY_PREFIX = "__raffle__::";
 const RAFFLE_BRAND_KEY_PREFIX = "__rafflebrand__::";
+const SAN_LUIS_EVENT_NAME = "San Luis 8/8";
+const SAN_LUIS_DAY_OPTIONS = [
+  { key: "viernes_7_8", label: "Viernes 7/8" },
+  { key: "sabado_8_8", label: "Sabado 8/8" }
+];
 const BULK_MAIL_MAX_MESSAGE_LENGTH = 6000;
 const BULK_MAIL_BATCH_SIZE = 100;
 const BULK_MAIL_RETRY_ATTEMPTS = 4;
@@ -70,6 +75,60 @@ function normalizeBrandKey(value) {
     .replace(/^_+|_+$/g, "");
 }
 
+function normalizeAttendanceDayKey(value) {
+  const normalized = String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9/.-]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  if (!normalized) {
+    return "";
+  }
+
+  if (
+    normalized === "viernes_7_8" ||
+    normalized === "viernes" ||
+    normalized === "2026-08-07" ||
+    normalized.includes("viernes") ||
+    normalized.includes("7/8")
+  ) {
+    return "viernes_7_8";
+  }
+
+  if (
+    normalized === "sabado_8_8" ||
+    normalized === "sabado" ||
+    normalized === "2026-08-08" ||
+    normalized.includes("sabado") ||
+    normalized.includes("8/8")
+  ) {
+    return "sabado_8_8";
+  }
+
+  return "";
+}
+
+function isDayScopedEvent(eventName) {
+  return getCanonicalEventName(eventName) === SAN_LUIS_EVENT_NAME;
+}
+
+function resolveScopedDayKey(eventName, dayKey) {
+  if (!isDayScopedEvent(eventName)) {
+    return "";
+  }
+
+  return normalizeAttendanceDayKey(dayKey);
+}
+
+function getDayLabel(dayKey) {
+  const normalizedDayKey = normalizeAttendanceDayKey(dayKey);
+  const option = SAN_LUIS_DAY_OPTIONS.find((item) => item.key === normalizedDayKey);
+  return option?.label || "";
+}
+
 function buildInscriptoMapKey(eventName, dni) {
   const canonicalEvent = getCanonicalEventName(eventName);
   const normalizedDni = normalizeDniValue(dni);
@@ -79,21 +138,55 @@ function buildInscriptoMapKey(eventName, dni) {
   return `${canonicalEvent}::${normalizedDni}`;
 }
 
-function buildAttendanceMapKey(eventName, dni) {
-  return buildInscriptoMapKey(eventName, dni);
+function buildScopedInscriptoMapKey(eventName, dni, dayKey = "") {
+  const baseKey = buildInscriptoMapKey(eventName, dni);
+  if (!baseKey) {
+    return "";
+  }
+
+  const scopedDayKey = resolveScopedDayKey(eventName, dayKey);
+  return scopedDayKey ? `${baseKey}::${scopedDayKey}` : baseKey;
+}
+
+function buildStorageEventName(eventName, dayKey = "") {
+  const canonicalEvent = getCanonicalEventName(eventName);
+  if (!canonicalEvent || canonicalEvent === "Sin evento") {
+    return "";
+  }
+
+  const scopedDayKey = resolveScopedDayKey(canonicalEvent, dayKey);
+  return scopedDayKey ? `${canonicalEvent} | ${scopedDayKey}` : canonicalEvent;
+}
+
+function parseStorageEventName(value) {
+  const raw = String(value ?? "").trim();
+  const [rawEventName, ...rawDayParts] = raw.split("|");
+  const canonicalEvent = getCanonicalEventName(rawEventName || raw);
+  if (!canonicalEvent || canonicalEvent === "Sin evento") {
+    return null;
+  }
+
+  return {
+    eventName: canonicalEvent,
+    dayKey: resolveScopedDayKey(canonicalEvent, rawDayParts.join("|"))
+  };
+}
+
+function buildAttendanceMapKey(eventName, dni, dayKey = "") {
+  return buildScopedInscriptoMapKey(eventName, dni, dayKey);
 }
 
 function buildLunchMapKey(eventName, dni) {
   return buildInscriptoMapKey(eventName, dni);
 }
 
-function buildAttendanceStorageKey(eventName, dni) {
-  const canonicalEvent = getCanonicalEventName(eventName);
+function buildAttendanceStorageKey(eventName, dni, dayKey = "") {
+  const storageEventName = buildStorageEventName(eventName, dayKey);
   const normalizedDni = normalizeDniValue(dni);
-  if (!canonicalEvent || canonicalEvent === "Sin evento" || !normalizedDni) {
+  if (!storageEventName || !normalizedDni) {
     return "";
   }
-  return `${ATTENDANCE_KEY_PREFIX}${encodeURIComponent(canonicalEvent)}::${normalizedDni}`;
+  return `${ATTENDANCE_KEY_PREFIX}${encodeURIComponent(storageEventName)}::${normalizedDni}`;
 }
 
 function buildLunchStorageKey(eventName, dni) {
@@ -130,14 +223,15 @@ function parseAttendanceStorageKey(storageKey) {
     return null;
   }
 
-  const canonicalEvent = getCanonicalEventName(decodedEvent);
-  if (!canonicalEvent || canonicalEvent === "Sin evento") {
+  const parsedEvent = parseStorageEventName(decodedEvent);
+  if (!parsedEvent) {
     return null;
   }
 
   return {
-    eventName: canonicalEvent,
-    dni: normalizedDni
+    eventName: parsedEvent.eventName,
+    dni: normalizedDni,
+    dayKey: parsedEvent.dayKey
   };
 }
 
@@ -213,13 +307,13 @@ function parseReconfirmStorageKey(storageKey) {
   };
 }
 
-function buildRaffleStorageKey(eventName, dni) {
-  const canonicalEvent = getCanonicalEventName(eventName);
+function buildRaffleStorageKey(eventName, dni, dayKey = "") {
+  const storageEventName = buildStorageEventName(eventName, dayKey);
   const normalizedDni = normalizeDniValue(dni);
-  if (!canonicalEvent || canonicalEvent === "Sin evento" || !normalizedDni) {
+  if (!storageEventName || !normalizedDni) {
     return "";
   }
-  return `${RAFFLE_KEY_PREFIX}${encodeURIComponent(canonicalEvent)}::${normalizedDni}`;
+  return `${RAFFLE_KEY_PREFIX}${encodeURIComponent(storageEventName)}::${normalizedDni}`;
 }
 
 function parseRaffleStorageKey(storageKey) {
@@ -247,31 +341,31 @@ function parseRaffleStorageKey(storageKey) {
     return null;
   }
 
-  const canonicalEvent = getCanonicalEventName(decodedEvent);
-  if (!canonicalEvent || canonicalEvent === "Sin evento") {
+  const parsedEvent = parseStorageEventName(decodedEvent);
+  if (!parsedEvent) {
     return null;
   }
 
   return {
-    eventName: canonicalEvent,
-    dni: normalizedDni
+    eventName: parsedEvent.eventName,
+    dni: normalizedDni,
+    dayKey: parsedEvent.dayKey
   };
 }
 
-function buildRaffleBrandStorageKey(eventName, dni, brandKey) {
-  const canonicalEvent = getCanonicalEventName(eventName);
+function buildRaffleBrandStorageKey(eventName, dni, brandKey, dayKey = "") {
+  const storageEventName = buildStorageEventName(eventName, dayKey);
   const normalizedDni = normalizeDniValue(dni);
   const normalizedBrandKey = normalizeBrandKey(brandKey);
   if (
-    !canonicalEvent ||
-    canonicalEvent === "Sin evento" ||
+    !storageEventName ||
     !normalizedDni ||
     !normalizedBrandKey
   ) {
     return "";
   }
 
-  return `${RAFFLE_BRAND_KEY_PREFIX}${encodeURIComponent(canonicalEvent)}::${normalizedDni}::${normalizedBrandKey}`;
+  return `${RAFFLE_BRAND_KEY_PREFIX}${encodeURIComponent(storageEventName)}::${normalizedDni}::${normalizedBrandKey}`;
 }
 
 function parseRaffleBrandStorageKey(storageKey) {
@@ -300,15 +394,16 @@ function parseRaffleBrandStorageKey(storageKey) {
     return null;
   }
 
-  const canonicalEvent = getCanonicalEventName(decodedEvent);
-  if (!canonicalEvent || canonicalEvent === "Sin evento") {
+  const parsedEvent = parseStorageEventName(decodedEvent);
+  if (!parsedEvent) {
     return null;
   }
 
   return {
-    eventName: canonicalEvent,
+    eventName: parsedEvent.eventName,
     dni: normalizedDni,
-    brandKey: normalizedBrandKey
+    brandKey: normalizedBrandKey,
+    dayKey: parsedEvent.dayKey
   };
 }
 
@@ -345,7 +440,11 @@ async function fetchAttendanceAndFlagStateMaps({ supabaseUrl, serviceRoleKey }) 
   for (const row of Array.isArray(rows) ? rows : []) {
     const parsedAttendance = parseAttendanceStorageKey(row.encuentro);
     if (parsedAttendance) {
-      const attendanceKey = buildAttendanceMapKey(parsedAttendance.eventName, parsedAttendance.dni);
+      const attendanceKey = buildAttendanceMapKey(
+        parsedAttendance.eventName,
+        parsedAttendance.dni,
+        parsedAttendance.dayKey
+      );
       if (attendanceKey) {
         attendanceMap.set(attendanceKey, row.activo !== false);
       }
@@ -369,7 +468,11 @@ async function fetchAttendanceAndFlagStateMaps({ supabaseUrl, serviceRoleKey }) 
 
     const parsedRaffle = parseRaffleStorageKey(row.encuentro);
     if (parsedRaffle) {
-      const raffleKey = buildInscriptoMapKey(parsedRaffle.eventName, parsedRaffle.dni);
+      const raffleKey = buildScopedInscriptoMapKey(
+        parsedRaffle.eventName,
+        parsedRaffle.dni,
+        parsedRaffle.dayKey
+      );
       if (raffleKey) {
         raffleMap.set(raffleKey, row.activo !== false);
       }
@@ -379,9 +482,10 @@ async function fetchAttendanceAndFlagStateMaps({ supabaseUrl, serviceRoleKey }) 
       ? parseRaffleBrandStorageKey(row.encuentro)
       : null;
     if (parsedRaffleBrand) {
-      const raffleBrandKey = buildInscriptoMapKey(
+      const raffleBrandKey = buildScopedInscriptoMapKey(
         parsedRaffleBrand.eventName,
-        parsedRaffleBrand.dni
+        parsedRaffleBrand.dni,
+        parsedRaffleBrand.dayKey
       );
       if (raffleBrandKey) {
         raffleBrandMap.set(raffleBrandKey, parsedRaffleBrand.brandKey);
@@ -397,9 +501,10 @@ async function upsertAttendanceState({
   serviceRoleKey,
   eventName,
   dni,
-  asistio
+  asistio,
+  dayKey = ""
 }) {
-  const storageKey = buildAttendanceStorageKey(eventName, dni);
+  const storageKey = buildAttendanceStorageKey(eventName, dni, dayKey);
   if (!storageKey) {
     return {
       ok: false,
@@ -501,9 +606,10 @@ async function upsertRaffleState({
   serviceRoleKey,
   eventName,
   dni,
-  sorteado
+  sorteado,
+  dayKey = ""
 }) {
-  const storageKey = buildRaffleStorageKey(eventName, dni);
+  const storageKey = buildRaffleStorageKey(eventName, dni, dayKey);
   if (!storageKey) {
     return {
       ok: false,
@@ -553,9 +659,10 @@ async function upsertRaffleBrandState({
   serviceRoleKey,
   eventName,
   dni,
-  brandKey
+  brandKey,
+  dayKey = ""
 }) {
-  const storageKey = buildRaffleBrandStorageKey(eventName, dni, brandKey);
+  const storageKey = buildRaffleBrandStorageKey(eventName, dni, brandKey, dayKey);
   if (!storageKey) {
     return {
       ok: false,
@@ -604,7 +711,8 @@ async function deactivateRaffleBrandStates({
   supabaseUrl,
   serviceRoleKey,
   eventName,
-  dni
+  dni,
+  dayKey = ""
 }) {
   const canonicalEvent = getCanonicalEventName(eventName);
   const normalizedDni = normalizeDniValue(dni);
@@ -616,8 +724,17 @@ async function deactivateRaffleBrandStates({
     };
   }
 
+  const storageEventName = buildStorageEventName(canonicalEvent, dayKey);
+  if (!storageEventName) {
+    return {
+      ok: false,
+      error: "Encuentro o dia invalido.",
+      tableMissing: false
+    };
+  }
+
   const storagePrefix =
-    `${RAFFLE_BRAND_KEY_PREFIX}${encodeURIComponent(canonicalEvent)}::${normalizedDni}::`;
+    `${RAFFLE_BRAND_KEY_PREFIX}${encodeURIComponent(storageEventName)}::${normalizedDni}::`;
   const endpoint = new URL(
     `${supabaseUrl.replace(/\/$/, "")}/rest/v1/${STATUS_TABLE}`
   );
@@ -1462,6 +1579,28 @@ async function handleGet(req, res, adminRole) {
 
     for (const row of Array.isArray(rows) ? rows : []) {
       const eventName = getCanonicalEventName(row.encuentro);
+      const baseAttendanceKey = buildAttendanceMapKey(eventName, row.dni);
+      const baseRaffleKey = buildScopedInscriptoMapKey(eventName, row.dni);
+      const asistenciaDias = {};
+      const sorteoDias = {};
+
+      if (isDayScopedEvent(eventName)) {
+        for (const day of SAN_LUIS_DAY_OPTIONS) {
+          const dayAttendanceKey = buildAttendanceMapKey(eventName, row.dni, day.key);
+          const dayRaffleKey = buildScopedInscriptoMapKey(eventName, row.dni, day.key);
+          const dayBrand = raffleBrandMap.get(dayRaffleKey) || "";
+          asistenciaDias[day.key] = attendanceMap.get(dayAttendanceKey) === true;
+          sorteoDias[day.key] = {
+            sorteado: raffleMap.get(dayRaffleKey) === true,
+            marca_sorteo: dayBrand
+          };
+        }
+      }
+
+      const attendedAnyDay = Object.values(asistenciaDias).some(Boolean);
+      const raffledAnyDay = Object.values(sorteoDias).some((item) => item?.sorteado === true);
+      const dayBrand = Object.values(sorteoDias).find((item) => item?.marca_sorteo)?.marca_sorteo || "";
+      const usesDayScope = isDayScopedEvent(eventName);
       const normalizedRow = {
         id: row.id ?? null,
         encuentro: eventName,
@@ -1478,15 +1617,17 @@ async function handleGet(req, res, adminRole) {
         origen: cleanText(row.origen, 40),
         created_at: row.created_at || null,
         asistio:
-          attendanceMap.get(buildAttendanceMapKey(eventName, row.dni)) === true,
+          usesDayScope ? attendedAnyDay : attendanceMap.get(baseAttendanceKey) === true,
+        asistencia_dias: asistenciaDias,
         almuerzo:
           lunchMap.get(buildLunchMapKey(eventName, row.dni)) === true,
         reconfirmado:
           reconfirmMap.get(buildInscriptoMapKey(eventName, row.dni)) === true,
         sorteado:
-          raffleMap.get(buildInscriptoMapKey(eventName, row.dni)) === true,
+          usesDayScope ? raffledAnyDay : raffleMap.get(baseRaffleKey) === true,
+        sorteo_dias: sorteoDias,
         marca_sorteo:
-          raffleBrandMap.get(buildInscriptoMapKey(eventName, row.dni)) || ""
+          usesDayScope ? dayBrand : raffleBrandMap.get(baseRaffleKey) || ""
       };
 
       if (!grouped.has(eventName)) {
@@ -1549,9 +1690,11 @@ async function handleGet(req, res, adminRole) {
             localidad: row.localidad,
             created_at: row.created_at,
             asistio: row.asistio === true,
+            asistencia_dias: row.asistencia_dias || {},
             almuerzo: row.almuerzo === true,
             reconfirmado: row.reconfirmado === true,
             sorteado: row.sorteado === true,
+            sorteo_dias: row.sorteo_dias || {},
             marca_sorteo: row.marca_sorteo || ""
           }))
         }))
@@ -1600,6 +1743,7 @@ async function handlePost(req, res, adminRole) {
     const canonicalEvent = getCanonicalEventName(eventInput);
     const dni = normalizeDniValue(payload.dni);
     const asistio = parseBooleanInput(payload.asistio);
+    const dayKey = resolveScopedDayKey(canonicalEvent, payload.dia || payload.day || payload.dayKey);
 
     if (!canonicalEvent || canonicalEvent === "Sin evento") {
       return res.status(422).json({
@@ -1622,12 +1766,20 @@ async function handlePost(req, res, adminRole) {
       });
     }
 
+    if (isDayScopedEvent(canonicalEvent) && !dayKey) {
+      return res.status(422).json({
+        ok: false,
+        error: "Tenes que seleccionar si la asistencia es para viernes 7/8 o sabado 8/8."
+      });
+    }
+
     const savedAttendance = await upsertAttendanceState({
       supabaseUrl,
       serviceRoleKey,
       eventName: canonicalEvent,
       dni,
-      asistio
+      asistio,
+      dayKey
     });
 
     if (!savedAttendance.ok) {
@@ -1642,6 +1794,8 @@ async function handlePost(req, res, adminRole) {
       ok: true,
       action: "set_attendance",
       evento: canonicalEvent,
+      dia: dayKey,
+      dia_label: getDayLabel(dayKey),
       dni,
       asistio: asistio === true,
       updated_at: new Date().toISOString()
@@ -1818,6 +1972,7 @@ async function handlePost(req, res, adminRole) {
     const eventInput = cleanText(payload.evento, 80);
     const canonicalEvent = getCanonicalEventName(eventInput);
     const dni = normalizeDniValue(payload.dni);
+    const dayKey = resolveScopedDayKey(canonicalEvent, payload.dia || payload.day || payload.dayKey);
 
     if (!canonicalEvent || canonicalEvent === "Sin evento") {
       return res.status(422).json({
@@ -1833,12 +1988,20 @@ async function handlePost(req, res, adminRole) {
       });
     }
 
+    if (isDayScopedEvent(canonicalEvent) && !dayKey) {
+      return res.status(422).json({
+        ok: false,
+        error: "Tenes que seleccionar el dia del sorteo."
+      });
+    }
+
     const savedRaffle = await upsertRaffleState({
       supabaseUrl,
       serviceRoleKey,
       eventName: canonicalEvent,
       dni,
-      sorteado: false
+      sorteado: false,
+      dayKey
     });
 
     if (!savedRaffle.ok) {
@@ -1853,7 +2016,8 @@ async function handlePost(req, res, adminRole) {
       supabaseUrl,
       serviceRoleKey,
       eventName: canonicalEvent,
-      dni
+      dni,
+      dayKey
     });
 
     if (!cleanedBrand.ok) {
@@ -1868,6 +2032,8 @@ async function handlePost(req, res, adminRole) {
       ok: true,
       action: "reset_raffle_winner",
       evento: canonicalEvent,
+      dia: dayKey,
+      dia_label: getDayLabel(dayKey),
       dni,
       sorteado: false,
       marca_sorteo: "",
@@ -1881,6 +2047,7 @@ async function handlePost(req, res, adminRole) {
     const canonicalEvent = getCanonicalEventName(eventInput);
     const requestedCount = Number.parseInt(String(payload.cantidad ?? "1"), 10);
     const raffleBrandKey = normalizeBrandKey(payload.marca);
+    const dayKey = resolveScopedDayKey(canonicalEvent, payload.dia || payload.day || payload.dayKey);
 
     if (!canonicalEvent || canonicalEvent === "Sin evento") {
       return res.status(422).json({
@@ -1900,6 +2067,13 @@ async function handlePost(req, res, adminRole) {
       return res.status(422).json({
         ok: false,
         error: "Tenes que seleccionar una marca para el sorteo."
+      });
+    }
+
+    if (isDayScopedEvent(canonicalEvent) && !dayKey) {
+      return res.status(422).json({
+        ok: false,
+        error: "Tenes que seleccionar si el sorteo es del viernes 7/8 o del sabado 8/8."
       });
     }
 
@@ -1933,7 +2107,7 @@ async function handlePost(req, res, adminRole) {
     const normalizedRows = (Array.isArray(inscripcionesResult.rows) ? inscripcionesResult.rows : [])
       .map((row) => {
         const dni = cleanText(row.dni, 20);
-        const winnerKey = buildInscriptoMapKey(canonicalEvent, dni);
+        const winnerKey = buildScopedInscriptoMapKey(canonicalEvent, dni, dayKey);
 
         return {
           id: row.id ?? null,
@@ -1944,7 +2118,7 @@ async function handlePost(req, res, adminRole) {
           localidad: cleanText(row.localidad, 120),
           profesion: formatProfesion(row.profesion),
           created_at: row.created_at || null,
-          asistio: attendanceMap.get(buildAttendanceMapKey(canonicalEvent, dni)) === true,
+          asistio: attendanceMap.get(buildAttendanceMapKey(canonicalEvent, dni, dayKey)) === true,
           sorteado: raffleMap.get(winnerKey) === true,
           marca_sorteo: raffleBrandMap.get(winnerKey) || ""
         };
@@ -1981,7 +2155,8 @@ async function handlePost(req, res, adminRole) {
         serviceRoleKey,
         eventName: canonicalEvent,
         dni: winner.dni,
-        sorteado: true
+        sorteado: true,
+        dayKey
       });
 
       if (!savedRaffle.ok) {
@@ -1997,7 +2172,8 @@ async function handlePost(req, res, adminRole) {
         serviceRoleKey,
         eventName: canonicalEvent,
         dni: winner.dni,
-        brandKey: raffleBrandKey
+        brandKey: raffleBrandKey,
+        dayKey
       });
 
       if (!savedBrand.ok) {
@@ -2025,6 +2201,8 @@ async function handlePost(req, res, adminRole) {
       ok: true,
       action: "draw_raffle",
       evento: canonicalEvent,
+      dia: dayKey,
+      dia_label: getDayLabel(dayKey),
       ganador: {
         id: winners[0].id,
         dni: winners[0].dni,
