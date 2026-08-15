@@ -2591,6 +2591,11 @@
     function buildRaffleSectionHtml(item, index) {
       const rows = Array.isArray(item?.inscripciones) ? item.inscripciones : [];
       const eventActive = isEventActive(item);
+
+      if (!eventActive) {
+        return "";
+      }
+
       const selectedDay = getSelectedRaffleDay(item, index);
       const dayLabel = getDayLabel(selectedDay);
       const eligibleRows = getEligibleRaffleRows(item, selectedDay);
@@ -2600,18 +2605,14 @@
       const drawCount = getRaffleDrawCount(item, index, eligibleRows.length, selectedDay);
       const selectedBrand = getRaffleBrandState(item, index, selectedDay);
       const requiresDay = isSanLuisEvent(item);
-      const controlDisabled = !eventActive || isDrawing;
-      const drawDisabled = !eventActive || (requiresDay && !selectedDay) || eligibleRows.length === 0 || isDrawing;
+      const controlDisabled = isDrawing;
+      const drawDisabled = (requiresDay && !selectedDay) || eligibleRows.length === 0 || isDrawing;
 
       if (rows.length === 0) {
         return `
           <section class="raffle-box">
             <h3 class="raffle-title">Sorteos</h3>
-            <p class="raffle-hint">
-              ${eventActive
-                ? "No hay inscriptos en este encuentro para participar del sorteo."
-                : "Este encuentro esta inactivo. Activalo para habilitar los sorteos."}
-            </p>
+            <p class="raffle-hint">No hay inscriptos en este encuentro para participar del sorteo.</p>
           </section>
         `;
       }
@@ -2620,9 +2621,7 @@
         <section class="raffle-box">
           <h3 class="raffle-title">Sorteos</h3>
           <p class="raffle-hint">
-            ${!eventActive
-              ? "Este encuentro esta inactivo. Activalo para habilitar los sorteos."
-              : requiresDay
+            ${requiresDay
               ? "Participan solo los inscriptos con asistencia confirmada para el dia seleccionado."
               : "Participan solo los inscriptos con asistencia confirmada. Cada DNI puede salir una sola vez por encuentro."}
           </p>
