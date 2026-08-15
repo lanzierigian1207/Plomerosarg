@@ -9,6 +9,7 @@ const {
   fetchCertificateStatusMap,
   resolveEventActive,
   resolveCertificateActive,
+  getEventStatus,
   upsertEventStatus,
   upsertCertificateStatus
 } = require("./_encuentros");
@@ -2074,6 +2075,28 @@ async function handlePost(req, res, adminRole) {
       return res.status(422).json({
         ok: false,
         error: "Tenes que seleccionar si el sorteo es del viernes 7/8 o del sabado 8/8."
+      });
+    }
+
+    const eventStatus = await getEventStatus({
+      supabaseUrl,
+      serviceRoleKey,
+      encuentro: canonicalEvent
+    });
+
+    if (!eventStatus.ok) {
+      return res.status(500).json({
+        ok: false,
+        error: "No se pudo validar si el encuentro esta activo.",
+        detail: eventStatus.error || ""
+      });
+    }
+
+    if (eventStatus.active === false) {
+      return res.status(409).json({
+        ok: false,
+        error: "Este encuentro esta inactivo. Activalo antes de hacer el sorteo.",
+        evento: canonicalEvent
       });
     }
 

@@ -2590,6 +2590,7 @@
 
     function buildRaffleSectionHtml(item, index) {
       const rows = Array.isArray(item?.inscripciones) ? item.inscripciones : [];
+      const eventActive = isEventActive(item);
       const selectedDay = getSelectedRaffleDay(item, index);
       const dayLabel = getDayLabel(selectedDay);
       const eligibleRows = getEligibleRaffleRows(item, selectedDay);
@@ -2599,12 +2600,18 @@
       const drawCount = getRaffleDrawCount(item, index, eligibleRows.length, selectedDay);
       const selectedBrand = getRaffleBrandState(item, index, selectedDay);
       const requiresDay = isSanLuisEvent(item);
+      const controlDisabled = !eventActive || isDrawing;
+      const drawDisabled = !eventActive || (requiresDay && !selectedDay) || eligibleRows.length === 0 || isDrawing;
 
       if (rows.length === 0) {
         return `
           <section class="raffle-box">
             <h3 class="raffle-title">Sorteos</h3>
-            <p class="raffle-hint">No hay inscriptos en este encuentro para participar del sorteo.</p>
+            <p class="raffle-hint">
+              ${eventActive
+                ? "No hay inscriptos en este encuentro para participar del sorteo."
+                : "Este encuentro esta inactivo. Activalo para habilitar los sorteos."}
+            </p>
           </section>
         `;
       }
@@ -2613,7 +2620,9 @@
         <section class="raffle-box">
           <h3 class="raffle-title">Sorteos</h3>
           <p class="raffle-hint">
-            ${requiresDay
+            ${!eventActive
+              ? "Este encuentro esta inactivo. Activalo para habilitar los sorteos."
+              : requiresDay
               ? "Participan solo los inscriptos con asistencia confirmada para el dia seleccionado."
               : "Participan solo los inscriptos con asistencia confirmada. Cada DNI puede salir una sola vez por encuentro."}
           </p>
@@ -2624,7 +2633,7 @@
                 <select
                   class="raffle-day-select"
                   data-raffle-day-select="${index}"
-                  ${isDrawing ? "disabled" : ""}
+                  ${controlDisabled ? "disabled" : ""}
                 >
                   ${buildDayOptionsHtml(selectedDay)}
                 </select>
@@ -2637,7 +2646,7 @@
               <select
                 class="raffle-brand-select"
                 data-raffle-brand-select="${index}"
-                ${isDrawing ? "disabled" : ""}
+                ${controlDisabled ? "disabled" : ""}
               >
                 <option value="">Elegir marca</option>
                 ${RAFFLE_BRANDS.map((brand) => `
@@ -2657,14 +2666,14 @@
                 step="1"
                 value="${drawCount}"
                 data-raffle-count-input="${index}"
-                ${requiresDay && !selectedDay || eligibleRows.length === 0 || isDrawing ? "disabled" : ""}
+                ${drawDisabled ? "disabled" : ""}
               />
             </label>
             <button
               class="btn-event"
               type="button"
               data-draw-raffle="${index}"
-              ${requiresDay && !selectedDay || eligibleRows.length === 0 || isDrawing ? "disabled" : ""}
+              ${drawDisabled ? "disabled" : ""}
             >
               ${isDrawing ? "Sorteando..." : "Sortear"}
             </button>
@@ -3874,6 +3883,10 @@
 
         const selected = currentEventos[drawIndex];
         if (!selected) return;
+        if (!isEventActive(selected)) {
+          setStatusMessage("El encuentro esta inactivo. Activalo antes de hacer el sorteo.", "error");
+          return;
+        }
         const selectedDay = getSelectedRaffleDay(selected, drawIndex);
         const eligibleRows = getEligibleRaffleRows(selected, selectedDay);
         const drawCount = getRaffleDrawCount(selected, drawIndex, eligibleRows.length, selectedDay);
