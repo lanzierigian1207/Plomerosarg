@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/png" href="/Prueba_2/assets/logo-plomeros-circular.png">
   <link rel="apple-touch-icon" href="/Prueba_2/assets/logo-plomeros-circular.png">
-  <title>Encuentro 29 Mendoza | Plomeros ARG</title>
+  <title>Encuentro 31 Villa Mercedes, San Luis | Plomeros ARG</title>
   <style>
     :root {
       --ink: #10243f;
@@ -50,7 +50,7 @@
       border-radius: 28px;
       background:
         linear-gradient(135deg, rgba(7, 34, 80, 0.95), rgba(15, 78, 168, 0.92)),
-        url('/Prueba_2/assets/noticias/encuentro-29-mendoza/img-20260509-102859451-hdr.jpg') center/cover no-repeat;
+        url('/Prueba_2/assets/noticias/encuentro-31-san-luis/dsc-06872.jpg') center/cover no-repeat;
       color: #ffffff;
       padding: clamp(26px, 5vw, 54px);
       box-shadow: 0 30px 70px rgba(9, 38, 82, 0.22);
@@ -86,16 +86,16 @@
     h1 {
       max-width: 880px;
       margin-top: 18px;
-      font-size: clamp(2rem, 4.2vw, 4rem);
+      font-size: 3.75rem;
       line-height: 0.98;
-      letter-spacing: -0.04em;
+      letter-spacing: 0;
     }
 
     .hero-subtitle {
       max-width: 760px;
       margin-top: 16px;
       color: #dce9ff;
-      font-size: clamp(1.02rem, 2vw, 1.24rem);
+      font-size: 1.18rem;
       line-height: 1.6;
       font-weight: 600;
     }
@@ -163,6 +163,71 @@
       color: var(--blue-700);
       font-size: 1.32rem;
       font-weight: 900;
+    }
+
+    .feature-media {
+      display: grid;
+      gap: 8px;
+    }
+
+    .feature-media img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: 0 18px 34px rgba(13, 43, 90, 0.1);
+    }
+
+    .feature-media figcaption {
+      color: var(--ink-soft);
+      font-size: 0.92rem;
+      font-weight: 800;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .program-list {
+      display: grid;
+      gap: 16px;
+    }
+
+    .program-list p {
+      color: #000000;
+      line-height: 1.78;
+      font-size: 1.22rem;
+    }
+
+    .program-list strong {
+      color: var(--blue-700);
+      font-weight: 900;
+    }
+
+    .sponsor-logos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 16px;
+      align-items: center;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: #f8fbff;
+    }
+
+    .sponsor-logo {
+      display: flex;
+      min-height: 76px;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+    }
+
+    .sponsor-logo img {
+      display: block;
+      max-width: 100%;
+      max-height: 62px;
+      object-fit: contain;
     }
 
     .section-heading {
@@ -355,6 +420,36 @@
         border-radius: 22px;
       }
 
+      h1 {
+        font-size: 2.2rem;
+      }
+
+      .intro p,
+      .thanks p,
+      .program-list p,
+      .highlight-copy p {
+        font-size: 1.08rem;
+        line-height: 1.7;
+      }
+
+      .lead {
+        font-size: 1.16rem;
+      }
+
+      .section-heading h2 {
+        font-size: 1.58rem;
+      }
+
+      .feature-media img {
+        border-radius: 18px;
+      }
+
+      .sponsor-logos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        padding: 14px;
+      }
+
       .photo-carousel {
         justify-items: center;
       }
@@ -397,55 +492,117 @@
   <main class="page">
     <section class="hero">
       <div class="eyebrow">Plomeros ARG | Noticias</div>
-      <h1>Encuentro 29 en Mendoza</h1>
+      <h1>Gran Encuentro Nacional de Plomeros y Sanitaristas N.&ordm;31 en Villa Mercedes, San Luis</h1>
+      <p class="hero-subtitle">Publicado el 15/08/2026 por Plomeros y Sanitaristas Argentinos.</p>
       <div class="hero-meta">
-        <span class="meta-pill">14/05/2026</span>
-        <span class="meta-pill">Mendoza</span>
-        <span class="meta-pill">Encuentro N.&ordm; 29</span>
+        <span class="meta-pill">15/08/2026</span>
+        <span class="meta-pill">Villa Mercedes, San Luis</span>
+        <span class="meta-pill">Encuentro N.&ordm; 31</span>
       </div>
     </section>
 
     <article class="content-card">
       <section class="intro">
         <p class="lead">
-          El pasado fin de semana se llev&oacute; a cabo con gran &eacute;xito el encuentro en la provincia de Mendoza, organizado por
-          Plomeros y Sanitaristas Argentinos.
+          Nos volvemos a encontrar para seguir impulsando el oficio, compartir experiencias y capacitarnos con las marcas
+          l&iacute;deres del sector. Los d&iacute;as <strong>7 y 8 de agosto</strong>, la ciudad de
+          <strong>Villa Mercedes, San Luis</strong>, ser&aacute; la sede de nuestro <strong>Encuentro N.&ordm;31</strong>, una jornada
+          pensada por y para los profesionales de la plomer&iacute;a y la sanitaria de todo el pa&iacute;s.
         </p>
         <p>
-          Fue una jornada muy importante para el sector, en la que colegas y profesionales pudieron compartir espacios de
-          aprendizaje e intercambio a trav&eacute;s de capacitaciones t&eacute;cnicas, pr&aacute;cticas en vivo, sorteos, entrada gratuita y
-          entrega de certificados de asistencia.
+          El evento contar&aacute; con un programa completo de actividades orientadas al crecimiento profesional y la
+          actualizaci&oacute;n t&eacute;cnica.
+        </p>
+      </section>
+
+      <figure class="feature-media">
+        <img src="/Prueba_2/assets/noticias/encuentro-31-san-luis/dsc-0337.jpg" alt="Participantes del Encuentro N.&ordm; 31 en Villa Mercedes" loading="lazy">
+        <figcaption>Una nueva jornada nacional para compartir oficio, capacitaci&oacute;n y comunidad.</figcaption>
+      </figure>
+
+      <section class="program-list">
+        <p>
+          <strong>Capacitaciones t&eacute;cnicas:</strong> Charlas formativas dictadas por especialistas sobre nuevas
+          tecnolog&iacute;as, materiales y normativas del rubro.
+        </p>
+        <p>
+          <strong>Pr&aacute;cticas en vivo:</strong> Demostraciones en directo para poner a prueba herramientas y soluciones
+          t&eacute;cnicas de vanguardia.
+        </p>
+      </section>
+
+      <figure class="feature-media">
+        <img src="/Prueba_2/assets/noticias/encuentro-31-san-luis/dsc-0298.jpg" alt="Capacitaci&oacute;n t&eacute;cnica durante el Encuentro N.&ordm; 31" loading="lazy">
+        <figcaption>Capacitaciones y demostraciones en vivo junto a especialistas y marcas del sector.</figcaption>
+      </figure>
+
+      <section class="program-list">
+        <p>
+          <strong>Certificado de asistencia:</strong> Acreditaci&oacute;n oficial para incorporar a tu legajo profesional.
+        </p>
+        <p>
+          <strong>Sorteos y sorpresas:</strong> Importantes premios en herramientas e insumos aportados por las firmas
+          auspiciantes.
+        </p>
+        <p>
+          La <strong>entrada es totalmente gratuita</strong>, pero requiere inscripci&oacute;n previa para asegurar tu lugar y
+          recibir todos los detalles del cronograma.
         </p>
       </section>
 
       <section class="gallery-block">
         <div class="section-heading">
-          <h2>Galer&iacute;a del encuentro en Mendoza</h2>
-          <p>Un recorrido visual por la jornada, las capacitaciones, la participaci&oacute;n del p&uacute;blico y los premios.</p>
+          <h2>Nos acompa&ntilde;an</h2>
+          <p>Marcas l&iacute;deres que hacen posible una experiencia de capacitaci&oacute;n completa para el rubro.</p>
+        </div>
+        <figure class="feature-media">
+          <img src="/Prueba_2/assets/noticias/encuentro-31-san-luis/dsc-0075.jpg" alt="Marcas auspiciantes presentes en el Encuentro N.&ordm; 31" loading="lazy">
+        </figure>
+        <div class="sponsor-logos" aria-label="Logos de sponsors del Encuentro N.&ordm; 31">
+          <span class="sponsor-logo"><img src="/Prueba_2/assets/empresas/36_rheem.png" alt="Rheem" loading="lazy"></span>
+          <span class="sponsor-logo"><img src="/Prueba_2/assets/empresas/12_piazza.png" alt="Piazza" loading="lazy"></span>
+          <span class="sponsor-logo"><img src="/Prueba_2/assets/empresas/logo-pluvius.svg" alt="Pluvius" loading="lazy"></span>
+          <span class="sponsor-logo"><img src="/Prueba_2/assets/empresas/06_latyn_fusion.png" alt="Latyn-Fusi&oacute;n" loading="lazy"></span>
+          <span class="sponsor-logo"><img src="/Prueba_2/assets/empresas/logo-parsecs.svg" alt="Parsecs" loading="lazy"></span>
+          <span class="sponsor-logo"><img src="/Prueba_2/assets/empresas/39_msb_industria_argentina.png" alt="MSB" loading="lazy"></span>
+          <span class="sponsor-logo"><img src="/Prueba_2/assets/empresas/logo-vasser.svg" alt="Vasser" loading="lazy"></span>
+          <span class="sponsor-logo"><img src="/Prueba_2/assets/empresas/logo-duke.png" alt="Duke" loading="lazy"></span>
+          <span class="sponsor-logo"><img src="/Prueba_2/assets/motoarg.png" alt="Motorarg" loading="lazy"></span>
+          <span class="sponsor-logo"><img src="/Prueba_2/assets/Total.jpeg" alt="Total" loading="lazy"></span>
+          <span class="sponsor-logo"><img src="/Prueba_2/assets/empresas/logo-redeco.png" alt="RedEco" loading="lazy"></span>
+          <span class="sponsor-logo"><img src="/Prueba_2/assets/empresas/logo-dinatecnica.png" alt="Dinatecnica" loading="lazy"></span>
+          <span class="sponsor-logo"><img src="/Prueba_2/assets/empresas/logo-krewen.jpg" alt="Krewen" loading="lazy"></span>
+          <span class="sponsor-logo"><img src="/Prueba_2/assets/empresas/logo-rao.jpg" alt="Rao" loading="lazy"></span>
+          <span class="sponsor-logo"><img src="/Prueba_2/assets/empresas/logo-egeo.png" alt="Egeo" loading="lazy"></span>
+          <span class="sponsor-logo"><img src="/Prueba_2/assets/empresas/logo-chicote.png" alt="Chicote" loading="lazy"></span>
+          <span class="sponsor-logo"><img src="/Prueba_2/assets/empresas/43_reed.png" alt="Reed" loading="lazy"></span>
+          <span class="sponsor-logo"><img src="/Prueba_2/assets/Retak.png" alt="Retak" loading="lazy"></span>
+        </div>
+      </section>
+
+      <section class="intro highlight-copy">
+        <p>
+          <strong>Rheem, Piazza, Pluvius, Latyn-Fusi&oacute;n, Parsecs, MSB, Vasser, Duke, Motorarg, Total, RedEco, Dinatecnica, Krewen, Rao, Egeo, Chicote, Reed y Retak.</strong>
+        </p>
+      </section>
+
+      <section class="gallery-block">
+        <div class="section-heading">
+          <h2>Galer&iacute;a del Encuentro N.&ordm;31</h2>
+          <p>Capacitaciones, demostraciones, premios y participaci&oacute;n de colegas de todo el pa&iacute;s.</p>
         </div>
         <div class="photo-carousel" data-carousel>
           <div class="carousel-viewport">
-            <figure class="carousel-slide is-active"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/img-20260509-102859451-hdr.jpg" alt="Encuentro 29 en Mendoza 1" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/dsc-0739.jpg" alt="Encuentro 29 en Mendoza 2" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/dsc-0736.jpg" alt="Encuentro 29 en Mendoza 3" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/dsc-0735.jpg" alt="Encuentro 29 en Mendoza 4" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/dsc-0732.jpg" alt="Encuentro 29 en Mendoza 5" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/dsc-0548.jpg" alt="Encuentro 29 en Mendoza 6" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/dsc-0539.jpg" alt="Encuentro 29 en Mendoza 7" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/dsc-0538.jpg" alt="Encuentro 29 en Mendoza 8" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/dsc-0535.jpg" alt="Encuentro 29 en Mendoza 9" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/20260509-165630.jpg" alt="Encuentro 29 en Mendoza 10" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/20260509-165130.jpg" alt="Encuentro 29 en Mendoza 11" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/20260509-164651.jpg" alt="Encuentro 29 en Mendoza 12" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/20260509-164052.jpg" alt="Encuentro 29 en Mendoza 13" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/20260509-163823.jpg" alt="Encuentro 29 en Mendoza 14" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/20260509-163710.jpg" alt="Encuentro 29 en Mendoza 15" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/20260509-163258.jpg" alt="Encuentro 29 en Mendoza 16" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/20260509-162942.jpg" alt="Encuentro 29 en Mendoza 17" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/20260509-162312.jpg" alt="Encuentro 29 en Mendoza 18" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/20260509-161913.jpg" alt="Encuentro 29 en Mendoza 19" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/20260509-160820.jpg" alt="Encuentro 29 en Mendoza 20" loading="lazy"></figure>
-            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-29-mendoza/20260509-161442.jpg" alt="Encuentro 29 en Mendoza 21" loading="lazy"></figure>
+            <figure class="carousel-slide is-active"><img src="/Prueba_2/assets/noticias/encuentro-31-san-luis/dsc-06872.jpg" alt="Encuentro N.&ordm; 31 en Villa Mercedes 1" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-31-san-luis/dsc-0337.jpg" alt="Encuentro N.&ordm; 31 en Villa Mercedes 2" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-31-san-luis/dsc-0298.jpg" alt="Encuentro N.&ordm; 31 en Villa Mercedes 3" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-31-san-luis/dsc-0067.jpg" alt="Encuentro N.&ordm; 31 en Villa Mercedes 4" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-31-san-luis/dsc-0075.jpg" alt="Encuentro N.&ordm; 31 en Villa Mercedes 5" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-31-san-luis/dsc-0077.jpg" alt="Encuentro N.&ordm; 31 en Villa Mercedes 6" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-31-san-luis/dsc-06858.jpg" alt="Encuentro N.&ordm; 31 en Villa Mercedes 7" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-31-san-luis/dsc-0356.jpg" alt="Encuentro N.&ordm; 31 en Villa Mercedes 8" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-31-san-luis/dsc-0382.jpg" alt="Encuentro N.&ordm; 31 en Villa Mercedes 9" loading="lazy"></figure>
+            <figure class="carousel-slide"><img src="/Prueba_2/assets/noticias/encuentro-31-san-luis/dsc-06886.jpg" alt="Encuentro N.&ordm; 31 en Villa Mercedes 10" loading="lazy"></figure>
           </div>
           <div class="carousel-controls">
             <button class="carousel-btn" type="button" data-carousel-prev>Anterior</button>
@@ -456,25 +613,14 @@
         </div>
       </section>
 
-      <section class="intro highlight-copy">
-        <p>
-          Queremos hacer un agradecimiento especial a todas las marcas que acompa&ntilde;aron y apoyaron este encuentro,
-          haciendo posible la jornada con su presencia y compromiso:
-          <strong>Rheem, Piazza, Pluvius, Parsecs, Vasser, MSB, Maygas, Fusio Gas, Reed, Deckert, RedEco, Duke, Dinatecnica, Chicote, Krewen, Rao, Waterplast, Egeo y Bahco.</strong>
-        </p>
-      </section>
-
       <section class="thanks">
         <p>
-          Gracias por confiar, acompa&ntilde;ar y seguir apostando al crecimiento del rubro junto a Plomeros y Sanitaristas Argentinos.
+          &iexcl;Inscribite hoy mismo para recibir m&aacute;s informaci&oacute;n y reservarte las fechas! Te esperamos para seguir
+          fortaleciendo juntos la comunidad de Plomeros y Sanitaristas Argentinos.
         </p>
-        <p>
-          Tambi&eacute;n agradecemos a cada una de las personas que participaron, se acercaron y formaron parte de este encuentro.
-        </p>
-        <p class="closing-tagline">&iexcl;Nos vemos en Salta!</p>
         <img class="closing-logo" src="/Prueba_2/assets/logo-plomeros-circular.png" alt="Logo circular de Plomeros ARG">
         <div class="actions">
-          <a class="btn btn-primary" href="/encuentros.html">Ver pr&oacute;ximos encuentros</a>
+          <a class="btn btn-primary" href="/inscripcion-san-luis.html">Inscribirme</a>
           <a class="btn btn-secondary" href="/index.html">Volver al inicio</a>
         </div>
       </section>
