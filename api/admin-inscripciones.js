@@ -3,13 +3,19 @@ const crypto = require("crypto");
 const { fetchSupabaseRows } = require("./_supabase-pagination");
 const {
   KNOWN_EVENTS,
+  EVENT_CATALOG_TABLE_SQL,
   cleanText,
+  fetchEventCatalog,
+  findEventCatalogItem,
   getCanonicalEventName,
   fetchEventStatusMap,
   fetchCertificateStatusMap,
+  resolveCatalogEventActive,
+  resolveCatalogCertificateActive,
   resolveEventActive,
   resolveCertificateActive,
   getEventStatus,
+  upsertEventCatalog,
   upsertEventStatus,
   upsertCertificateStatus
 } = require("./_encuentros");
@@ -1542,7 +1548,8 @@ async function handleGet(req, res, adminRole) {
   endpoint.searchParams.set("order", "id.asc");
 
   try {
-    const [statusResult, certificateStatusResult, flagsState] = await Promise.all([
+    const [catalogResult, statusResult, certificateStatusResult, flagsState] = await Promise.all([
+      fetchEventCatalog({ supabaseUrl, serviceRoleKey }),
       fetchEventStatusMap({ supabaseUrl, serviceRoleKey }),
       fetchCertificateStatusMap({ supabaseUrl, serviceRoleKey }),
       fetchAttendanceAndFlagStateMaps({ supabaseUrl, serviceRoleKey })
@@ -1638,12 +1645,19 @@ async function handleGet(req, res, adminRole) {
       grouped.get(eventName).push(normalizedRow);
     }
 
+    const catalogEvents = Array.isArray(catalogResult.eventos)
+      ? catalogResult.eventos
+      : [];
+    const catalogEventNames = catalogEvents
+      .map((item) => cleanText(item?.evento || item?.nombre, 80))
+      .filter((name) => name && name !== "Sin evento");
+    const orderedBaseEvents = catalogEventNames.length > 0 ? catalogEventNames : [...KNOWN_EVENTS];
     const dynamicEvents = [...grouped.keys()]
-      .filter((name) => !KNOWN_EVENTS.includes(name) && name !== "Sin evento")
+      .filter((name) => !orderedBaseEvents.includes(name) && name !== "Sin evento")
       .sort((a, b) => a.localeCompare(b, "es"));
 
     const orderedEvents = [
-      ...KNOWN_EVENTS,
+      ...orderedBaseEvents,
       ...dynamicEvents,
       ...(grouped.has("Sin evento") ? ["Sin evento"] : [])
     ];
@@ -1656,6 +1670,7 @@ async function handleGet(req, res, adminRole) {
     const fullOrder = [...orderedEvents, ...statusEvents];
 
     const eventos = fullOrder.map((eventName) => {
+      const catalogItem = findEventCatalogItem(catalogEvents, eventName);
       const inscripciones = (grouped.get(eventName) || [])
         .slice()
         .sort(compareRegistrationOrder)
@@ -1665,16 +1680,21 @@ async function handleGet(req, res, adminRole) {
         }));
 
       return {
+        ...(catalogItem || {}),
         evento: eventName,
         contador: inscripciones.length,
-        activo: resolveEventActive({
-          eventName,
-          statusMap: statusResult.map
-        }),
-        certificado_activo: resolveCertificateActive({
-          eventName,
-          certificateMap: certificateStatusResult.map
-        }),
+        activo: catalogItem
+          ? resolveCatalogEventActive(catalogItem, statusResult.map)
+          : resolveEventActive({
+              eventName,
+              statusMap: statusResult.map
+            }),
+        certificado_activo: catalogItem
+          ? resolveCatalogCertificateActive(catalogItem, certificateStatusResult.map)
+          : resolveCertificateActive({
+              eventName,
+              certificateMap: certificateStatusResult.map
+            }),
         inscripciones
       };
     });
@@ -1712,6 +1732,8 @@ async function handleGet(req, res, adminRole) {
       },
       status_available: statusResult.available,
       status_warning: statusResult.warning || "",
+      catalog_available: catalogResult.available,
+      catalog_warning: catalogResult.warning || "",
       certificate_status_available: certificateStatusResult.available,
       certificate_status_warning: certificateStatusResult.warning || "",
       generated_at: new Date().toISOString()
@@ -1807,6 +1829,67 @@ async function handlePost(req, res, adminRole) {
     return res.status(403).json({
       ok: false,
       error: "No autorizado para modificar el estado de encuentros."
+    });
+  }
+
+  if (action === "create_event" || action === "crear_evento") {
+    const savedCatalog = await upsertEventCatalog({
+      supabaseUrl,
+      serviceRoleKey,
+      payload
+    });
+
+    if (!savedCatalog.ok) {
+      return res.status(500).json({
+        ok: false,
+        error: savedCatalog.tableMissing
+          ? "No existe la tabla de catalogo de encuentros. Creala una sola vez en Supabase y volve a intentar."
+          : savedCatalog.error || "No se pudo crear el encuentro.",
+        detail: savedCatalog.detail || "",
+        sql: savedCatalog.tableMissing ? EVENT_CATALOG_TABLE_SQL : ""
+      });
+    }
+
+    const eventItem = savedCatalog.evento;
+    const [savedStatus, savedCertificate] = await Promise.all([
+      upsertEventStatus({
+        supabaseUrl,
+        serviceRoleKey,
+        encuentro: eventItem.evento,
+        activo: eventItem.activo
+      }),
+      upsertCertificateStatus({
+        supabaseUrl,
+        serviceRoleKey,
+        encuentro: eventItem.evento,
+        activo: eventItem.certificado_activo
+      })
+    ]);
+    const warnings = [];
+
+    if (!savedStatus.ok) {
+      warnings.push(savedStatus.error || "No se pudo guardar el estado del encuentro.");
+    }
+
+    if (!savedCertificate.ok) {
+      warnings.push(savedCertificate.error || "No se pudo guardar el estado del certificado.");
+    }
+
+    return res.status(200).json({
+      ok: true,
+      action: "create_event",
+      evento: {
+        ...eventItem,
+        activo: savedStatus.ok ? savedStatus.active : eventItem.activo,
+        certificado_activo: savedCertificate.ok
+          ? savedCertificate.active
+          : eventItem.certificado_activo
+      },
+      warning: warnings.join(" "),
+      sql: [savedStatus, savedCertificate].some((item) => item && item.tableMissing)
+        ? STATUS_TABLE_SQL
+        : "",
+      updated_at: new Date().toISOString()
     });
   }
 

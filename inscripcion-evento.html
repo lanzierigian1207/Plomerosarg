@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="/Prueba_2/assets/logo-plomeros-circular.png">
+  <link rel="apple-touch-icon" href="/Prueba_2/assets/logo-plomeros-circular.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>Inscripcion | Plomeros ARG</title>
+  <style>
+    :root {
+      --ink: #14304c;
+      --muted: #55708c;
+      --bg: #eef5f7;
+      --card: #ffffff;
+      --line: #d6e2ee;
+      --accent: #0d63c7;
+      --accent-dark: #0a4d9a;
+      --ok: #12733d;
+      --error: #a92922;
+      --shadow: 0 18px 44px rgba(15, 47, 87, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: "Manrope", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, rgba(13, 99, 199, 0.09) 0%, rgba(13, 99, 199, 0) 320px),
+        var(--bg);
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    .wrap {
+      width: min(980px, 100%);
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: start;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.96);
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin-top: 5px;
+      font-size: clamp(1.7rem, 4vw, 2.6rem);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .intro {
+      margin-top: 10px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .header-logo {
+      width: 86px;
+      height: 86px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      object-fit: contain;
+      padding: 7px;
+    }
+
+    .event-media {
+      display: none;
+      width: 100%;
+      max-height: 420px;
+      object-fit: cover;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      background: #ffffff;
+    }
+
+    .event-media.is-visible {
+      display: block;
+    }
+
+    .event-details {
+      display: none;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 14px;
+    }
+
+    .event-details.is-visible {
+      display: grid;
+    }
+
+    .detail-item {
+      border: 1px solid #e3ebf4;
+      border-radius: 8px;
+      background: #f8fbff;
+      padding: 10px 12px;
+      display: grid;
+      gap: 2px;
+    }
+
+    .detail-label {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .detail-value,
+    .detail-value a {
+      color: var(--ink);
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    form {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 20px;
+      display: grid;
+      gap: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field.is-wide {
+      grid-column: 1 / -1;
+    }
+
+    label,
+    .field-title {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #213d5b;
+    }
+
+    .required::after {
+      content: " *";
+      color: var(--error);
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid #b9cadd;
+      border-radius: 8px;
+      color: var(--ink);
+      background: #ffffff;
+      padding: 10px 11px;
+      font: inherit;
+      font-size: 0.96rem;
+      font-weight: 600;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(13, 99, 199, 0.13);
+    }
+
+    .profession-group {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .profession-option {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-height: 44px;
+      border: 1px solid #dce7f2;
+      border-radius: 8px;
+      background: #f8fbff;
+      padding: 9px 10px;
+      font-weight: 700;
+    }
+
+    .profession-option input {
+      width: 18px;
+      height: 18px;
+      min-height: 0;
+      accent-color: var(--accent);
+    }
+
+    .consent {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      border: 1px solid #dce7f2;
+      border-radius: 8px;
+      background: #f8fbff;
+      padding: 12px;
+    }
+
+    .consent input {
+      width: 18px;
+      height: 18px;
+      min-height: 0;
+      margin-top: 2px;
+      accent-color: var(--accent);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 10px 15px;
+      font: inherit;
+      font-weight: 800;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-dark);
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .message {
+      display: none;
+      border-radius: 8px;
+      padding: 13px 14px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .message.is-visible {
+      display: block;
+    }
+
+    .message.is-ok {
+      border: 1px solid #b6dec5;
+      background: #ecf9f1;
+      color: var(--ok);
+    }
+
+    .message.is-error {
+      border: 1px solid #efb7b2;
+      background: #fff0ef;
+      color: var(--error);
+    }
+
+    .message a {
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 14px;
+      }
+
+      .top,
+      .form-grid,
+      .event-details,
+      .profession-group {
+        grid-template-columns: 1fr;
+      }
+
+      .header-logo {
+        width: 64px;
+        height: 64px;
+      }
+
+      form,
+      .top {
+        padding: 16px;
+      }
+
+      .actions .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="top">
+      <div>
+        <div class="eyebrow">Inscripcion</div>
+        <h1 id="eventTitle">Cargando encuentro...</h1>
+        <p class="intro" id="eventIntro">Estamos preparando los datos del evento.</p>
+      </div>
+      <img class="header-logo" src="/Prueba_2/assets/logo-plomeros-circular.png" alt="Logo Plomeros ARG">
+    </header>
+
+    <img class="event-media" id="eventImage" alt="">
+    <section class="event-details" id="eventDetails" aria-label="Datos del encuentro"></section>
+
+    <form id="inscripcionForm" action="/api/inscripciones" method="post" hidden>
+      <input type="hidden" id="encuentro" name="encuentro">
+
+      <div class="form-grid">
+        <div class="field">
+          <label class="required" for="dni">DNI</label>
+          <input id="dni" name="dni" type="text" inputmode="numeric" autocomplete="off" required>
+        </div>
+
+        <div class="field">
+          <label class="required" for="nombre_apellido">Nombre y Apellido</label>
+          <input id="nombre_apellido" name="nombre_apellido" type="text" autocomplete="name" required>
+        </div>
+
+        <div class="field">
+          <label id="mailLabel" class="required" for="mail">Mail</label>
+          <input id="mail" name="mail" type="email" autocomplete="email" required>
+        </div>
+
+        <div class="field">
+          <label id="celularLabel" for="celular">Numero de Celular</label>
+          <input id="celular" name="celular" type="tel" inputmode="tel" autocomplete="tel">
+        </div>
+
+        <div class="field">
+          <label class="required" for="provincia">&iquest;De qu&eacute; provincia sos?</label>
+          <select id="provincia" name="provincia" required>
+            <option value="">Seleccionar</option>
+            <option value="buenos_aires">Buenos Aires</option>
+            <option value="caba">Ciudad Aut&oacute;noma de Buenos Aires</option>
+            <option value="catamarca">Catamarca</option>
+            <option value="chaco">Chaco</option>
+            <option value="chubut">Chubut</option>
+            <option value="cordoba">C&oacute;rdoba</option>
+            <option value="corrientes">Corrientes</option>
+            <option value="entre_rios">Entre R&iacute;os</option>
+            <option value="formosa">Formosa</option>
+            <option value="jujuy">Jujuy</option>
+            <option value="la_pampa">La Pampa</option>
+            <option value="la_rioja">La Rioja</option>
+            <option value="mendoza">Mendoza</option>
+            <option value="misiones">Misiones</option>
+            <option value="neuquen">Neuqu&eacute;n</option>
+            <option value="rio_negro">R&iacute;o Negro</option>
+            <option value="salta">Salta</option>
+            <option value="san_juan">San Juan</option>
+            <option value="san_luis">San Luis</option>
+            <option value="santa_cruz">Santa Cruz</option>
+            <option value="santa_fe">Santa Fe</option>
+            <option value="santiago_del_estero">Santiago del Estero</option>
+            <option value="tierra_del_fuego">Tierra del Fuego</option>
+            <option value="tucuman">Tucum&aacute;n</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="localidad">&iquest;De qu&eacute; localidad sos?</label>
+          <input id="localidad" name="localidad" type="text" placeholder="Opcional">
+        </div>
+
+        <div class="field">
+          <label id="asociadoLabel" class="required" for="asociado">&iquest;Sos asociado a AAPSYA?</label>
+          <select id="asociado" name="asociado" required>
+            <option value="">Seleccionar</option>
+            <option value="si">S&iacute;</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+
+        <div class="field is-wide">
+          <div class="field-title required">Profesi&oacute;n (pod&eacute;s elegir varias)</div>
+          <div class="profession-group" role="group" aria-label="Profesion">
+            <label class="profession-option" for="profesion_plomero">
+              <input id="profesion_plomero" type="checkbox" name="profesion" value="plomero">
+              <span>Plomero</span>
+            </label>
+            <label class="profession-option" for="profesion_gasista">
+              <input id="profesion_gasista" type="checkbox" name="profesion" value="gasista">
+              <span>Gasista</span>
+            </label>
+            <label class="profession-option" for="profesion_oficial_plomero">
+              <input id="profesion_oficial_plomero" type="checkbox" name="profesion" value="oficial_plomero">
+              <span>Oficial Plomero</span>
+            </label>
+            <label class="profession-option" for="profesion_ayudante_plomero">
+              <input id="profesion_ayudante_plomero" type="checkbox" name="profesion" value="ayudante_plomero">
+              <span>Ayudante de Plomero</span>
+            </label>
+            <label class="profession-option" for="profesion_medio_oficial_plomero">
+              <input id="profesion_medio_oficial_plomero" type="checkbox" name="profesion" value="medio_oficial_plomero">
+              <span>Medio Oficial Plomero</span>
+            </label>
+            <label class="profession-option" for="profesion_ayudante_gasista">
+              <input id="profesion_ayudante_gasista" type="checkbox" name="profesion" value="ayudante_gasista">
+              <span>Ayudante Gasista</span>
+            </label>
+            <label class="profession-option" for="profesion_oficial_gasista">
+              <input id="profesion_oficial_gasista" type="checkbox" name="profesion" value="oficial_gasista">
+              <span>Oficial Gasista</span>
+            </label>
+            <label class="profession-option" for="profesion_gasista_matriculado">
+              <input id="profesion_gasista_matriculado" type="checkbox" name="profesion" value="gasista_matriculado">
+              <span>Gasista Matriculado</span>
+            </label>
+            <label class="profession-option" for="profesion_maestro_mayor_obra">
+              <input id="profesion_maestro_mayor_obra" type="checkbox" name="profesion" value="maestro_mayor_obra">
+              <span>Maestro Mayor de Obra</span>
+            </label>
+            <label class="profession-option" for="profesion_arquitecto_ingeniero">
+              <input id="profesion_arquitecto_ingeniero" type="checkbox" name="profesion" value="arquitecto_ingeniero">
+              <span>Arquitecto/Ingeniero</span>
+            </label>
+            <label class="profession-option" for="profesion_estudiante_centro_formacion">
+              <input id="profesion_estudiante_centro_formacion" type="checkbox" name="profesion" value="estudiante_centro_formacion">
+              <span>Estudiante de centro de Formaci&oacute;n</span>
+            </label>
+            <label class="profession-option" for="profesion_expositor">
+              <input id="profesion_expositor" type="checkbox" name="profesion" value="expositor">
+              <span>Expositor</span>
+            </label>
+            <label class="profession-option" for="profesion_otros">
+              <input id="profesion_otros" type="checkbox" name="profesion" value="otros">
+              <span>Otros</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field is-wide" id="expositorField" hidden>
+          <label for="expositor_info">Detalle para Expositor</label>
+          <input
+            id="expositor_info"
+            name="expositor_info"
+            type="text"
+            placeholder="Pon la marca que representas"
+            maxlength="200"
+          >
+        </div>
+
+        <div class="field">
+          <label class="required" for="origen">&iquest;D&oacute;nde nos conociste?</label>
+          <select id="origen" name="origen" required>
+            <option value="">Seleccionar</option>
+            <option value="facebook">Grupo de Facebook</option>
+            <option value="grupo_whatsapp">Grupo de WhatsApp</option>
+            <option value="instagram">Instagram de Plomeros</option>
+            <option value="casa_sanitarios">Casa de Sanitarios</option>
+            <option value="centro_formacion">Centro de Formaci&oacute;n</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="consent">
+        <input id="acepto_terminos" name="acepto_terminos" type="checkbox" required>
+        <label class="required" for="acepto_terminos">
+          Confirmo que mis datos son verdaderos. Al inscribirme, acepto que se env&iacute;en mis datos a los sponsors y, adem&aacute;s, acepto que los sponsors y/o los organizadores utilicen mi imagen, parcial o total, para hacer publicidad. La presente autorizaci&oacute;n y cesi&oacute;n de mi imagen es a t&iacute;tulo gratuito y concedida por tiempo ilimitado.
+        </label>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="submitBtn" type="submit">Enviar</button>
+        <a class="btn btn-secondary" href="encuentros.html">Volver a Encuentros</a>
+      </div>
+
+      <p class="message" id="formMessage" role="status"></p>
+    </form>
+  </main>
+
+  <script>
+    const form = document.getElementById("inscripcionForm");
+    const formMessage = document.getElementById("formMessage");
+    const eventTitle = document.getElementById("eventTitle");
+    const eventIntro = document.getElementById("eventIntro");
+    const eventImage = document.getElementById("eventImage");
+    const eventDetails = document.getElementById("eventDetails");
+    const encuentroInput = document.getElementById("encuentro");
+    const submitBtn = document.getElementById("submitBtn");
+    const mailInput = document.getElementById("mail");
+    const mailLabel = document.getElementById("mailLabel");
+    const celularInput = document.getElementById("celular");
+    const celularLabel = document.getElementById("celularLabel");
+    const asociadoInput = document.getElementById("asociado");
+    const asociadoLabel = document.getElementById("asociadoLabel");
+    const expositorCheckbox = document.getElementById("profesion_expositor");
+    const expositorField = document.getElementById("expositorField");
+    const expositorInput = document.getElementById("expositor_info");
+    let currentEvent = null;
+
+    function normalizeEventKey(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^\w\s/.-]/g, " ")
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function slugifyEvent(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 80) || "encuentro";
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function getRequestedEventKey() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("evento") || params.get("slug") || params.get("encuentro") || "";
+    }
+
+    function findRequestedEvent(events, requested) {
+      const requestedKey = normalizeEventKey(requested);
+      const requestedSlug = slugifyEvent(requested);
+      return (Array.isArray(events) ? events : []).find((item) => {
+        return (
+          normalizeEventKey(item?.evento) === requestedKey ||
+          normalizeEventKey(item?.nombre) === requestedKey ||
+          slugifyEvent(item?.slug || item?.evento || item?.nombre) === requestedSlug
+        );
+      }) || null;
+    }
+
+    function setMessage(text, mode = "error") {
+      formMessage.classList.remove("is-ok", "is-error", "is-visible");
+      formMessage.classList.add(mode === "ok" ? "is-ok" : "is-error", "is-visible");
+      formMessage.innerHTML = text;
+    }
+
+    function clearMessage() {
+      formMessage.classList.remove("is-ok", "is-error", "is-visible");
+      formMessage.textContent = "";
+    }
+
+    function setFieldRequired(input, label, required) {
+      input.required = required;
+      label.classList.toggle("required", required);
+    }
+
+    function buildDetail(label, value, href = "") {
+      if (!value) return "";
+      const content = href
+        ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(value)}</a>`
+        : escapeHtml(value);
+      return `
+        <div class="detail-item">
+          <span class="detail-label">${escapeHtml(label)}</span>
+          <span class="detail-value">${content}</span>
+        </div>
+      `;
+    }
+
+    function renderEventDetails(eventItem) {
+      const detailsHtml = [
+        buildDetail("Fecha", eventItem.fecha),
+        buildDetail("Horario", eventItem.horario),
+        buildDetail("Lugar", eventItem.lugar),
+        buildDetail("Direccion", eventItem.direccion),
+        buildDetail("Mapa", eventItem.maps_url ? "Ver ubicacion" : "", eventItem.maps_url),
+        buildDetail("Ingreso", eventItem.ingreso_solidario)
+      ].join("");
+
+      eventDetails.innerHTML = detailsHtml;
+      eventDetails.classList.toggle("is-visible", Boolean(detailsHtml));
+    }
+
+    function renderEvent(eventItem) {
+      currentEvent = eventItem;
+      document.title = `Inscripcion | ${eventItem.evento || "Encuentro"}`;
+      eventTitle.textContent = eventItem.evento || "Encuentro";
+      eventIntro.textContent = eventItem.descripcion || "Completa el formulario para reservar tu lugar.";
+      encuentroInput.value = eventItem.evento || "";
+
+      if (eventItem.imagen_url) {
+        eventImage.src = eventItem.imagen_url;
+        eventImage.alt = `Imagen del encuentro ${eventItem.evento || ""}`;
+        eventImage.classList.add("is-visible");
+      } else {
+        eventImage.removeAttribute("src");
+        eventImage.classList.remove("is-visible");
+      }
+
+      setFieldRequired(mailInput, mailLabel, eventItem.mail_opcional !== true);
+      setFieldRequired(asociadoInput, asociadoLabel, eventItem.asociado_opcional !== true);
+      setFieldRequired(celularInput, celularLabel, eventItem.celular_obligatorio === true);
+      renderEventDetails(eventItem);
+      form.hidden = false;
+      submitBtn.disabled = eventItem.activo === false;
+      submitBtn.textContent = "Enviar";
+
+      if (eventItem.activo === false) {
+        setMessage("Las inscripciones para este encuentro estan cerradas temporalmente.", "error");
+      }
+    }
+
+    async function loadEvent() {
+      const requested = getRequestedEventKey();
+      if (!requested) {
+        eventTitle.textContent = "Encuentro no indicado";
+        eventIntro.textContent = "Volver a la pagina de encuentros para elegir un evento.";
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/encuentros-estado", {
+          method: "GET",
+          headers: { "Accept": "application/json" },
+          cache: "no-store"
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok || !Array.isArray(data.eventos)) {
+          throw new Error(data.error || "No se pudo cargar el encuentro.");
+        }
+
+        const eventItem = findRequestedEvent(data.eventos, requested);
+        if (!eventItem) {
+          eventTitle.textContent = "Encuentro no encontrado";
+          eventIntro.textContent = "Revisa el link o volve a la pagina de encuentros.";
+          return;
+        }
+
+        renderEvent(eventItem);
+      } catch (error) {
+        eventTitle.textContent = "No se pudo cargar el encuentro";
+        eventIntro.textContent = error instanceof Error ? error.message : "Intenta nuevamente en unos minutos.";
+      }
+    }
+
+    function toggleExpositorField() {
+      const isExpositorChecked = Boolean(expositorCheckbox && expositorCheckbox.checked);
+      if (expositorField) {
+        expositorField.hidden = !isExpositorChecked;
+      }
+      if (expositorInput && !isExpositorChecked) {
+        expositorInput.value = "";
+      }
+    }
+
+    if (expositorCheckbox) {
+      expositorCheckbox.addEventListener("change", toggleExpositorField);
+      toggleExpositorField();
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      clearMessage();
+
+      if (!currentEvent || currentEvent.activo === false) {
+        setMessage("Las inscripciones para este encuentro estan cerradas temporalmente.");
+        return;
+      }
+
+      const formData = new FormData(form);
+      const profesiones = formData
+        .getAll("profesion")
+        .map((value) => String(value || "").trim())
+        .filter(Boolean);
+
+      if (profesiones.length === 0) {
+        setMessage("Selecciona al menos una profesion.");
+        return;
+      }
+
+      const payload = {
+        encuentro: String(formData.get("encuentro") || "").trim(),
+        dni: String(formData.get("dni") || "").trim(),
+        nombre_apellido: String(formData.get("nombre_apellido") || "").trim(),
+        mail: String(formData.get("mail") || "").trim(),
+        celular: String(formData.get("celular") || "").trim(),
+        provincia: String(formData.get("provincia") || "").trim(),
+        localidad: String(formData.get("localidad") || "").trim(),
+        asociado: String(formData.get("asociado") || "").trim(),
+        profesion: profesiones,
+        expositor_info: String(formData.get("expositor_info") || "").trim(),
+        origen: String(formData.get("origen") || "").trim(),
+        acepto_terminos: formData.get("acepto_terminos") ? "si" : ""
+      };
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Enviando...";
+
+      try {
+        const response = await fetch("/api/inscripciones", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error || "No fue posible guardar la inscripcion.");
+        }
+
+        const whatsappUrl = String(currentEvent.whatsapp_url || "").trim();
+        setMessage(
+          `
+            <strong>Inscripcion Confirmada</strong><br>
+            Le llegara un correo con la informacion si cargaste un mail valido.<br>
+            ${
+              whatsappUrl
+                ? `Grupo de Whatsapp <a href="${escapeHtml(whatsappUrl)}" target="_blank" rel="noopener noreferrer">Aqui</a><br>`
+                : ""
+            }
+            <strong>IMPORTANTE:</strong> si no llega a la bandeja principal, revisar correo no deseado o SPAM.
+          `,
+          "ok"
+        );
+        form.reset();
+        encuentroInput.value = currentEvent.evento || "";
+        renderEvent(currentEvent);
+        toggleExpositorField();
+      } catch (error) {
+        setMessage(`Error: ${escapeHtml(error instanceof Error ? error.message : "No se pudo guardar la inscripcion.")}`);
+      } finally {
+        submitBtn.disabled = currentEvent?.activo === false;
+        submitBtn.textContent = "Enviar";
+      }
+    });
+
+    loadEvent();
+  </script>
+</body>
+</html>

@@ -133,6 +133,13 @@
       background-position: center center;
     }
 
+    .event-dynamic {
+      background-image:
+        linear-gradient(100deg, rgba(9, 32, 61, 0.9) 0%, rgba(9, 32, 61, 0.7) 48%, rgba(9, 32, 61, 0.4) 100%),
+        var(--event-image, linear-gradient(135deg, #0f2f57, #0d63c7));
+      background-position: center center;
+    }
+
     .event-hero h2 {
       color: #ffffff;
       text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
@@ -176,6 +183,11 @@
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
+    }
+
+    .dynamic-events {
+      display: grid;
+      gap: 20px;
     }
 
     .btn {
@@ -314,6 +326,8 @@
       </div>
     </div>
 
+    <section class="dynamic-events" id="dynamicEvents" aria-label="Nuevos encuentros"></section>
+
     <div class="actions">
       <a class="btn btn-secondary" href="/">Volver al inicio</a>
     </div>
@@ -328,6 +342,39 @@
         .toLowerCase()
         .replace(/\s+/g, " ")
         .trim();
+    };
+
+    const escapeHtml = (value) => {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    };
+
+    const slugifyEvent = (value) => {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 80) || "encuentro";
+    };
+
+    const getRegistrationUrl = (item) => {
+      const rawUrl = String(item?.inscripcion_url || "").trim();
+      if (rawUrl) {
+        return rawUrl;
+      }
+
+      return `/inscripcion-evento.html?evento=${encodeURIComponent(item?.slug || slugifyEvent(item?.evento))}`;
+    };
+
+    const getEventImageStyle = (item) => {
+      const imageUrl = String(item?.imagen_url || "").trim().replace(/['"\\]/g, "");
+      return imageUrl ? ` style="--event-image: url('${escapeHtml(imageUrl)}');"` : "";
     };
 
     const getInactiveButtonLabel = (card) => {
@@ -345,7 +392,53 @@
       return "Proximamente";
     };
 
-    const eventCards = Array.from(document.querySelectorAll(".event[data-encuentro]"));
+    const dynamicEventsContainer = document.getElementById("dynamicEvents");
+    let eventCards = Array.from(document.querySelectorAll(".event[data-encuentro]"));
+
+    const renderDynamicEventCards = (events) => {
+      if (!dynamicEventsContainer || !Array.isArray(events)) {
+        return;
+      }
+
+      const staticKeys = new Set(
+        eventCards.map((card) => normalizeEventKey(card.getAttribute("data-encuentro") || ""))
+      );
+      const dynamicEvents = events.filter((item) => {
+        const key = normalizeEventKey(item?.evento || "");
+        return key && key !== "sin evento" && !staticKeys.has(key);
+      });
+
+      dynamicEventsContainer.innerHTML = dynamicEvents
+        .map((item) => {
+          const isActive = item?.activo !== false;
+          const registrationUrl = getRegistrationUrl(item);
+          const eventNumber = item?.numero ? `Encuentro ${item.numero}` : "Nuevo encuentro";
+          const statusText = isActive
+            ? "Inscripcion abierta para este encuentro."
+            : "Inscripcion cerrada temporalmente por administracion.";
+
+          return `
+            <div
+              class="event event-hero event-dynamic"
+              data-encuentro="${escapeHtml(item.evento || "")}"
+              data-inscripcion="${escapeHtml(registrationUrl)}"
+              ${getEventImageStyle(item)}
+            >
+              <h2 class="event-title">
+                <span>${escapeHtml(item.evento || "Encuentro")}</span>
+                <span class="event-number">${escapeHtml(eventNumber)}</span>
+              </h2>
+              <p class="event-status">${escapeHtml(item.descripcion || statusText)}</p>
+              <div class="actions">
+                <a class="btn btn-primary ${isActive ? "" : "btn-disabled"}" href="${escapeHtml(registrationUrl)}">${isActive ? "Inscribirme" : "Proximamente"}</a>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+
+      eventCards = Array.from(document.querySelectorAll(".event[data-encuentro]"));
+    };
 
     const setEventState = (card, isActive) => {
       const button = card.querySelector(".actions .btn");
@@ -400,6 +493,8 @@
         if (!response.ok || !data.ok || !Array.isArray(data.eventos)) {
           return;
         }
+
+        renderDynamicEventCards(data.eventos);
 
         const eventStateMap = new Map(
           data.eventos.map((item) => [

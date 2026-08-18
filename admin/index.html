@@ -1250,6 +1250,205 @@
       line-height: 1.15;
     }
 
+    .event-create-panel {
+      background: var(--card);
+      border: 1px solid rgba(197, 208, 221, 0.9);
+      border-radius: 8px;
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+    }
+
+    .event-create-head {
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+      background:
+        linear-gradient(90deg, rgba(234, 243, 255, 0.9) 0%, rgba(248, 250, 252, 0.98) 100%);
+      display: grid;
+      gap: 6px;
+    }
+
+    .event-create-title {
+      font-size: 1.14rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .event-create-hint {
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 600;
+      line-height: 1.45;
+    }
+
+    .event-create-form {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .event-create-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .event-create-field {
+      display: grid;
+      gap: 6px;
+      color: #335173;
+      font-size: 0.84rem;
+      font-weight: 800;
+    }
+
+    .event-create-field.is-wide {
+      grid-column: 1 / -1;
+    }
+
+    .event-create-field input,
+    .event-create-field textarea {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid #b8c8db;
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 0.92rem;
+      font-weight: 600;
+      padding: 10px 11px;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .event-create-field textarea {
+      min-height: 92px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    .event-create-field input:focus,
+    .event-create-field textarea:focus {
+      border-color: rgba(21, 90, 167, 0.62);
+      box-shadow: 0 0 0 3px rgba(21, 90, 167, 0.12);
+      outline: none;
+    }
+
+    .event-create-switches {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .event-create-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      min-height: 52px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--card-soft);
+      color: var(--ink);
+      padding: 10px;
+      font-size: 0.84rem;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .event-create-check input {
+      width: 18px;
+      height: 18px;
+      margin-top: 1px;
+      accent-color: var(--accent);
+      flex: 0 0 auto;
+    }
+
+    .event-create-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .event-create-result {
+      border: 1px solid #b8dec7;
+      border-radius: 8px;
+      background: var(--ok-soft);
+      color: var(--ok);
+      padding: 11px 12px;
+      display: grid;
+      gap: 6px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .event-create-result.is-error {
+      border-color: #f1b5af;
+      background: var(--off-soft);
+      color: var(--off);
+    }
+
+    .event-create-result a {
+      color: var(--accent);
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .event-create-sql {
+      max-height: 220px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      color: #213750;
+      padding: 10px;
+      font-size: 0.78rem;
+      white-space: pre-wrap;
+    }
+
+    .event-catalog {
+      border-top: 1px solid var(--line);
+      background: var(--card-soft);
+      padding: 16px 18px 18px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .event-catalog-title {
+      color: var(--ink);
+      font-size: 0.95rem;
+      font-weight: 800;
+    }
+
+    .event-catalog-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .event-catalog-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 10px 12px;
+    }
+
+    .event-catalog-name {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--ink);
+      overflow-wrap: anywhere;
+    }
+
+    .event-catalog-meta {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -1426,7 +1625,8 @@
       .attendance-day-select,
       .attendance-form .btn-event,
       .mail-actions .btn-event,
-      .raffle-actions .btn-event {
+      .raffle-actions .btn-event,
+      .event-create-actions .btn-event {
         width: 100%;
       }
 
@@ -1458,6 +1658,12 @@
 
       .pill {
         font-size: 0.88rem;
+      }
+
+      .event-create-grid,
+      .event-create-switches,
+      .event-catalog-row {
+        grid-template-columns: 1fr;
       }
 
       .raffle-screen {
@@ -1547,6 +1753,7 @@
           <button class="btn-view" id="viewLunchBtn" type="button">Almuerzo</button>
           <button class="btn-view" id="viewSorteosBtn" type="button">Sorteos</button>
           <button class="btn-view" id="viewCertificadosBtn" type="button">Certificado asistencias</button>
+          <button class="btn-view" id="viewCrearEventoBtn" type="button">Crear evento</button>
         </div>
         <button class="btn btn-primary" id="refreshBtn" type="button">Actualizar</button>
         <form class="logout-form" method="post" action="/api/admin">
@@ -1617,6 +1824,7 @@
     const viewLunchBtn = document.getElementById("viewLunchBtn");
     const viewSorteosBtn = document.getElementById("viewSorteosBtn");
     const viewCertificadosBtn = document.getElementById("viewCertificadosBtn");
+    const viewCrearEventoBtn = document.getElementById("viewCrearEventoBtn");
     const raffleScreen = document.getElementById("raffleScreen");
     const raffleScreenClose = document.getElementById("raffleScreenClose");
     const raffleScreenEvent = document.getElementById("raffleScreenEvent");
@@ -1635,6 +1843,7 @@
     const PANEL_VIEW_ALMUERZO = "almuerzo";
     const PANEL_VIEW_SORTEOS = "sorteos";
     const PANEL_VIEW_CERTIFICADOS = "certificados";
+    const PANEL_VIEW_CREAR_EVENTO = "crear_evento";
     let currentPanelView = PANEL_VIEW_INSCRIPCIONES;
     let currentAdminRole = "admin";
     let currentEventos = [];
@@ -1977,6 +2186,7 @@
       viewLunchBtn.style.display = "inline-flex";
       viewSorteosBtn.style.display = asistenciaOnly ? "none" : "inline-flex";
       viewCertificadosBtn.style.display = asistenciaOnly ? "none" : "inline-flex";
+      viewCrearEventoBtn.style.display = asistenciaOnly ? "none" : "inline-flex";
       if (
         asistenciaOnly &&
         currentPanelView !== PANEL_VIEW_ASISTENCIA &&
@@ -1989,6 +2199,7 @@
       viewLunchBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_ALMUERZO);
       viewSorteosBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_SORTEOS);
       viewCertificadosBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_CERTIFICADOS);
+      viewCrearEventoBtn.classList.toggle("is-active", currentPanelView === PANEL_VIEW_CREAR_EVENTO);
       viewInscripcionesBtn.setAttribute(
         "aria-pressed",
         currentPanelView === PANEL_VIEW_INSCRIPCIONES ? "true" : "false"
@@ -2009,6 +2220,10 @@
         "aria-pressed",
         currentPanelView === PANEL_VIEW_CERTIFICADOS ? "true" : "false"
       );
+      viewCrearEventoBtn.setAttribute(
+        "aria-pressed",
+        currentPanelView === PANEL_VIEW_CREAR_EVENTO ? "true" : "false"
+      );
     }
 
     function setPanelView(nextView) {
@@ -2024,7 +2239,8 @@
         nextView !== PANEL_VIEW_ASISTENCIA &&
         nextView !== PANEL_VIEW_ALMUERZO &&
         nextView !== PANEL_VIEW_SORTEOS &&
-        nextView !== PANEL_VIEW_CERTIFICADOS
+        nextView !== PANEL_VIEW_CERTIFICADOS &&
+        nextView !== PANEL_VIEW_CREAR_EVENTO
       ) {
         return;
       }
@@ -3428,11 +3644,167 @@
       URL.revokeObjectURL(url);
     }
 
+    function buildAbsolutePublicUrl(path) {
+      const rawPath = String(path || "").trim();
+      if (!rawPath) return "";
+      if (/^https?:\/\//i.test(rawPath)) {
+        return rawPath;
+      }
+      return `${window.location.origin}${rawPath.startsWith("/") ? rawPath : `/${rawPath}`}`;
+    }
+
+    function buildEventCatalogRowHtml(item) {
+      const rows = Array.isArray(item?.inscripciones) ? item.inscripciones : [];
+      const publicUrl = buildAbsolutePublicUrl(item?.inscripcion_url || "");
+      const metaParts = [
+        item?.numero ? `Encuentro ${item.numero}` : "",
+        item?.fecha || "",
+        item?.ciudad || item?.provincia || "",
+        `${rows.length} inscripto${rows.length === 1 ? "" : "s"}`
+      ].filter(Boolean);
+
+      return `
+        <div class="event-catalog-row">
+          <div>
+            <div class="event-catalog-name">${escapeHtml(item?.evento || "Sin nombre")}</div>
+            <div class="event-catalog-meta">${escapeHtml(metaParts.join(" - "))}</div>
+          </div>
+          ${
+            publicUrl
+              ? `<a class="btn-event" href="${escapeHtml(publicUrl)}" target="_blank" rel="noopener noreferrer">Abrir link</a>`
+              : ""
+          }
+        </div>
+      `;
+    }
+
+    function buildEventCreatorHtml(eventos) {
+      const eventList = (Array.isArray(eventos) ? eventos : [])
+        .filter((item) => item?.evento && item.evento !== "Sin evento");
+
+      return `
+        <section class="event-create-panel">
+          <div class="event-create-head">
+            <h2 class="event-create-title">Crear evento</h2>
+            <p class="event-create-hint">
+              Carga los datos del encuentro y el sistema genera el link de inscripcion usando la misma base de datos del panel.
+            </p>
+          </div>
+
+          <form class="event-create-form" data-create-event-form>
+            <div class="event-create-grid">
+              <label class="event-create-field">
+                Nombre del evento
+                <input name="nombre" type="text" placeholder="Ej: Tucuman 12/9" maxlength="80" required>
+              </label>
+              <label class="event-create-field">
+                Numero de encuentro
+                <input name="numero" type="number" min="1" step="1" placeholder="32">
+              </label>
+              <label class="event-create-field">
+                Ciudad
+                <input name="ciudad" type="text" placeholder="Tucuman" maxlength="80">
+              </label>
+              <label class="event-create-field">
+                Provincia
+                <input name="provincia" type="text" placeholder="Tucuman" maxlength="80">
+              </label>
+              <label class="event-create-field">
+                Fecha
+                <input name="fecha" type="text" placeholder="12/09/2026" maxlength="80">
+              </label>
+              <label class="event-create-field">
+                Horario
+                <input name="horario" type="text" placeholder="08:30 a 17:00 hs" maxlength="120">
+              </label>
+              <label class="event-create-field">
+                Lugar
+                <input name="lugar" type="text" placeholder="Nombre del salon o institucion" maxlength="140">
+              </label>
+              <label class="event-create-field">
+                Direccion
+                <input name="direccion" type="text" placeholder="Calle, numero y ciudad" maxlength="180">
+              </label>
+              <label class="event-create-field">
+                Link de Google Maps
+                <input name="maps_url" type="url" placeholder="https://maps.app.goo.gl/...">
+              </label>
+              <label class="event-create-field">
+                Link grupo WhatsApp
+                <input name="whatsapp_url" type="url" placeholder="https://chat.whatsapp.com/...">
+              </label>
+              <label class="event-create-field is-wide">
+                Imagen o flyer
+                <input name="imagen_url" type="text" placeholder="/Prueba_2/assets/flyer.jpg o https://...">
+              </label>
+              <label class="event-create-field is-wide">
+                Descripcion
+                <textarea name="descripcion" maxlength="300" placeholder="Texto corto para mostrar en el listado y en el mail"></textarea>
+              </label>
+              <label class="event-create-field is-wide">
+                Ingreso solidario
+                <textarea name="ingreso_solidario" maxlength="260" placeholder="Ej: Traer 2 alimentos no perecederos"></textarea>
+              </label>
+              <label class="event-create-field">
+                Cupo
+                <input name="cupo" type="number" min="1" step="1" placeholder="Opcional">
+              </label>
+            </div>
+
+            <div class="event-create-switches">
+              <label class="event-create-check">
+                <input name="activo" type="checkbox" checked>
+                Inscripcion activa
+              </label>
+              <label class="event-create-check">
+                <input name="certificado_activo" type="checkbox" checked>
+                Certificado visible
+              </label>
+              <label class="event-create-check">
+                <input name="mail_opcional" type="checkbox">
+                Mail opcional
+              </label>
+              <label class="event-create-check">
+                <input name="asociado_opcional" type="checkbox">
+                Asociado opcional
+              </label>
+              <label class="event-create-check">
+                <input name="celular_obligatorio" type="checkbox">
+                Celular obligatorio
+              </label>
+            </div>
+
+            <div class="event-create-actions">
+              <button class="btn-event" type="submit" data-create-event-submit>Crear evento</button>
+            </div>
+
+            <div class="event-create-result" data-create-event-result hidden></div>
+          </form>
+
+          <div class="event-catalog">
+            <h3 class="event-catalog-title">Eventos disponibles</h3>
+            <div class="event-catalog-list">
+              ${
+                eventList.length
+                  ? eventList.map(buildEventCatalogRowHtml).join("")
+                  : `<p class="empty">Todavia no hay eventos cargados.</p>`
+              }
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
     function renderEvents(eventos) {
       currentEventos = Array.isArray(eventos) ? eventos : [];
       attendanceTotalValue.textContent = String(countAttendance(currentEventos));
       lunchTotalValue.textContent = String(countLunch(currentEventos));
       reconfirmTotalValue.textContent = String(countReconfirm(currentEventos));
+
+      if (currentPanelView === PANEL_VIEW_CREAR_EVENTO) {
+        eventsContainer.innerHTML = buildEventCreatorHtml(currentEventos);
+        return;
+      }
 
       if (!Array.isArray(eventos) || eventos.length === 0) {
         eventsContainer.innerHTML = `
@@ -3751,6 +4123,7 @@
 
         renderEvents(data.eventos || []);
         const warnings = [
+          String(data.catalog_warning || "").trim(),
           String(data.status_warning || "").trim(),
           String(data.certificate_status_warning || "").trim()
         ].filter(Boolean);
@@ -3862,6 +4235,164 @@
         renderEvents(currentEventos);
       }
     }
+
+    function getFormText(form, fieldName) {
+      return String(new FormData(form).get(fieldName) || "").trim();
+    }
+
+    function getFormChecked(form, fieldName) {
+      const field = form.elements[fieldName];
+      return Boolean(field && field.checked);
+    }
+
+    function buildCreateEventPayload(form) {
+      return {
+        action: "create_event",
+        nombre: getFormText(form, "nombre"),
+        numero: getFormText(form, "numero"),
+        ciudad: getFormText(form, "ciudad"),
+        provincia: getFormText(form, "provincia"),
+        fecha: getFormText(form, "fecha"),
+        horario: getFormText(form, "horario"),
+        lugar: getFormText(form, "lugar"),
+        direccion: getFormText(form, "direccion"),
+        maps_url: getFormText(form, "maps_url"),
+        whatsapp_url: getFormText(form, "whatsapp_url"),
+        imagen_url: getFormText(form, "imagen_url"),
+        descripcion: getFormText(form, "descripcion"),
+        ingreso_solidario: getFormText(form, "ingreso_solidario"),
+        cupo: getFormText(form, "cupo"),
+        activo: getFormChecked(form, "activo"),
+        certificado_activo: getFormChecked(form, "certificado_activo"),
+        mail_opcional: getFormChecked(form, "mail_opcional"),
+        asociado_opcional: getFormChecked(form, "asociado_opcional"),
+        celular_obligatorio: getFormChecked(form, "celular_obligatorio")
+      };
+    }
+
+    function showCreateEventResult(form, html, isError = false) {
+      const resultBox = form.querySelector("[data-create-event-result]");
+      if (!resultBox) return;
+      resultBox.hidden = false;
+      resultBox.classList.toggle("is-error", isError);
+      resultBox.innerHTML = html;
+    }
+
+    function upsertCreatedEventLocally(eventItem) {
+      if (!eventItem?.evento) return;
+      const nextEvent = {
+        ...eventItem,
+        contador: eventItem.contador || 0,
+        inscripciones: Array.isArray(eventItem.inscripciones) ? eventItem.inscripciones : []
+      };
+      const existingIndex = currentEventos.findIndex((item) => item?.evento === nextEvent.evento);
+      if (existingIndex >= 0) {
+        currentEventos[existingIndex] = {
+          ...currentEventos[existingIndex],
+          ...nextEvent
+        };
+      } else {
+        currentEventos.push(nextEvent);
+      }
+    }
+
+    function resetCreateEventForm(form) {
+      form.reset();
+      if (form.elements.activo) {
+        form.elements.activo.checked = true;
+      }
+      if (form.elements.certificado_activo) {
+        form.elements.certificado_activo.checked = true;
+      }
+    }
+
+    async function submitCreateEvent(form) {
+      const submitButton = form.querySelector("[data-create-event-submit]");
+      const payload = buildCreateEventPayload(form);
+
+      if (!payload.nombre) {
+        showCreateEventResult(form, "Escribi el nombre del evento.", true);
+        return;
+      }
+
+      if (submitButton) {
+        submitButton.disabled = true;
+      }
+
+      try {
+        const response = await fetch("/api/admin-inscripciones", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.status === 401) {
+          window.location.href = ADMIN_LOGIN_URL;
+          return;
+        }
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || !data.ok) {
+          const sqlHint = typeof data.sql === "string" && data.sql
+            ? `<pre class="event-create-sql">${escapeHtml(data.sql)}</pre>`
+            : "";
+          showCreateEventResult(
+            form,
+            `${escapeHtml(data.error || "No se pudo crear el evento.")}${sqlHint}`,
+            true
+          );
+          return;
+        }
+
+        const eventItem = data.evento || {};
+        const publicUrl = buildAbsolutePublicUrl(eventItem.inscripcion_url || "");
+        upsertCreatedEventLocally(eventItem);
+        setStatusMessage(`Evento ${eventItem.evento || payload.nombre} creado correctamente.`);
+        showCreateEventResult(
+          form,
+          `
+            <strong>Evento creado correctamente.</strong>
+            ${
+              publicUrl
+                ? `<span>Link de inscripcion: <a href="${escapeHtml(publicUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(publicUrl)}</a></span>`
+                : ""
+            }
+            ${data.warning ? `<span>${escapeHtml(data.warning)}</span>` : ""}
+            ${data.sql ? `<pre class="event-create-sql">${escapeHtml(data.sql)}</pre>` : ""}
+          `
+        );
+        resetCreateEventForm(form);
+
+        const catalogList = eventsContainer.querySelector(".event-catalog-list");
+        if (catalogList && eventItem.evento) {
+          catalogList.innerHTML = currentEventos
+            .filter((item) => item?.evento && item.evento !== "Sin evento")
+            .map(buildEventCatalogRowHtml)
+            .join("");
+        }
+      } catch (error) {
+        showCreateEventResult(
+          form,
+          `Error: ${escapeHtml(error instanceof Error ? error.message : "No se pudo crear el evento.")}`,
+          true
+        );
+      } finally {
+        if (submitButton) {
+          submitButton.disabled = false;
+        }
+      }
+    }
+
+    eventsContainer.addEventListener("submit", (event) => {
+      const form = event.target.closest("[data-create-event-form]");
+      if (!form) return;
+      event.preventDefault();
+      submitCreateEvent(form);
+    });
 
     eventsContainer.addEventListener("input", (event) => {
       const subjectInput = event.target.closest("[data-mail-subject]");
@@ -4471,6 +5002,10 @@
 
     viewSorteosBtn.addEventListener("click", () => {
       setPanelView(PANEL_VIEW_SORTEOS);
+    });
+
+    viewCrearEventoBtn.addEventListener("click", () => {
+      setPanelView(PANEL_VIEW_CREAR_EVENTO);
     });
 
     raffleScreenClose.addEventListener("click", closeRaffleScreen);

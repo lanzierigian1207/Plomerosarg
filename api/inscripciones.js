@@ -31,7 +31,12 @@ const ALLOWED_ORIGEN = new Set([
   "centro_formacion"
 ]);
 
-const { getCanonicalEventName, getEventStatus } = require("./_encuentros");
+const {
+  fetchEventCatalog,
+  findEventCatalogItem,
+  getCanonicalEventName,
+  getEventStatus
+} = require("./_encuentros");
 const DEFAULT_WHATSAPP_GROUP_URL =
   "https://wa.me/5491100000000?text=Hola%2C%20quiero%20sumarme%20al%20grupo%20del%20encuentro";
 const DEFAULT_DONATION_NOTICE =
@@ -282,6 +287,35 @@ async function existsDniInEncuentro({ endpoint, serviceRoleKey, dni, encuentro }
   return Array.isArray(rows) && rows.length > 0;
 }
 
+async function getInscripcionesCountByEncuentro({ endpoint, serviceRoleKey, encuentro }) {
+  const lookupUrl = new URL(endpoint);
+  lookupUrl.searchParams.set("select", "id");
+  lookupUrl.searchParams.set("encuentro", `eq.${encuentro}`);
+  lookupUrl.searchParams.set("limit", "1");
+
+  const response = await fetch(lookupUrl.toString(), {
+    method: "GET",
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      Prefer: "count=exact"
+    }
+  });
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`No se pudo validar el cupo: ${detail}`);
+  }
+
+  const total = parseContentRangeTotal(response.headers.get("content-range"));
+  if (total !== null) {
+    return total;
+  }
+
+  const rows = await response.json().catch(() => []);
+  return Array.isArray(rows) ? rows.length : 0;
+}
+
 function parseContentRangeTotal(contentRange) {
   const match = String(contentRange ?? "").match(/\/(\d+)$/);
   if (!match) {
@@ -378,7 +412,57 @@ function escapeHtml(text) {
     .replace(/'/g, "&#39;");
 }
 
-function resolveWhatsappGroupUrl(encuentro) {
+function toPublicAssetUrl(value) {
+  const url = cleanText(value, 500);
+  if (!url) {
+    return "";
+  }
+
+  if (/^https?:\/\//i.test(url)) {
+    return url;
+  }
+
+  if (url.startsWith("/")) {
+    return `https://plomerosarg.com${url}`;
+  }
+
+  return "";
+}
+
+function buildMailEventExtrasFromCatalog(eventConfig) {
+  if (!eventConfig) {
+    return null;
+  }
+
+  const detailRows = [
+    { label: "Fecha", value: cleanText(eventConfig.fecha, 80) },
+    { label: "Horario", value: cleanText(eventConfig.horario, 120) },
+    { label: "Lugar", value: cleanText(eventConfig.lugar, 140) },
+    { label: "Direccion", value: cleanText(eventConfig.direccion, 180) },
+    {
+      label: "Link lugar",
+      value: cleanText(eventConfig.maps_url, 500),
+      href: cleanText(eventConfig.maps_url, 500)
+    }
+  ].filter((item) => item.value);
+
+  return {
+    detailRows,
+    summary: cleanText(eventConfig.descripcion, 300),
+    prizeHighlightTitle: "",
+    prizeHighlightText: "",
+    hideBuenDiaLine: true,
+    donationNotice: cleanText(eventConfig.ingreso_solidario, 260) || DEFAULT_DONATION_NOTICE,
+    imageUrl: toPublicAssetUrl(eventConfig.imagen_url)
+  };
+}
+
+function resolveWhatsappGroupUrl(encuentro, eventConfig = null) {
+  const catalogWhatsappUrl = cleanText(eventConfig?.whatsapp_url, 500);
+  if (catalogWhatsappUrl) {
+    return catalogWhatsappUrl;
+  }
+
   const normalizedEncuentro = normalizeLookupText(encuentro);
   const matched = WHATSAPP_GROUP_MATCHERS.find((item) =>
     normalizedEncuentro.includes(item.key)
@@ -391,9 +475,13 @@ function resolveWhatsappGroupUrl(encuentro) {
   return process.env.MAIL_WHATSAPP_GRUPO_URL || DEFAULT_WHATSAPP_GROUP_URL;
 }
 
-function resolveMailEventExtras(encuentro) {
+function resolveMailEventExtras(encuentro, eventConfig = null) {
   const normalizedEventKey = normalizeLookupText(getCanonicalEventName(encuentro));
-  return MAIL_EVENT_EXTRAS.find((item) => item.eventKey === normalizedEventKey) || null;
+  return (
+    MAIL_EVENT_EXTRAS.find((item) => item.eventKey === normalizedEventKey) ||
+    buildMailEventExtrasFromCatalog(eventConfig) ||
+    null
+  );
 }
 
 function buildConfirmationEmailPayload({
@@ -402,11 +490,12 @@ function buildConfirmationEmailPayload({
   encuentro,
   numeroRegistro,
   mailFrom,
-  replyTo
+  replyTo,
+  eventConfig = null
 }) {
-  const whatsappGroupUrl = resolveWhatsappGroupUrl(encuentro);
+  const whatsappGroupUrl = resolveWhatsappGroupUrl(encuentro, eventConfig);
   const logoUrl = "https://plomerosarg.com/Prueba_2/assets/logo-plomeros-circular.png";
-  const eventExtras = resolveMailEventExtras(encuentro);
+  const eventExtras = resolveMailEventExtras(encuentro, eventConfig);
   const normalizedTo = cleanText(to, 120).toLowerCase();
   if (!mailFrom || !normalizedTo) {
     return null;
@@ -612,7 +701,7 @@ function buildConfirmationEmailPayload({
   return { normalizedTo, payload };
 }
 
-async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) {
+async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro, eventConfig = null }) {
   const resendApiKey = process.env.RESEND_API_KEY;
   const mailFrom = process.env.MAIL_FROM;
   const replyTo = process.env.MAIL_REPLY_TO;
@@ -622,7 +711,8 @@ async function sendConfirmationEmail({ to, nombre, encuentro, numeroRegistro }) 
     encuentro,
     numeroRegistro,
     mailFrom,
-    replyTo
+    replyTo,
+    eventConfig
   });
 
   if (!resendApiKey || !builtPayload) {
@@ -660,7 +750,7 @@ const handler = async (req, res) => {
 
   const dni = normalizeDni(payload.dni);
   const encuentroInput = cleanText(payload.encuentro, 80);
-  const encuentro = getCanonicalEventName(encuentroInput);
+  let encuentro = getCanonicalEventName(encuentroInput);
   const nombre_apellido = cleanText(payload.nombre_apellido, 120);
   const mail = cleanText(payload.mail, 120).toLowerCase();
   const celular = cleanText(payload.celular, 40);
@@ -672,9 +762,28 @@ const handler = async (req, res) => {
   const expositor_info = cleanText(payload.expositor_info, 200);
   const origen = cleanText(payload.origen, 40);
   const acepto_terminos = cleanText(payload.acepto_terminos, 5).toLowerCase() === "si";
-  const mailRequired = !isMailOptionalForEvent(encuentro);
-  const asociadoRequired = !isAsociadoOptionalForEvent(encuentro);
-  const celularRequired = isCelularRequiredForEvent(encuentro);
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    return res.status(500).json({ ok: false, error: "Faltan variables de entorno de Supabase." });
+  }
+
+  const catalogResult = await fetchEventCatalog({ supabaseUrl, serviceRoleKey });
+  const eventConfig = findEventCatalogItem(catalogResult.eventos, encuentroInput || encuentro);
+  if (eventConfig?.evento) {
+    encuentro = eventConfig.evento;
+  }
+
+  const mailRequired = eventConfig
+    ? eventConfig.mail_opcional !== true
+    : !isMailOptionalForEvent(encuentro);
+  const asociadoRequired = eventConfig
+    ? eventConfig.asociado_opcional !== true
+    : !isAsociadoOptionalForEvent(encuentro);
+  const celularRequired = eventConfig
+    ? eventConfig.celular_obligatorio === true
+    : isCelularRequiredForEvent(encuentro);
 
   if (
     !dni ||
@@ -714,13 +823,6 @@ const handler = async (req, res) => {
     return res.status(422).json({ ok: false, error: "Origen inválido." });
   }
 
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !serviceRoleKey) {
-    return res.status(500).json({ ok: false, error: "Faltan variables de entorno de Supabase." });
-  }
-
   const endpoint = `${supabaseUrl.replace(/\/$/, "")}/rest/v1/inscripciones`;
 
   const record = {
@@ -755,7 +857,7 @@ const handler = async (req, res) => {
       });
     }
 
-    if (status.active === false) {
+    if ((eventConfig?.activo === false && status.configured !== true) || status.active === false) {
       return res.status(409).json({
         ok: false,
         error: "Las inscripciones para este encuentro estan cerradas."
@@ -774,6 +876,21 @@ const handler = async (req, res) => {
         ok: false,
         error: "Este DNI ya fue inscripto en este encuentro."
       });
+    }
+
+    if (eventConfig?.cupo) {
+      const currentCount = await getInscripcionesCountByEncuentro({
+        endpoint,
+        serviceRoleKey,
+        encuentro
+      });
+
+      if (currentCount >= eventConfig.cupo) {
+        return res.status(409).json({
+          ok: false,
+          error: "El cupo para este encuentro ya esta completo."
+        });
+      }
     }
 
     let response = await insertInscripcionRecord({
@@ -839,7 +956,8 @@ const handler = async (req, res) => {
       to: mail,
       nombre: nombre_apellido,
       encuentro,
-      numeroRegistro
+      numeroRegistro,
+      eventConfig
     });
 
     return res.status(200).json({

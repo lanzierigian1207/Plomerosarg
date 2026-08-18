@@ -1,14 +1,20 @@
 const {
   KNOWN_EVENTS,
+  fetchEventCatalog,
   fetchEventStatusMap,
   fetchCertificateStatusMap,
+  getDefaultEventCatalog,
+  resolveCatalogCertificateActive,
+  resolveCatalogEventActive,
   resolveCertificateActive,
   resolveEventActive
 } = require("./_encuentros");
 
 function buildDefaultEvents() {
-  return KNOWN_EVENTS.map((evento) => ({
-    evento,
+  const defaults = getDefaultEventCatalog();
+  return (defaults.length > 0 ? defaults : KNOWN_EVENTS.map((evento) => ({ evento }))).map((item) => ({
+    ...item,
+    evento: item.evento || item.nombre,
     activo: true,
     certificado_activo: true
   }));
@@ -35,12 +41,18 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const [statusResult, certificateStatusResult] = await Promise.all([
+    const [catalogResult, statusResult, certificateStatusResult] = await Promise.all([
+      fetchEventCatalog({ supabaseUrl, serviceRoleKey }),
       fetchEventStatusMap({ supabaseUrl, serviceRoleKey }),
       fetchCertificateStatusMap({ supabaseUrl, serviceRoleKey })
     ]);
 
-    const known = [...KNOWN_EVENTS];
+    const catalogEvents = Array.isArray(catalogResult.eventos)
+      ? catalogResult.eventos
+      : [];
+    const known = catalogEvents.length > 0
+      ? catalogEvents.map((item) => item.evento)
+      : [...KNOWN_EVENTS];
     const extra = [...statusResult.map.keys()]
       .filter((name) => !known.includes(name) && name !== "Sin evento")
       .sort((a, b) => a.localeCompare(b, "es"));
@@ -48,20 +60,29 @@ module.exports = async (req, res) => {
 
     return res.status(200).json({
       ok: true,
-      eventos: orderedEvents.map((eventName) => ({
-        evento: eventName,
-        activo: resolveEventActive({
-          eventName,
-          statusMap: statusResult.map
-        }),
-        certificado_activo: resolveCertificateActive({
-          eventName,
-          certificateMap: certificateStatusResult.map
-        })
-      })),
+      eventos: orderedEvents.map((eventName) => {
+        const catalogItem = catalogEvents.find((item) => item.evento === eventName);
+        return {
+          ...(catalogItem || {}),
+          evento: eventName,
+          activo: catalogItem
+            ? resolveCatalogEventActive(catalogItem, statusResult.map)
+            : resolveEventActive({
+                eventName,
+                statusMap: statusResult.map
+              }),
+          certificado_activo: catalogItem
+            ? resolveCatalogCertificateActive(catalogItem, certificateStatusResult.map)
+            : resolveCertificateActive({
+                eventName,
+                certificateMap: certificateStatusResult.map
+              })
+        };
+      }),
+      catalog_available: catalogResult.available,
       status_available: statusResult.available,
       certificate_status_available: certificateStatusResult.available,
-      warning: statusResult.warning || "",
+      warning: [catalogResult.warning, statusResult.warning].filter(Boolean).join(" "),
       certificate_warning: certificateStatusResult.warning || ""
     });
   } catch (error) {
