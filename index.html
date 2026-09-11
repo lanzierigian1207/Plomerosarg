@@ -462,6 +462,7 @@
       display: grid;
       place-items: center;
       padding: 1rem;
+      min-width: 0;
       opacity: 0;
       visibility: hidden;
       transform: translateX(24px);
@@ -479,10 +480,10 @@
 
     .brand-slide img {
       display: block;
-      width: auto;
-      height: auto;
-      max-width: min(90%, 760px);
-      max-height: 178px;
+      width: min(90%, 760px);
+      min-width: 0;
+      max-width: 100%;
+      height: 178px;
       object-fit: contain;
     }
 
@@ -961,9 +962,11 @@
       }
 
       .brand-slide img {
+        width: 94%;
         max-width: 94%;
-        max-height: 140px;
+        height: 140px;
       }
+
     }
   </style>
 </head>
@@ -1058,7 +1061,7 @@
           <h2 id="brandCarouselTitle">MARCAS QUE NOS ACOMPA&Ntilde;AN</h2>
         </div>
         <div class="brand-carousel" id="brandCarousel" role="region" aria-roledescription="carrusel" aria-label="Logos de las marcas que nos acompa&ntilde;an">
-          <div class="brand-slide is-active" role="group" aria-label="Rheem"><img src="/Prueba_2/assets/empresas/36_rheem.png" alt="Logo de Rheem"></div>
+          <div class="brand-slide is-active" role="group" aria-label="Rheem"><img src="/Prueba_2/assets/empresas/logo-rheem-carrusel.png" alt="Logo de Rheem"></div>
           <div class="brand-slide" role="group" aria-label="Piazza" aria-hidden="true"><img src="/Prueba_2/assets/empresas/logo-piazza.png" alt="Logo de Piazza" loading="lazy"></div>
           <div class="brand-slide" role="group" aria-label="Pluvius" aria-hidden="true"><img src="/Prueba_2/assets/empresas/logo-pluvius-sorteos.svg" alt="Logo de Pluvius" loading="lazy"></div>
           <div class="brand-slide" role="group" aria-label="Parsecs" aria-hidden="true"><img src="/Prueba_2/assets/empresas/logo-parsecs.svg" alt="Logo de Parsecs" loading="lazy"></div>
@@ -1069,9 +1072,9 @@
           <div class="brand-slide" role="group" aria-label="Reed" aria-hidden="true"><img src="/Prueba_2/assets/empresas/43_reed.png" alt="Logo de Reed" loading="lazy"></div>
           <div class="brand-slide" role="group" aria-label="Deckert" aria-hidden="true"><img src="/Prueba_2/assets/empresas/44_deckert.png" alt="Logo de Deckert" loading="lazy"></div>
           <div class="brand-slide" role="group" aria-label="Total" aria-hidden="true"><img src="/Prueba_2/assets/Total.jpeg" alt="Logo de Total" loading="lazy"></div>
-          <div class="brand-slide" role="group" aria-label="MotorArg" aria-hidden="true"><img src="/Prueba_2/assets/motoarg.png" alt="Logo de MotorArg" loading="lazy"></div>
-          <div class="brand-slide" role="group" aria-label="Retak" aria-hidden="true"><img src="/Prueba_2/assets/Retak.png" alt="Logo de Retak" loading="lazy"></div>
-          <div class="brand-slide" role="group" aria-label="Bahco" aria-hidden="true"><img src="/Prueba_2/assets/empresas/42_bahco.png" alt="Logo de Bahco" loading="lazy"></div>
+          <div class="brand-slide" role="group" aria-label="MotorArg" aria-hidden="true"><img src="/Prueba_2/assets/empresas/logo-motorarg-carrusel.png" alt="Logo de MotorArg" loading="lazy"></div>
+          <div class="brand-slide" role="group" aria-label="Retak" aria-hidden="true"><img src="/Prueba_2/assets/empresas/logo-retak-carrusel.png" alt="Logo de Retak" loading="lazy"></div>
+          <div class="brand-slide" role="group" aria-label="Bahco" aria-hidden="true"><img src="/Prueba_2/assets/empresas/logo-bahco-carrusel.png" alt="Logo de Bahco" loading="lazy"></div>
           <div class="brand-slide" role="group" aria-label="Redeco" aria-hidden="true"><img src="/Prueba_2/assets/empresas/logo-redeco-carrusel.avif" alt="Logo de Redeco" loading="lazy"></div>
           <div class="brand-slide" role="group" aria-label="Duke" aria-hidden="true"><img src="/Prueba_2/assets/empresas/logo-duke.png" alt="Logo de Duke" loading="lazy"></div>
           <div class="brand-slide" role="group" aria-label="Egeo" aria-hidden="true"><img src="/Prueba_2/assets/empresas/logo-egeo.png" alt="Logo de Egeo" loading="lazy"></div>
@@ -1081,8 +1084,8 @@
           <div class="brand-slide" role="group" aria-label="Krewen" aria-hidden="true"><img src="/Prueba_2/assets/empresas/logo-krewen-carrusel.jpg" alt="Logo de Krewen" loading="lazy"></div>
           <div class="brand-slide" role="group" aria-label="Waterplast" aria-hidden="true"><img src="/Prueba_2/assets/empresas/logo-waterplast-sorteos.svg" alt="Logo de Waterplast" loading="lazy"></div>
           <div class="brand-slide" role="group" aria-label="RAO" aria-hidden="true"><img src="/Prueba_2/assets/empresas/logo-rao.jpg" alt="Logo de RAO" loading="lazy"></div>
-          <div class="brand-slide" role="group" aria-label="Dinatecnica" aria-hidden="true"><img src="/Prueba_2/assets/empresas/logo-dinatecnica.png" alt="Logo de Dinatecnica" loading="lazy"></div>
-          <div class="brand-slide" role="group" aria-label="BTM" aria-hidden="true"><img src="/Prueba_2/assets/empresas/05_btm_bombas.png" alt="Logo de BTM" loading="lazy"></div>
+          <div class="brand-slide" role="group" aria-label="Dinatecnica" aria-hidden="true"><img src="/Prueba_2/assets/empresas/logo-dinatecnica-carrusel.png" alt="Logo de Dinatecnica" loading="lazy"></div>
+          <div class="brand-slide" role="group" aria-label="BTM" aria-hidden="true"><img src="/Prueba_2/assets/empresas/logo-btm-carrusel.png" alt="Logo de BTM" loading="lazy"></div>
         </div>
       </div>
     </section>
