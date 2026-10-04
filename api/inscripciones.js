@@ -472,6 +472,12 @@ function resolveWhatsappGroupUrl(encuentro, eventConfig = null) {
     return matched.url;
   }
 
+  const legacyEventKey = normalizeLookupText(getCanonicalEventName(encuentro));
+  const hasLegacyMailExtras = MAIL_EVENT_EXTRAS.some((item) => item.eventKey === legacyEventKey);
+  if (eventConfig && !hasLegacyMailExtras) {
+    return "";
+  }
+
   return process.env.MAIL_WHATSAPP_GRUPO_URL || DEFAULT_WHATSAPP_GROUP_URL;
 }
 
@@ -580,7 +586,9 @@ function buildConfirmationEmailPayload({
     eventExtras?.hideBuenDiaLine === true
       ? ""
       : `<p style="margin:0 0 10px;">Que tengan buen d&iacute;a</p>`;
-  const eventWhatsappIntroHtml = eventExtras
+  const eventWhatsappIntroHtml = !whatsappGroupUrl
+    ? ""
+    : eventExtras
     ? `
       <p style="margin:0 0 12px;color:#c62828;font-size:15px;font-weight:600;line-height:1.5;">
         Para terminar la inscripci&oacute;n, unite al grupo exclusivo de WhatsApp y empez&aacute; a vivir la experiencia del encuentro.
@@ -593,6 +601,20 @@ function buildConfirmationEmailPayload({
         consultas, sorteo, informaci&oacute;n y comunicados:
       </p>
     `;
+  const eventWhatsappButtonHtml = whatsappGroupUrl
+    ? `
+      <p style="margin:10px 0 14px;">
+        <a
+          href="${safeWhatsappGroupUrl}"
+          target="_blank"
+          rel="noopener noreferrer"
+          style="display:inline-block;padding:10px 14px;border-radius:8px;background:#0b6b35;color:#ffffff;text-decoration:none;font-weight:700;"
+        >
+          Ingresar al grupo de WhatsApp
+        </a>
+      </p>
+    `
+    : "";
   const eventDonationNoticeHtml =
     `<p style="margin:0 0 12px;padding:10px 12px;border-left:4px solid #111111;background:#f6f6f6;color:#111111;font-weight:900;font-size:14px;">${safeEventDonationNotice}</p>`;
   const eventDetailRowsHtml = safeEventDetailRows.length
@@ -658,16 +680,7 @@ function buildConfirmationEmailPayload({
       ${eventCapacityNoticeHtml}
       ${eventDonationNoticeHtml}
       ${eventWhatsappIntroHtml}
-      <p style="margin:10px 0 14px;">
-        <a
-          href="${safeWhatsappGroupUrl}"
-          target="_blank"
-          rel="noopener noreferrer"
-          style="display:inline-block;padding:10px 14px;border-radius:8px;background:#0b6b35;color:#ffffff;text-decoration:none;font-weight:700;"
-        >
-          Ingresar al grupo de WhatsApp
-        </a>
-      </p>
+      ${eventWhatsappButtonHtml}
       <p style="margin:0 0 14px;color:#c62828;font-weight:800;font-size:15px;">
         Unos d&iacute;as antes del encuentro recibir&aacute; un mail para que confirme su asistencia.
       </p>

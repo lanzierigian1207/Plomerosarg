@@ -5,7 +5,8 @@ const KNOWN_EVENTS = [
   "Mar del Plata 14/3",
   "Mendoza 9/5",
   "Salta 6/6",
-  "San Luis 8/8"
+  "San Luis 8/8",
+  "Jun\u00edn 16/10"
 ];
 
 const EVENT_CATALOG_TABLE = "encuentros";
@@ -164,6 +165,24 @@ const DEFAULT_EVENT_CATALOG = [
     descripcion: "Inscripci\u00f3n abierta para el encuentro en San Luis.",
     ingreso_solidario: "Ingreso solidario: para participar del evento, es necesario llevar 2 alimentos no perecederos.",
     inscripcion_url: "/inscripcion-san-luis.html",
+    mail_opcional: false,
+    asociado_opcional: false,
+    celular_obligatorio: true
+  },
+  {
+    nombre: "Jun\u00edn 16/10",
+    slug: "junin-16-10",
+    numero: 32,
+    ciudad: "Jun\u00edn",
+    provincia: "Buenos Aires",
+    fecha: "16/10/2026",
+    horario: "14:00 a 20:30 hs",
+    lugar: "EEST N.\u00ba 1 \u00abAntonio Bermejo\u00bb",
+    direccion: "Mois\u00e9s Lebensohn 125, Jun\u00edn, Buenos Aires",
+    maps_url: "https://www.google.com/maps/search/?api=1&query=Mois%C3%A9s%20Lebensohn%20125%2C%20Jun%C3%ADn%2C%20Buenos%20Aires",
+    imagen_url: "/Prueba_2/assets/junin-16-10-2026.jpeg",
+    descripcion: "Encuentro de Plomeros N.\u00ba 32. Viernes 16 de octubre de 2026. Capacitaciones t\u00e9cnicas, certificado de asistencia, sorteos y pr\u00e1cticas en vivo.",
+    ingreso_solidario: "Entrada gratuita. Ingreso solidario: para participar del evento, es necesario llevar 2 alimentos no perecederos.",
     mail_opcional: false,
     asociado_opcional: false,
     celular_obligatorio: true

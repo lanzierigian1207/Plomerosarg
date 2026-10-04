@@ -133,6 +133,24 @@ insert into public.encuentros (
     false,
     false,
     true
+  ),
+  (
+    'Junín 16/10',
+    'junin-16-10',
+    32,
+    'Junín',
+    'Buenos Aires',
+    '16/10/2026',
+    '14:00 a 20:30 hs',
+    'EEST N.º 1 «Antonio Bermejo»',
+    'Moisés Lebensohn 125, Junín, Buenos Aires',
+    'https://www.google.com/maps/search/?api=1&query=Mois%C3%A9s%20Lebensohn%20125%2C%20Jun%C3%ADn%2C%20Buenos%20Aires',
+    '/Prueba_2/assets/junin-16-10-2026.jpeg',
+    'Encuentro de Plomeros N.º 32. Viernes 16 de octubre de 2026. Capacitaciones técnicas, certificado de asistencia, sorteos y prácticas en vivo.',
+    'Entrada gratuita. Ingreso solidario: para participar del evento, es necesario llevar 2 alimentos no perecederos.',
+    false,
+    false,
+    true
   )
 on conflict (slug) do update set
   nombre = excluded.nombre,

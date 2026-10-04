@@ -92,8 +92,8 @@
     .event-media {
       display: none;
       width: 100%;
-      max-height: 420px;
-      object-fit: cover;
+      height: auto;
+      object-fit: contain;
       border: 1px solid var(--line);
       border-radius: 8px;
       box-shadow: var(--shadow);
@@ -161,6 +161,10 @@
     .field {
       display: grid;
       gap: 7px;
+    }
+
+    .field[hidden] {
+      display: none;
     }
 
     .field.is-wide {
