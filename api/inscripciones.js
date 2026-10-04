@@ -134,7 +134,12 @@ const MAIL_EVENT_EXTRAS = [
       { label: "Fecha", value: "16/10/2026" },
       { label: "Horario", value: "14:00 a 20:30 hs" },
       { label: "Lugar", value: "EEST N.\u00ba 1 \u00abAntonio Bermejo\u00bb" },
-      { label: "Direcci\u00f3n", value: "Mois\u00e9s Lebensohn 125, Jun\u00edn" }
+      { label: "Direcci\u00f3n", value: "Mois\u00e9s Lebensohn 125, Jun\u00edn" },
+      {
+        label: "Link",
+        value: "https://share.google/mWnM6RyO8lgAXu5uX",
+        href: "https://share.google/mWnM6RyO8lgAXu5uX"
+      }
     ],
     summary:
       "Capacitaciones t\u00e9cnicas, entrada gratuita, certificado de asistencia, sorteos y pr\u00e1cticas en vivo.",
