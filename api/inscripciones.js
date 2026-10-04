@@ -452,7 +452,7 @@ function buildMailEventExtrasFromCatalog(eventConfig) {
     prizeHighlightTitle: "",
     prizeHighlightText: "",
     hideBuenDiaLine: true,
-    donationNotice: cleanText(eventConfig.ingreso_solidario, 260) || DEFAULT_DONATION_NOTICE,
+    donationNotice: cleanText(eventConfig.ingreso_solidario, 260),
     imageUrl: toPublicAssetUrl(eventConfig.imagen_url)
   };
 }
@@ -514,7 +514,7 @@ function buildConfirmationEmailPayload({
   const safeEventLocationAddress = escapeHtml(eventExtras?.locationAddress || "");
   const safeEventLocationLinkLabel = escapeHtml(eventExtras?.locationLinkLabel || "");
   const safeEventDonationNotice = escapeHtml(
-    eventExtras?.donationNotice || DEFAULT_DONATION_NOTICE
+    eventExtras?.donationNotice ?? DEFAULT_DONATION_NOTICE
   );
   const safeEventIngresoHorarioLabel = escapeHtml(
     eventExtras?.ingresoHorarioLabel || "Horario de Ingreso"
@@ -615,8 +615,9 @@ function buildConfirmationEmailPayload({
       </p>
     `
     : "";
-  const eventDonationNoticeHtml =
-    `<p style="margin:0 0 12px;padding:10px 12px;border-left:4px solid #111111;background:#f6f6f6;color:#111111;font-weight:900;font-size:14px;">${safeEventDonationNotice}</p>`;
+  const eventDonationNoticeHtml = safeEventDonationNotice
+    ? `<p style="margin:0 0 12px;padding:10px 12px;border-left:4px solid #111111;background:#f6f6f6;color:#111111;font-weight:900;font-size:14px;">${safeEventDonationNotice}</p>`
+    : "";
   const eventDetailRowsHtml = safeEventDetailRows.length
     ? `
       <div style="margin:0 0 14px;">

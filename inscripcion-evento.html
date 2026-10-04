@@ -618,6 +618,12 @@
     }
 
     function renderEventDetails(eventItem) {
+      if (eventItem.slug === "junin-16-10") {
+        eventDetails.replaceChildren();
+        eventDetails.classList.remove("is-visible");
+        return;
+      }
+
       const detailsHtml = [
         buildDetail("Fecha", eventItem.fecha),
         buildDetail("Horario", eventItem.horario),
