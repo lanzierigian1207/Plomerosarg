@@ -127,6 +127,23 @@ const MAIL_EVENT_EXTRAS = [
       "Ingreso solidario: para participar del evento, es necesario llevar 2 alimentos no perecederos.",
     reserveImageSlot: true,
     imageUrl: "https://www.plomerosarg.com/Prueba_2/assets/San%20luis%20mail.jpeg"
+  },
+  {
+    eventKey: "junin 16/10",
+    detailRows: [
+      { label: "Fecha", value: "16/10/2026" },
+      { label: "Horario", value: "14:00 a 20:30 hs" },
+      { label: "Lugar", value: "EEST N.\u00ba 1 \u00abAntonio Bermejo\u00bb" },
+      { label: "Direcci\u00f3n", value: "Mois\u00e9s Lebensohn 125, Jun\u00edn" }
+    ],
+    summary:
+      "Capacitaciones t\u00e9cnicas, entrada gratuita, certificado de asistencia, sorteos y pr\u00e1cticas en vivo.",
+    hideBuenDiaLine: true,
+    donationNotice: "",
+    whatsappPlaceholder: true,
+    whatsappPlaceholderLabel: "Grupo de WhatsApp - Pr\u00f3ximamente",
+    imageUrl:
+      "https://plomerosarg.com/Prueba_2/assets/WhatsApp%20Image%202026-09-22%20at%2011.48.19%20AM.jpeg"
   }
 ];
 
@@ -473,7 +490,12 @@ function resolveWhatsappGroupUrl(encuentro, eventConfig = null) {
   }
 
   const legacyEventKey = normalizeLookupText(getCanonicalEventName(encuentro));
-  const hasLegacyMailExtras = MAIL_EVENT_EXTRAS.some((item) => item.eventKey === legacyEventKey);
+  const legacyMailExtras = MAIL_EVENT_EXTRAS.find((item) => item.eventKey === legacyEventKey);
+  if (eventConfig && legacyMailExtras?.whatsappPlaceholder === true) {
+    return "";
+  }
+
+  const hasLegacyMailExtras = Boolean(legacyMailExtras);
   if (eventConfig && !hasLegacyMailExtras) {
     return "";
   }
@@ -526,6 +548,9 @@ function buildConfirmationEmailPayload({
   const safeEventPrizeHighlightTitle = escapeHtml(eventExtras?.prizeHighlightTitle || "");
   const safeEventPrizeHighlightText = escapeHtml(eventExtras?.prizeHighlightText || "");
   const safeEventCapacityNotice = escapeHtml(eventExtras?.capacityNotice || "");
+  const safeWhatsappPlaceholderLabel = escapeHtml(
+    eventExtras?.whatsappPlaceholderLabel || "Grupo de WhatsApp - Pr\u00f3ximamente"
+  );
   const safeEventDetailRows = Array.isArray(eventExtras?.detailRows)
     ? eventExtras.detailRows
         .map((item) => ({
@@ -586,8 +611,18 @@ function buildConfirmationEmailPayload({
     eventExtras?.hideBuenDiaLine === true
       ? ""
       : `<p style="margin:0 0 10px;">Que tengan buen d&iacute;a</p>`;
-  const eventWhatsappIntroHtml = !whatsappGroupUrl
+  const showWhatsappBlock = Boolean(
+    whatsappGroupUrl || eventExtras?.whatsappPlaceholder === true
+  );
+  const eventWhatsappIntroHtml = !showWhatsappBlock
     ? ""
+    : eventExtras?.whatsappPlaceholder === true && !whatsappGroupUrl
+    ? `
+      <p style="margin:0 0 12px;color:#c62828;font-size:15px;font-weight:600;line-height:1.5;">
+        Pr\u00f3ximamente vamos a habilitar el grupo exclusivo de WhatsApp del encuentro para consultas,
+        sorteos, informaci\u00f3n y comunicados.
+      </p>
+    `
     : eventExtras
     ? `
       <p style="margin:0 0 12px;color:#c62828;font-size:15px;font-weight:600;line-height:1.5;">
@@ -612,6 +647,16 @@ function buildConfirmationEmailPayload({
         >
           Ingresar al grupo de WhatsApp
         </a>
+      </p>
+    `
+    : eventExtras?.whatsappPlaceholder === true
+    ? `
+      <p style="margin:10px 0 14px;">
+        <span
+          style="display:inline-block;padding:10px 14px;border-radius:8px;background:#6f8578;color:#ffffff;font-weight:700;cursor:not-allowed;"
+        >
+          ${safeWhatsappPlaceholderLabel}
+        </span>
       </p>
     `
     : "";
