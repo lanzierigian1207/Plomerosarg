@@ -770,17 +770,22 @@
           throw new Error(data.error || "No fue posible guardar la inscripcion.");
         }
 
-        const whatsappUrl = String(currentEvent.whatsapp_url || "").trim();
+        const whatsappUrl = String(
+          currentEvent.whatsapp_url ||
+            (currentEvent.slug === "junin-16-10"
+              ? "https://chat.whatsapp.com/BM1y9BIiw9wGWC42Aj4LLE?s=cl&p=a&ilr=4&iam=2"
+              : "")
+        ).trim();
         setMessage(
           `
-            <strong>Inscripcion Confirmada</strong><br>
-            Le llegara un correo con la informacion si cargaste un mail valido.<br>
+            <strong>Inscripción Confirmada</strong><br>
+            Le llegará un correo con la información.<br>
             ${
               whatsappUrl
-                ? `Grupo de Whatsapp <a href="${escapeHtml(whatsappUrl)}" target="_blank" rel="noopener noreferrer">Aqui</a><br>`
+                ? `Grupo de WhatsApp <a href="${escapeHtml(whatsappUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:2px 10px;border-radius:5px;background:#20c866;color:#fff;text-decoration:none;font-weight:800;">Aquí</a><br>`
                 : ""
             }
-            <strong>IMPORTANTE:</strong> si no llega a la bandeja principal, revisar correo no deseado o SPAM.
+            <strong>IMPORTANTE:</strong> En el caso que no llegue a la bandeja principal, buscar en correo no deseado o SPAM, notificaciones, social.
           `,
           "ok"
         );

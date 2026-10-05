@@ -145,8 +145,6 @@ const MAIL_EVENT_EXTRAS = [
       "Capacitaciones t\u00e9cnicas, entrada gratuita, certificado de asistencia, sorteos y pr\u00e1cticas en vivo.",
     hideBuenDiaLine: true,
     donationNotice: "",
-    whatsappPlaceholder: true,
-    whatsappPlaceholderLabel: "Grupo de WhatsApp - Pr\u00f3ximamente",
     imageUrl:
       "https://plomerosarg.com/Prueba_2/assets/WhatsApp%20Image%202026-09-22%20at%2011.48.19%20AM.jpeg"
   }
@@ -168,6 +166,10 @@ const WHATSAPP_GROUP_MATCHERS = [
   {
     key: "san luis 8/8",
     url: "https://chat.whatsapp.com/JzRtSGRWdXH4AhK0xKYDp8"
+  },
+  {
+    key: "junin",
+    url: "https://chat.whatsapp.com/BM1y9BIiw9wGWC42Aj4LLE?s=cl&p=a&ilr=4&iam=2"
   }
 ];
 const DEFAULT_REGISTRO_RESET_AT = "2026-02-21T20:33:01.000Z";
@@ -650,7 +652,7 @@ function buildConfirmationEmailPayload({
           rel="noopener noreferrer"
           style="display:inline-block;padding:10px 14px;border-radius:8px;background:#0b6b35;color:#ffffff;text-decoration:none;font-weight:700;"
         >
-          Ingresar al grupo de WhatsApp
+          Grupo de WhatsApp
         </a>
       </p>
     `
