@@ -300,6 +300,7 @@
       border: 1px solid #b6dec5;
       background: #ecf9f1;
       color: var(--ok);
+      font-weight: 400;
     }
 
     .message.is-error {
@@ -771,10 +772,9 @@
         }
 
         const whatsappUrl = String(
-          currentEvent.whatsapp_url ||
-            (currentEvent.slug === "junin-16-10"
-              ? "https://chat.whatsapp.com/BM1y9BIiw9wGWC42Aj4LLE?s=cl&p=a&ilr=4&iam=2"
-              : "")
+          currentEvent.slug === "junin-16-10"
+            ? "https://chat.whatsapp.com/BM1y9BIiw9wGWC42Aj4LLE"
+            : currentEvent.whatsapp_url || ""
         ).trim();
         setMessage(
           `
