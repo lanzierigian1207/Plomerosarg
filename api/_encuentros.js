@@ -180,7 +180,7 @@ const DEFAULT_EVENT_CATALOG = [
     lugar: "",
     direccion: "",
     maps_url: "",
-    imagen_url: "/Prueba_2/assets/junin.webp",
+    imagen_url: "/Prueba_2/assets/Junin-con-qr.png",
     descripcion: "Complet\u00e1 el formulario para reservar tu lugar en Jun\u00edn 16/10.",
     ingreso_solidario: "",
     mail_opcional: false,

@@ -146,7 +146,7 @@ const MAIL_EVENT_EXTRAS = [
     hideBuenDiaLine: true,
     donationNotice: "",
     imageUrl:
-      "https://plomerosarg.com/Prueba_2/assets/WhatsApp%20Image%202026-09-22%20at%2011.48.19%20AM.jpeg"
+      "https://plomerosarg.com/Prueba_2/assets/Junin-con-qr.png"
   }
 ];
 

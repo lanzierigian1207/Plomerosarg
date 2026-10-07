@@ -145,7 +145,7 @@ insert into public.encuentros (
     NULL,
     NULL,
     NULL,
-    '/Prueba_2/assets/junin.webp',
+    '/Prueba_2/assets/Junin-con-qr.png',
     'Completá el formulario para reservar tu lugar en Junín 16/10.',
     NULL,
     false,
