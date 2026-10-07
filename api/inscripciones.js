@@ -144,7 +144,9 @@ const MAIL_EVENT_EXTRAS = [
     summary:
       "Capacitaciones t\u00e9cnicas, entrada gratuita, certificado de asistencia, sorteos y pr\u00e1cticas en vivo.",
     hideBuenDiaLine: true,
-    donationNotice: "",
+    donationNotice:
+      "Ingreso solidario: para participar del evento, es necesario llevar 2 alimentos no perecederos.",
+    donationNoticeBeforeSummary: true,
     imageUrl:
       "https://plomerosarg.com/Prueba_2/assets/Junin-con-qr.png"
   }
@@ -670,6 +672,14 @@ function buildConfirmationEmailPayload({
   const eventDonationNoticeHtml = safeEventDonationNotice
     ? `<p style="margin:0 0 12px;padding:10px 12px;border-left:4px solid #111111;background:#f6f6f6;color:#111111;font-weight:900;font-size:14px;">${safeEventDonationNotice}</p>`
     : "";
+  const eventDonationNoticeBeforeSummaryHtml =
+    eventExtras?.donationNoticeBeforeSummary === true
+      ? eventDonationNoticeHtml
+      : "";
+  const eventDonationNoticeAfterSummaryHtml =
+    eventExtras?.donationNoticeBeforeSummary === true
+      ? ""
+      : eventDonationNoticeHtml;
   const eventDetailRowsHtml = safeEventDetailRows.length
     ? `
       <div style="margin:0 0 14px;">
@@ -728,10 +738,11 @@ function buildConfirmationEmailPayload({
       <p>Hola ${safeNombre}</p>
       <p>Ya est&aacute; confirmada su vacante para el encuentro <strong>${safeEncuentro}</strong>.</p>
       ${eventLocationHtml}
+      ${eventDonationNoticeBeforeSummaryHtml}
       ${eventSummaryHtml}
       ${eventPrizeHighlightHtml}
       ${eventCapacityNoticeHtml}
-      ${eventDonationNoticeHtml}
+      ${eventDonationNoticeAfterSummaryHtml}
       ${eventWhatsappIntroHtml}
       ${eventWhatsappButtonHtml}
       <p style="margin:0 0 14px;color:#c62828;font-weight:800;font-size:15px;">
