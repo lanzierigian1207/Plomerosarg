@@ -1111,6 +1111,12 @@
       object-position: center;
     }
 
+    .raffle-brand-logo[src="/Prueba_2/assets/empresas/logo-aqua-nex.png"],
+    .raffle-screen-brand-media:has(> .raffle-screen-brand-logo[src="/Prueba_2/assets/empresas/logo-aqua-nex.png"]),
+    .brand-logo-viewer-image-wrap:has(> .brand-logo-viewer-image[src="/Prueba_2/assets/empresas/logo-aqua-nex.png"]) {
+      background: #000000;
+    }
+
     .brand-logo-viewer-image.is-vector {
       width: min(82vw, 1040px);
       max-width: min(82vw, 1040px);
@@ -1896,8 +1902,7 @@
       { key: "rotoplas", name: "Rotoplas", logo: "/Prueba_2/assets/empresas/Rotoplas.png" },
       { key: "ips", name: "IPS", logo: "/Prueba_2/assets/empresas/IPS.png" },
       { key: "senorial", name: "Señorial", logo: "/Prueba_2/assets/empresas/senorial.png" },
-      { key: "aquanex", name: "AquaNex", logo: "/Prueba_2/assets/empresas/logo-aqua-nex.png" },
-      { key: "kalyxx", name: "KalyxX", logo: "/Prueba_2/assets/empresas/37_kalyxx.png" }
+      { key: "aquanex", name: "AquaNex", logo: "/Prueba_2/assets/empresas/logo-aqua-nex.png" }
     ];
     const RAFFLE_BRAND_BY_KEY = new Map(
       RAFFLE_BRANDS.map((brand) => [brand.key, brand])
