@@ -474,6 +474,22 @@
       filter: saturate(1.05);
     }
 
+    .cert-logo-crop {
+      position: relative;
+      display: block;
+      flex: 0 0 auto;
+      width: min(156px, calc(34px * var(--logo-ratio)));
+      aspect-ratio: var(--logo-ratio);
+      overflow: hidden;
+    }
+
+    .cert-logos .cert-logo-crop img {
+      position: absolute;
+      max-width: none;
+      max-height: none;
+      height: auto;
+    }
+
     .cert-event {
       color: #103f75;
       font-size: clamp(0.82rem, 1.03vw, 1.08rem);
@@ -594,6 +610,10 @@
       .cert-logos img {
         max-height: 29px;
         max-width: 132px;
+      }
+
+      .cert-logo-crop {
+        width: min(132px, calc(29px * var(--logo-ratio)));
       }
 
       .cert-event {
@@ -933,6 +953,28 @@
       ]
     ];
 
+    // Las variantes de estas cuatro marcas se conservan tal como aparecen en el flyer.
+    const JUNIN_CERT_FLYER = "/Prueba_2/assets/Junin-con-qr.png";
+    const JUNIN_CERT_LOGO_ROWS = [
+      [
+        { src: "/Prueba_2/assets/empresas/Rotoplas.png", alt: "Rotoplas" },
+        { src: JUNIN_CERT_FLYER, alt: "IPS", crop: { x: 376, y: 1057, width: 207, height: 93, sourceWidth: 1122 } },
+        { src: JUNIN_CERT_FLYER, alt: "Señorial", crop: { x: 632, y: 1057, width: 202, height: 92, sourceWidth: 1122 } },
+        { src: "/Prueba_2/assets/empresas/32_egeo.png", alt: "Egeo" }
+      ],
+      [
+        { src: "/Prueba_2/assets/empresas/29_parsecs.png", alt: "Parsecs" },
+        { src: JUNIN_CERT_FLYER, alt: "Grupo Dinatecnica", crop: { x: 403, y: 1160, width: 315, height: 68, sourceWidth: 1122 } },
+        { src: "/Prueba_2/assets/motoarg-cert.png", alt: "Motorarg" }
+      ],
+      [
+        { src: JUNIN_CERT_FLYER, alt: "AquaNex", crop: { x: 51, y: 1232, width: 283, height: 89, sourceWidth: 1122 } },
+        { src: "/Prueba_2/assets/empresas/37_kalyxx.png", alt: "KalyxX" },
+        { src: "/Prueba_2/assets/empresas/10_krewen.png", alt: "Krewen" },
+        { src: "/Prueba_2/assets/empresas/38_redeco_termofusion.png", alt: "RedEco Termofusión" }
+      ]
+    ];
+
     const EVENT_DETAILS = {
       "bahia blanca 11/3": {
         label: "Bahía Blanca 11/3",
@@ -973,7 +1015,8 @@
         label: "Junín 16/10",
         numero: "32",
         fecha: "Junín, Viernes 16 de Octubre de 2026",
-        image: "/Prueba_2/assets/Junin-con-qr.png"
+        image: JUNIN_CERT_FLYER,
+        logoRows: JUNIN_CERT_LOGO_ROWS
       }
     };
 
@@ -1032,9 +1075,15 @@
           const logos = Array.isArray(row) ? row : [row];
           const logoMarkup = logos
             .filter((logo) => logo?.src)
-            .map((logo) => (
-              `<img src="${escapeHtml(logo.src)}" alt="${escapeHtml(logo.alt || "")}">`
-            ))
+            .map((logo) => {
+              const img = `<img src="${escapeHtml(logo.src)}" alt="${escapeHtml(logo.alt || "")}">`;
+              if (!logo.crop) return img;
+
+              const { x, y, width, height, sourceWidth } = logo.crop;
+              const cropStyle = `--logo-ratio: ${width / height};`;
+              const imageStyle = `width: ${sourceWidth / width * 100}%; left: ${-x / width * 100}%; top: ${-y / height * 100}%;`;
+              return `<span class="cert-logo-crop" style="${cropStyle}"><img src="${escapeHtml(logo.src)}" alt="${escapeHtml(logo.alt || "")}" style="${imageStyle}"></span>`;
+            })
             .join("");
 
           return logoMarkup
